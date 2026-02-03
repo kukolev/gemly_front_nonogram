@@ -43,15 +43,21 @@ const toggleCell = (r, c, button) => {
 
 const isDrawing = ref(false);
 const drawingState = ref(null);
+const hoveredRow = ref(null);
+const hoveredCol = ref(null);
 
 const startDrawing = (event, r, c) => {
   if (event.button !== 0 && event.button !== 2) return;
+  hoveredRow.value = r;
+  hoveredCol.value = c;
   isDrawing.value = true;
   toggleCell(r, c, event.button);
   drawingState.value = grid.value[r][c];
 };
 
 const continueDrawing = (r, c) => {
+  hoveredRow.value = r;
+  hoveredCol.value = c;
   if (isDrawing.value) {
     grid.value[r][c] = drawingState.value;
   }
@@ -60,6 +66,11 @@ const continueDrawing = (r, c) => {
 const stopDrawing = () => {
   isDrawing.value = false;
   drawingState.value = null;
+};
+
+const resetHover = () => {
+  hoveredRow.value = null;
+  hoveredCol.value = null;
 };
 
 onMounted(() => {
@@ -77,25 +88,25 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 <template>
   <div class="nonogram-container">
-    <table class="nonogram-table">
+    <table class="nonogram-table" @mouseleave="resetHover">
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
         <th :colspan="maxRowClues"></th>
-        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue">
+        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol }">
           {{ col[col.length - maxColClues + i - 1] !== undefined ? col[col.length - maxColClues + i - 1] : '' }}
         </th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(row, rIdx) in rowValues" :key="'row-' + rIdx">
-        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue">
+        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow }">
           {{ row[row.length - maxRowClues + i - 1] !== undefined ? row[row.length - maxRowClues + i - 1] : '' }}
         </td>
         <td
             v-for="(cell, cIdx) in grid[rIdx]"
             :key="'cell-' + rIdx + '-' + cIdx"
             class="cell"
-            :class="{ filled: cell === 1, marked: cell === -1 }"
+            :class="{ filled: cell === 1, marked: cell === -1, highlighted: rIdx === hoveredRow || cIdx === hoveredCol }"
             @mousedown="startDrawing($event, rIdx, cIdx)"
             @mouseenter="continueDrawing(rIdx, cIdx)"
             @contextmenu.prevent
@@ -136,6 +147,16 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 .cell.marked {
   color: #5b5353;
   font-weight: bold;
+}
+
+.cell.highlighted,
+.row-clue.highlighted,
+.col-clue.highlighted {
+  background-color: #dfdfdf;
+}
+
+.cell.filled.highlighted {
+  background-color: #555555;
 }
 
 .col-clue {
