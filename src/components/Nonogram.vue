@@ -92,14 +92,14 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
         <th :colspan="maxRowClues" @mouseenter="resetHover"></th>
-        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol }" @mouseenter="hoveredCol = cIdx; hoveredRow = null">
+        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol, 'has-digit': col[col.length - maxColClues + i - 1] !== undefined }" @mouseenter="hoveredCol = cIdx; hoveredRow = null">
           {{ col[col.length - maxColClues + i - 1] !== undefined ? col[col.length - maxColClues + i - 1] : '' }}
         </th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(row, rIdx) in rowValues" :key="'row-' + rIdx">
-        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow }" @mouseenter="hoveredRow = rIdx; hoveredCol = null">
+        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow, 'has-digit': row[row.length - maxRowClues + i - 1] !== undefined }" @mouseenter="hoveredRow = rIdx; hoveredCol = null">
           {{ row[row.length - maxRowClues + i - 1] !== undefined ? row[row.length - maxRowClues + i - 1] : '' }}
         </td>
         <td
@@ -161,6 +161,17 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 }
 
 .cell.filled.highlighted {
+  background-color: #555555;
+}
+
+.row-clue.has-digit,
+.col-clue.has-digit {
+  background-color: #555555;
+  color: white;
+}
+
+.row-clue.has-digit.highlighted,
+.col-clue.has-digit.highlighted {
   background-color: #555555;
 }
 
