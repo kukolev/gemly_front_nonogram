@@ -24,13 +24,20 @@ const grid = ref(
     )
 );
 
-const toggleCell = (r, c) => {
-  if (grid.value[r][c] === 0) {
-    grid.value[r][c] = 1; // Filled
-  } else if (grid.value[r][c] === 1) {
-    grid.value[r][c] = -1; // Marked (X)
-  } else {
-    grid.value[r][c] = 0; // Empty
+const toggleCell = (r, c, button) => {
+  const currentValue = grid.value[r][c];
+  if (button === 0) { // Left click
+    if (currentValue === 1) {
+      grid.value[r][c] = 0; // Black -> White
+    } else {
+      grid.value[r][c] = 1; // White or X -> Black
+    }
+  } else if (button === 2) { // Right click
+    if (currentValue === -1) {
+      grid.value[r][c] = 0; // X -> White
+    } else {
+      grid.value[r][c] = -1; // White or Black -> X
+    }
   }
 };
 
@@ -38,9 +45,9 @@ const isDrawing = ref(false);
 const drawingState = ref(null);
 
 const startDrawing = (event, r, c) => {
-  if (event.button !== 0) return;
+  if (event.button !== 0 && event.button !== 2) return;
   isDrawing.value = true;
-  toggleCell(r, c);
+  toggleCell(r, c, event.button);
   drawingState.value = grid.value[r][c];
 };
 
@@ -91,6 +98,7 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
             :class="{ filled: cell === 1, marked: cell === -1 }"
             @mousedown="startDrawing($event, rIdx, cIdx)"
             @mouseenter="continueDrawing(rIdx, cIdx)"
+            @contextmenu.prevent
         >
           <span v-if="cell === -1">x</span>
         </td>
