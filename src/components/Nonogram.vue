@@ -91,22 +91,27 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
     <table class="nonogram-table" @mouseleave="resetHover">
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
-        <th :colspan="maxRowClues"></th>
-        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol }">
+        <th :colspan="maxRowClues" @mouseenter="resetHover"></th>
+        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol }" @mouseenter="hoveredCol = cIdx; hoveredRow = null">
           {{ col[col.length - maxColClues + i - 1] !== undefined ? col[col.length - maxColClues + i - 1] : '' }}
         </th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(row, rIdx) in rowValues" :key="'row-' + rIdx">
-        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow }">
+        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow }" @mouseenter="hoveredRow = rIdx; hoveredCol = null">
           {{ row[row.length - maxRowClues + i - 1] !== undefined ? row[row.length - maxRowClues + i - 1] : '' }}
         </td>
         <td
             v-for="(cell, cIdx) in grid[rIdx]"
             :key="'cell-' + rIdx + '-' + cIdx"
             class="cell"
-            :class="{ filled: cell === 1, marked: cell === -1, highlighted: rIdx === hoveredRow || cIdx === hoveredCol }"
+            :class="{
+              filled: cell === 1,
+              marked: cell === -1,
+              highlighted: rIdx === hoveredRow || cIdx === hoveredCol,
+              'cursor-cell': rIdx === hoveredRow && cIdx === hoveredCol
+            }"
             @mousedown="startDrawing($event, rIdx, cIdx)"
             @mouseenter="continueDrawing(rIdx, cIdx)"
             @contextmenu.prevent
@@ -157,6 +162,14 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 .cell.filled.highlighted {
   background-color: #555555;
+}
+
+.cell.cursor-cell {
+  box-shadow: inset 0 0 0 2px #000;
+}
+
+.cell.filled.cursor-cell {
+  box-shadow: inset 0 0 0 2px #fff;
 }
 
 .col-clue {
