@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, ref, onMounted, onUnmounted} from 'vue';
 // Note: library 'nonogram' is installed and can be used for solving if needed
 // e.g. import nonogram from 'nonogram'
 
@@ -34,6 +34,35 @@ const toggleCell = (r, c) => {
   }
 };
 
+const isDrawing = ref(false);
+const drawingState = ref(null);
+
+const startDrawing = (event, r, c) => {
+  if (event.button !== 0) return;
+  isDrawing.value = true;
+  toggleCell(r, c);
+  drawingState.value = grid.value[r][c];
+};
+
+const continueDrawing = (r, c) => {
+  if (isDrawing.value) {
+    grid.value[r][c] = drawingState.value;
+  }
+};
+
+const stopDrawing = () => {
+  isDrawing.value = false;
+  drawingState.value = null;
+};
+
+onMounted(() => {
+  window.addEventListener('mouseup', stopDrawing);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('mouseup', stopDrawing);
+});
+
 const maxRowClues = computed(() => Math.max(...props.rowValues.map(v => v.length), 0));
 const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length), 0));
 
@@ -60,7 +89,8 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
             :key="'cell-' + rIdx + '-' + cIdx"
             class="cell"
             :class="{ filled: cell === 1, marked: cell === -1 }"
-            @mousedown="toggleCell(rIdx, cIdx)"
+            @mousedown="startDrawing($event, rIdx, cIdx)"
+            @mouseenter="continueDrawing(rIdx, cIdx)"
         >
           <span v-if="cell === -1">x</span>
         </td>
