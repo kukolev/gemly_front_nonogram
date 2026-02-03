@@ -7,7 +7,9 @@ export function loadData() {
 
 export function loadRandomNonogram() {
     const request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/api/v1/nonogram.getRandom", false);
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
+    const address = import.meta.env.ENV_SERVER_ADDRESS;
+    request.open("GET", `${protocol}://${address}/api/v1/nonogram.getRandom`, false);
     request.send(null);
 
     if (request.status === 200) {
