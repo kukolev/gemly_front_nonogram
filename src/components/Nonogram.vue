@@ -91,15 +91,15 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
     <table class="nonogram-table" @mouseleave="resetHover">
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
-        <th :colspan="maxRowClues" @mouseenter="resetHover"></th>
-        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol, 'has-digit': col[col.length - maxColClues + i - 1], 'thick-right': (cIdx + 1) % 5 === 0 }" @mouseenter="hoveredCol = cIdx; hoveredRow = null">
+        <th :colspan="maxRowClues" class="top-left-empty" :class="{'thick-top': i === 1, 'thick-left': true, 'thick-bottom': i === maxColClues}" @mouseenter="resetHover"></th>
+        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol, 'has-digit': col[col.length - maxColClues + i - 1], 'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1, 'thick-left': cIdx === 0, 'thick-top': i === 1, 'thick-bottom': i === maxColClues }" @mouseenter="hoveredCol = cIdx; hoveredRow = null">
           {{ col[col.length - maxColClues + i - 1] || '' }}
         </th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(row, rIdx) in rowValues" :key="'row-' + rIdx">
-        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow, 'has-digit': row[row.length - maxRowClues + i - 1], 'thick-bottom': (rIdx + 1) % 5 === 0 }" @mouseenter="hoveredRow = rIdx; hoveredCol = null">
+        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow, 'has-digit': row[row.length - maxRowClues + i - 1], 'thick-bottom': (rIdx + 1) % 5 === 0 || rIdx === size.rows - 1, 'thick-left': i === 1, 'thick-top': rIdx === 0, 'thick-right': i === maxRowClues }" @mouseenter="hoveredRow = rIdx; hoveredCol = null">
           {{ row[row.length - maxRowClues + i - 1] || '' }}
         </td>
         <td
@@ -111,8 +111,10 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
               marked: cell === -1,
               highlighted: rIdx === hoveredRow || cIdx === hoveredCol,
               'cursor-cell': rIdx === hoveredRow && cIdx === hoveredCol,
-              'thick-right': (cIdx + 1) % 5 === 0,
-              'thick-bottom': (rIdx + 1) % 5 === 0
+              'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1,
+              'thick-bottom': (rIdx + 1) % 5 === 0 || rIdx === size.rows - 1,
+              'thick-left': cIdx === 0,
+              'thick-top': rIdx === 0
             }"
             @mousedown="startDrawing($event, rIdx, cIdx)"
             @mouseenter="continueDrawing(rIdx, cIdx)"
@@ -134,6 +136,11 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 .nonogram-table {
   border-collapse: collapse;
+  background-color: #000;
+}
+
+.nonogram-table th, .nonogram-table td {
+  background-color: #fff;
 }
 
 .cell {
@@ -143,7 +150,6 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
   text-align: center;
   cursor: pointer;
   user-select: none;
-  background-color: #fff;
   line-height: 12px;
   font-size: 10px;
 }
@@ -165,7 +171,8 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 .cell.highlighted,
 .row-clue.highlighted,
-.col-clue.highlighted {
+.col-clue.highlighted,
+.top-left-empty.highlighted {
   background-color: #dfdfdf;
 }
 
@@ -198,6 +205,14 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 .thick-bottom {
   border-bottom: 2px solid #999 !important;
+}
+
+.thick-left {
+  border-left: 2px solid #999 !important;
+}
+
+.thick-top {
+  border-top: 2px solid #999 !important;
 }
 
 .col-clue {
