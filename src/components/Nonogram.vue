@@ -153,7 +153,6 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 .cell.marked {
   color: #5b5353;
-  font-weight: bold;
 }
 
 .cell.highlighted,
@@ -194,6 +193,7 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
   font-size: 10px;
   user-select: none;
   line-height: 12px;
+  font-weight: normal;
 }
 
 .row-clue {
@@ -205,6 +205,7 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
   font-size: 10px;
   user-select: none;
   line-height: 12px;
+  font-weight: normal;
 }
 
 th, td {
