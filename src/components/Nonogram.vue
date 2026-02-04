@@ -139,7 +139,7 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 .cell {
   width: 12px;
   height: 12px;
-  border: 1px solid #333;
+  border: 1px solid #999;
   text-align: center;
   cursor: pointer;
   user-select: none;
@@ -193,17 +193,17 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 }
 
 .thick-right {
-  border-right: 2px solid #333 !important;
+  border-right: 2px solid #999 !important;
 }
 
 .thick-bottom {
-  border-bottom: 2px solid #333 !important;
+  border-bottom: 2px solid #999 !important;
 }
 
 .col-clue {
   width: 12px;
   height: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #999;
   vertical-align: middle;
   padding: 0;
   font-size: 10px;
@@ -215,7 +215,7 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 .row-clue {
   width: 12px;
   height: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #999;
   text-align: center;
   padding: 0;
   font-size: 10px;
