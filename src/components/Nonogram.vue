@@ -136,13 +136,15 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 }
 
 .cell {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
   border: 1px solid #333;
   text-align: center;
   cursor: pointer;
   user-select: none;
   background-color: #fff;
+  line-height: 12px;
+  font-size: 10px;
 }
 
 .cell.filled {
@@ -184,22 +186,28 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 }
 
 .col-clue {
-  height: 25px;
+  width: 12px;
+  height: 12px;
   border: 1px solid #ccc;
-  vertical-align: bottom;
-  padding: 2px;
-  font-size: 0.8rem;
+  vertical-align: middle;
+  padding: 0;
+  font-size: 10px;
+  user-select: none;
+  line-height: 12px;
 }
 
 .row-clue {
-  width: 25px;
+  width: 12px;
+  height: 12px;
   border: 1px solid #ccc;
-  text-align: right;
-  padding: 2px 5px;
-  font-size: 0.8rem;
+  text-align: center;
+  padding: 0;
+  font-size: 10px;
+  user-select: none;
+  line-height: 12px;
 }
 
 th, td {
-  min-width: 20px;
+  min-width: 12px;
 }
 </style>
