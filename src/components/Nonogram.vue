@@ -116,7 +116,6 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
             @mouseenter="continueDrawing(rIdx, cIdx)"
             @contextmenu.prevent
         >
-          <span v-if="cell === -1">x</span>
         </td>
       </tr>
       </tbody>
@@ -152,7 +151,14 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 }
 
 .cell.marked {
-  color: #5b5353;
+  position: relative;
+  background-image:
+      linear-gradient(to top right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px)),
+      linear-gradient(to bottom right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px));
+}
+
+.cell.marked.highlighted {
+  background-color: #dfdfdf;
 }
 
 .cell.highlighted,
