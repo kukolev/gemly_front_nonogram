@@ -2,7 +2,7 @@
   <div class="header">
     <h1 class="main-form-title">{{ message }}</h1>
     <button name="nonogram-reload-button" @click="requestReload()">Загрузить новый</button>
-    <button name="nonogram-clear-button" @click="requestClear()">Clear</button>
+    <button name="nonogram-clear-button" @click="requestClear()">Очистить</button>
     <button name="nonogram-check-button" @click="reload()">Проверить</button>
     <button name="nonogram-undo-button" @click="undo()" :disabled="!canUndo">Undo</button>
     <button name="nonogram-redo-button" @click="redo()" :disabled="!canRedo">Redo</button>
@@ -58,7 +58,7 @@ function requestReload() {
 }
 
 function requestClear() {
-  dialogMessage.value = 'Clearing will erase your progress. Are you sure?';
+  dialogMessage.value = 'Ваш прогресс по данному кроссворду будет потерян, вы точно уверены?';
   pendingAction.value = 'clear';
   showDialog.value = true;
 }

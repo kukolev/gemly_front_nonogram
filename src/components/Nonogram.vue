@@ -121,8 +121,6 @@ onUnmounted(() => {
 const maxRowClues = computed(() => Math.max(...props.rowValues.map(v => v.length), 0));
 const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length), 0));
 
-const lastClick = ref({ type: null, index: null, count: 0, time: 0 });
-
 const markedRowClues = ref(
     props.rowValues.map(() => Array(maxRowClues.value).fill(false))
 );
@@ -150,8 +148,6 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
     }
     saveHistory();
   }
-
-  handleLegendClick(type, lineIdx);
 };
 
 const checkAndFillCrosses = (type, index) => {
@@ -181,36 +177,6 @@ const checkAndFillCrosses = (type, index) => {
       }
     }
   }
-};
-
-const handleLegendClick = (type, index) => {
-  const now = Date.now();
-  if (lastClick.value.type === type && lastClick.value.index === index && (now - lastClick.value.time) < 500) {
-    lastClick.value.count++;
-  } else {
-    lastClick.value.count = 1;
-  }
-  lastClick.value.type = type;
-  lastClick.value.index = index;
-  lastClick.value.time = now;
-
-  if (lastClick.value.count === 3) {
-    fillSolidLine(type, index);
-    lastClick.value.count = 0; // Reset after action
-  }
-};
-
-const fillSolidLine = (type, index) => {
-  if (type === 'row') {
-    for (let c = 0; c < props.size.cols; c++) {
-      grid.value[index][c] = 1;
-    }
-  } else if (type === 'col') {
-    for (let r = 0; r < props.size.rows; r++) {
-      grid.value[r][index] = 1;
-    }
-  }
-  saveHistory();
 };
 
 const history = ref([JSON.stringify({
