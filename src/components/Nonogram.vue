@@ -71,7 +71,7 @@ const continueDrawing = (event, r, c) => {
   let targetR = r;
   let targetC = c;
 
-  if (event.shiftKey) {
+  if (!event.shiftKey) {
     if (!lockedAxis.value) {
       if (r !== startRow.value || c !== startCol.value) {
         if (Math.abs(r - startRow.value) >= Math.abs(c - startCol.value)) {
