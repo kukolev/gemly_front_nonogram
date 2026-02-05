@@ -45,9 +45,15 @@ const isDrawing = ref(false);
 const drawingState = ref(null);
 const hoveredRow = ref(null);
 const hoveredCol = ref(null);
+const startRow = ref(null);
+const startCol = ref(null);
+const lockedAxis = ref(null);
 
 const startDrawing = (event, r, c) => {
   if (event.button !== 0 && event.button !== 2) return;
+  startRow.value = r;
+  startCol.value = c;
+  lockedAxis.value = null;
   hoveredRow.value = r;
   hoveredCol.value = c;
   isDrawing.value = true;
@@ -55,17 +61,45 @@ const startDrawing = (event, r, c) => {
   drawingState.value = grid.value[r][c];
 };
 
-const continueDrawing = (r, c) => {
-  hoveredRow.value = r;
-  hoveredCol.value = c;
-  if (isDrawing.value) {
-    grid.value[r][c] = drawingState.value;
+const continueDrawing = (event, r, c) => {
+  if (!isDrawing.value) {
+    hoveredRow.value = r;
+    hoveredCol.value = c;
+    return;
   }
+
+  let targetR = r;
+  let targetC = c;
+
+  if (event.shiftKey) {
+    if (!lockedAxis.value) {
+      if (r !== startRow.value || c !== startCol.value) {
+        if (Math.abs(r - startRow.value) >= Math.abs(c - startCol.value)) {
+          lockedAxis.value = 'vertical';
+        } else {
+          lockedAxis.value = 'horizontal';
+        }
+      }
+    }
+
+    if (lockedAxis.value === 'horizontal') {
+      targetR = startRow.value;
+    } else if (lockedAxis.value === 'vertical') {
+      targetC = startCol.value;
+    }
+  } else {
+    lockedAxis.value = null;
+  }
+
+  hoveredRow.value = targetR;
+  hoveredCol.value = targetC;
+  grid.value[targetR][targetC] = drawingState.value;
 };
 
 const stopDrawing = () => {
   isDrawing.value = false;
   drawingState.value = null;
+  lockedAxis.value = null;
 };
 
 const resetHover = () => {
@@ -152,7 +186,7 @@ const fillSolidLine = (type, index) => {
               'thick-top': rIdx === 0
             }"
             @mousedown="startDrawing($event, rIdx, cIdx)"
-            @mouseenter="continueDrawing(rIdx, cIdx)"
+            @mouseenter="continueDrawing($event, rIdx, cIdx)"
             @contextmenu.prevent
         >
         </td>
