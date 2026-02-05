@@ -15,6 +15,10 @@ const props = defineProps({
   colValues: {
     type: Array,
     required: true
+  },
+  solution: {
+    type: Array,
+    required: false
   }
 });
 
@@ -118,6 +122,7 @@ const stopDrawing = () => {
         grid.value[r][cStart] = drawingState.value;
       }
     }
+    autoMarkClues();
     saveHistory();
   }
   isDrawing.value = false;
@@ -132,6 +137,7 @@ const resetHover = () => {
 
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
+  autoMarkClues();
 });
 
 onUnmounted(() => {
@@ -199,6 +205,77 @@ const checkAndFillCrosses = (type, index) => {
   }
 };
 
+const getBlocks = (arr) => {
+  const blocks = [];
+  let currentBlock = null;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === 1) {
+      if (currentBlock === null) {
+        currentBlock = {start: i, length: 1};
+      } else {
+        currentBlock.length++;
+      }
+    } else {
+      if (currentBlock !== null) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+    }
+  }
+  if (currentBlock !== null) {
+    blocks.push(currentBlock);
+  }
+  return blocks;
+};
+
+const autoMarkClues = () => {
+  if (!props.solution) return;
+
+  // Auto mark rows
+  for (let r = 0; r < props.size.rows; r++) {
+    const gridRowBlocks = getBlocks(grid.value[r]);
+    const solutionRowBlocks = getBlocks(props.solution[r]);
+    const rowClues = props.rowValues[r];
+
+    for (let j = 0; j < rowClues.length; j++) {
+      const clueIdx = maxRowClues.value - rowClues.length + j;
+      const solBlock = solutionRowBlocks[j];
+      let isCorrect = false;
+
+      if (solBlock) {
+        // Check if there is a block in grid that matches this solution block
+        isCorrect = gridRowBlocks.some(gb => gb.start === solBlock.start && gb.length === solBlock.length);
+      }
+      markedRowClues.value[r][clueIdx] = isCorrect;
+    }
+  }
+
+  // Auto mark columns
+  for (let c = 0; c < props.size.cols; c++) {
+    const colArr = [];
+    const solColArr = [];
+    for (let r = 0; r < props.size.rows; r++) {
+      colArr.push(grid.value[r][c]);
+      solColArr.push(props.solution[r][c]);
+    }
+
+    const gridColBlocks = getBlocks(colArr);
+    const solutionColBlocks = getBlocks(solColArr);
+    const colClues = props.colValues[c];
+
+    for (let j = 0; j < colClues.length; j++) {
+      const clueIdx = maxColClues.value - colClues.length + j;
+      const solBlock = solutionColBlocks[j];
+      let isCorrect = false;
+
+      if (solBlock) {
+        isCorrect = gridColBlocks.some(gb => gb.start === solBlock.start && gb.length === solBlock.length);
+      }
+      markedColClues.value[c][clueIdx] = isCorrect;
+    }
+  }
+};
+
 const history = ref([JSON.stringify({
   grid: grid.value,
   markedRowClues: markedRowClues.value,
@@ -248,12 +325,14 @@ const clear = () => {
   );
   markedRowClues.value = props.rowValues.map(() => Array(maxRowClues.value).fill(false));
   markedColClues.value = props.colValues.map(() => Array(maxColClues.value).fill(false));
+  autoMarkClues();
   saveHistory();
 };
 
 const drawResult = (resultGrid) => {
   if (resultGrid && resultGrid.length === props.size.rows) {
     grid.value = resultGrid.map(row => [...row]);
+    autoMarkClues();
     saveHistory();
   }
 };

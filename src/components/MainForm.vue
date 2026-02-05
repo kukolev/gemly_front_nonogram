@@ -9,7 +9,7 @@
     <button name="nonogram-draw-result-button" @click="drawResult()">Draw result</button>
   </div>
   <div class="main-form">
-    <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues"/>
+    <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues" :solution="resultData"/>
   </div>
   <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
 </template>
