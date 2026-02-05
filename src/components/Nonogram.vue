@@ -24,22 +24,6 @@ const grid = ref(
     )
 );
 
-const toggleCell = (r, c, button) => {
-  const currentValue = grid.value[r][c];
-  if (button === 0) { // Left click
-    if (currentValue === 1) {
-      grid.value[r][c] = 0; // Black -> White
-    } else {
-      grid.value[r][c] = 1; // White or X -> Black
-    }
-  } else if (button === 2) { // Right click
-    if (currentValue === -1) {
-      grid.value[r][c] = 0; // X -> White
-    } else {
-      grid.value[r][c] = -1; // White or Black -> X
-    }
-  }
-};
 
 const isDrawing = ref(false);
 const drawingState = ref(null);
@@ -49,6 +33,20 @@ const startRow = ref(null);
 const startCol = ref(null);
 const lockedAxis = ref(null);
 
+const isInPendingLine = (r, c) => {
+  if (!isDrawing.value) return false;
+  const rStart = startRow.value;
+  const rEnd = hoveredRow.value;
+  const cStart = startCol.value;
+  const cEnd = hoveredCol.value;
+
+  if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
+    return r === rStart && ((c >= cStart && c <= cEnd) || (c <= cStart && c >= cEnd));
+  } else {
+    return c === cStart && ((r >= rStart && r <= rEnd) || (r <= rStart && r >= rEnd));
+  }
+};
+
 const startDrawing = (event, r, c) => {
   if (event.button !== 0 && event.button !== 2) return;
   startRow.value = r;
@@ -57,8 +55,13 @@ const startDrawing = (event, r, c) => {
   hoveredRow.value = r;
   hoveredCol.value = c;
   isDrawing.value = true;
-  toggleCell(r, c, event.button);
-  drawingState.value = grid.value[r][c];
+  
+  const currentValue = grid.value[r][c];
+  if (event.button === 0) { // Left click
+    drawingState.value = (currentValue === 1) ? 0 : 1;
+  } else if (event.button === 2) { // Right click
+    drawingState.value = (currentValue === -1) ? 0 : -1;
+  }
 };
 
 const continueDrawing = (event, r, c) => {
@@ -93,11 +96,28 @@ const continueDrawing = (event, r, c) => {
 
   hoveredRow.value = targetR;
   hoveredCol.value = targetC;
-  grid.value[targetR][targetC] = drawingState.value;
 };
 
 const stopDrawing = () => {
   if (isDrawing.value) {
+    const rStart = startRow.value;
+    const rEnd = hoveredRow.value;
+    const cStart = startCol.value;
+    const cEnd = hoveredCol.value;
+
+    if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
+      const min = Math.min(cStart, cEnd);
+      const max = Math.max(cStart, cEnd);
+      for (let c = min; c <= max; c++) {
+        grid.value[rStart][c] = drawingState.value;
+      }
+    } else {
+      const min = Math.min(rStart, rEnd);
+      const max = Math.max(rStart, rEnd);
+      for (let r = min; r <= max; r++) {
+        grid.value[r][cStart] = drawingState.value;
+      }
+    }
     saveHistory();
   }
   isDrawing.value = false;
@@ -260,8 +280,8 @@ defineExpose({undo, redo, canUndo, canRedo, clear});
             :key="'cell-' + rIdx + '-' + cIdx"
             class="cell"
             :class="{
-              filled: cell === 1,
-              marked: cell === -1,
+              filled: isInPendingLine(rIdx, cIdx) ? drawingState === 1 : cell === 1,
+              marked: isInPendingLine(rIdx, cIdx) ? drawingState === -1 : cell === -1,
               highlighted: rIdx === hoveredRow || cIdx === hoveredCol,
               'cursor-cell': rIdx === hoveredRow && cIdx === hoveredCol,
               'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1,
