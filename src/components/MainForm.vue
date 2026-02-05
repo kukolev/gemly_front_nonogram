@@ -3,9 +3,11 @@
     <h1 class="main-form-title">{{ message }}</h1>
     <button name="nonogram-reload-button" @click="requestReload()">Загрузить новый</button>
     <button name="nonogram-check-button" @click="reload()">Проверить</button>
+    <button name="nonogram-undo-button" @click="undo()" :disabled="!canUndo">Undo</button>
+    <button name="nonogram-redo-button" @click="redo()" :disabled="!canRedo">Redo</button>
   </div>
   <div class="main-form">
-    <Nonogram :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues"/>
+    <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues"/>
   </div>
   <ConfirmationDialog v-if="showDialog" @yes="handleConfirm" @no="handleCancel" />
 </template>
@@ -27,10 +29,14 @@ defineProps({
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
-import {ref} from 'vue';
+import {ref, computed} from 'vue';
 import {loadData, loadRandomNonogram} from '../funcs.js';
 
 const componentKey = ref(0);
+const nonogramComponent = ref(null);
+
+const canUndo = computed(() => nonogramComponent.value?.canUndo);
+const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const showDialog = ref(false);
 
 
@@ -54,6 +60,14 @@ function handleConfirm() {
 
 function handleCancel() {
   showDialog.value = false;
+}
+
+function undo() {
+  nonogramComponent.value?.undo();
+}
+
+function redo() {
+  nonogramComponent.value?.redo();
 }
 </script>
 

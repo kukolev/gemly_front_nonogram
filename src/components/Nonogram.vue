@@ -97,6 +97,9 @@ const continueDrawing = (event, r, c) => {
 };
 
 const stopDrawing = () => {
+  if (isDrawing.value) {
+    saveHistory();
+  }
   isDrawing.value = false;
   drawingState.value = null;
   lockedAxis.value = null;
@@ -147,7 +150,39 @@ const fillSolidLine = (type, index) => {
       grid.value[r][index] = 1;
     }
   }
+  saveHistory();
 };
+
+const history = ref([JSON.stringify(grid.value)]);
+const historyIndex = ref(0);
+
+const saveHistory = () => {
+  const currentState = JSON.stringify(grid.value);
+  if (currentState !== history.value[historyIndex.value]) {
+    history.value = history.value.slice(0, historyIndex.value + 1);
+    history.value.push(currentState);
+    historyIndex.value++;
+  }
+};
+
+const undo = () => {
+  if (historyIndex.value > 0) {
+    historyIndex.value--;
+    grid.value = JSON.parse(history.value[historyIndex.value]);
+  }
+};
+
+const redo = () => {
+  if (historyIndex.value < history.value.length - 1) {
+    historyIndex.value++;
+    grid.value = JSON.parse(history.value[historyIndex.value]);
+  }
+};
+
+const canUndo = computed(() => historyIndex.value > 0);
+const canRedo = computed(() => historyIndex.value < history.value.length - 1);
+
+defineExpose({undo, redo, canUndo, canRedo});
 
 </script>
 
