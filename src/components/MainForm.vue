@@ -6,6 +6,7 @@
     <button name="nonogram-check-button" @click="reload()">Проверить</button>
     <button name="nonogram-undo-button" @click="undo()" :disabled="!canUndo">Undo</button>
     <button name="nonogram-redo-button" @click="redo()" :disabled="!canRedo">Redo</button>
+    <button name="nonogram-draw-result-button" @click="drawResult()">Draw result</button>
   </div>
   <div class="main-form">
     <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues"/>
@@ -42,12 +43,12 @@ const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
 
-let [rowValues, colValues] = loadRandomNonogram();
+let [rowValues, colValues, resultData] = loadRandomNonogram();
 let nonogramSize = {rows: rowValues.length, cols: colValues.length};
 
 async function reload() {
   componentKey.value += 1;
-  [rowValues, colValues] = loadRandomNonogram();
+  [rowValues, colValues, resultData] = loadRandomNonogram();
   nonogramSize = {rows: rowValues.length, cols: colValues.length};
 }
 
@@ -83,6 +84,10 @@ function undo() {
 
 function redo() {
   nonogramComponent.value?.redo();
+}
+
+function drawResult() {
+  nonogramComponent.value?.drawResult(resultData);
 }
 
 function clear() {

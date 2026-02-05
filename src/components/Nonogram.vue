@@ -251,7 +251,14 @@ const clear = () => {
   saveHistory();
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear});
+const drawResult = (resultGrid) => {
+  if (resultGrid && resultGrid.length === props.size.rows) {
+    grid.value = resultGrid.map(row => [...row]);
+    saveHistory();
+  }
+};
+
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult});
 
 </script>
 

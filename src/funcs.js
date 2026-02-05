@@ -14,7 +14,7 @@ export function loadRandomNonogram() {
 
     if (request.status === 200) {
         const response = JSON.parse(request.responseText);
-        return [response.rows, response.columns];
+        return [response.rows, response.columns, response.data];
     } else {
         throw new Error('Failed to load nonogram');
     }
