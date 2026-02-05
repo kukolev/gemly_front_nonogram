@@ -213,6 +213,12 @@ const fillSolidLine = (type, index) => {
   background-color: #dfdfdf;
 }
 
+.nonogram-table .top-left-empty,
+.row-clue:not(.has-digit),
+.col-clue:not(.has-digit) {
+  background-color: #eeeeee;
+}
+
 .cell.highlighted,
 .row-clue.highlighted,
 .col-clue.highlighted,
