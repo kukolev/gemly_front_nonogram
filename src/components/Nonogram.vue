@@ -120,6 +120,10 @@ const fillSolidLine = (type, index) => {
 <template>
   <div class="nonogram-container">
     <table class="nonogram-table" @mouseleave="resetHover">
+      <colgroup>
+        <col v-for="i in maxRowClues" :key="'col-group-row-clue-' + i" style="width: 15px;">
+        <col v-for="i in size.cols" :key="'col-group-cell-' + i" style="width: 15px;">
+      </colgroup>
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
         <th :colspan="maxRowClues" class="top-left-empty" :class="{'thick-top': i === 1, 'thick-left': true, 'thick-bottom': i === maxColClues}" @mouseenter="resetHover"></th>
@@ -168,21 +172,30 @@ const fillSolidLine = (type, index) => {
 .nonogram-table {
   border-collapse: collapse;
   background-color: #000;
+  table-layout: fixed;
 }
 
 .nonogram-table th, .nonogram-table td {
   background-color: #fff;
+  padding: 0;
+}
+
+.top-left-empty {
+  box-sizing: border-box;
+  height: 15px;
 }
 
 .cell {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   border: 1px solid #999;
   text-align: center;
   cursor: pointer;
   user-select: none;
-  line-height: 12px;
+  line-height: 15px;
   font-size: 10px;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .cell.filled {
@@ -247,30 +260,34 @@ const fillSolidLine = (type, index) => {
 }
 
 .col-clue {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   border: 1px solid #999;
   vertical-align: middle;
+  text-align: center;
   padding: 0;
   font-size: 10px;
   user-select: none;
-  line-height: 12px;
+  line-height: 15px;
   font-weight: normal;
+  box-sizing: border-box;
 }
 
 .row-clue {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   border: 1px solid #999;
   text-align: center;
   padding: 0;
   font-size: 10px;
   user-select: none;
-  line-height: 12px;
+  line-height: 15px;
   font-weight: normal;
+  box-sizing: border-box;
 }
 
 th, td {
-  min-width: 12px;
+  min-width: 15px;
+  box-sizing: border-box;
 }
 </style>
