@@ -139,13 +139,48 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
   if (hasDigit) {
     if (type === 'row') {
       markedRowClues.value[lineIdx][clueIdx] = !markedRowClues.value[lineIdx][clueIdx];
+      if (markedRowClues.value[lineIdx][clueIdx]) {
+        checkAndFillCrosses('row', lineIdx);
+      }
     } else {
       markedColClues.value[lineIdx][clueIdx] = !markedColClues.value[lineIdx][clueIdx];
+      if (markedColClues.value[lineIdx][clueIdx]) {
+        checkAndFillCrosses('col', lineIdx);
+      }
     }
     saveHistory();
   }
 
   handleLegendClick(type, lineIdx);
+};
+
+const checkAndFillCrosses = (type, index) => {
+  const line = type === 'row' ? props.rowValues[index] : props.colValues[index];
+  const maxClues = type === 'row' ? maxRowClues.value : maxColClues.value;
+  const markedClues = type === 'row' ? markedRowClues.value[index] : markedColClues.value[index];
+
+  // Check if all digits are marked
+  const allMarked = line.every((clue, i) => {
+    if (!clue) return true; // Skip empty clue slots
+    const clueIdx = maxClues - line.length + i;
+    return markedClues[clueIdx];
+  });
+
+  if (allMarked) {
+    if (type === 'row') {
+      for (let c = 0; c < props.size.cols; c++) {
+        if (grid.value[index][c] === 0) {
+          grid.value[index][c] = -1;
+        }
+      }
+    } else {
+      for (let r = 0; r < props.size.rows; r++) {
+        if (grid.value[r][index] === 0) {
+          grid.value[r][index] = -1;
+        }
+      }
+    }
+  }
 };
 
 const handleLegendClick = (type, index) => {
