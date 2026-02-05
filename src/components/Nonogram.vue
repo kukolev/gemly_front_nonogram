@@ -123,6 +123,31 @@ const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length
 
 const lastClick = ref({ type: null, index: null, count: 0, time: 0 });
 
+const markedRowClues = ref(
+    props.rowValues.map(() => Array(maxRowClues.value).fill(false))
+);
+
+const markedColClues = ref(
+    props.colValues.map(() => Array(maxColClues.value).fill(false))
+);
+
+const handleClueClick = (type, lineIdx, clueIdx) => {
+  const line = type === 'row' ? props.rowValues[lineIdx] : props.colValues[lineIdx];
+  const maxClues = type === 'row' ? maxRowClues.value : maxColClues.value;
+  const hasDigit = !!line[line.length - maxClues + clueIdx];
+
+  if (hasDigit) {
+    if (type === 'row') {
+      markedRowClues.value[lineIdx][clueIdx] = !markedRowClues.value[lineIdx][clueIdx];
+    } else {
+      markedColClues.value[lineIdx][clueIdx] = !markedColClues.value[lineIdx][clueIdx];
+    }
+    saveHistory();
+  }
+
+  handleLegendClick(type, lineIdx);
+};
+
 const handleLegendClick = (type, index) => {
   const now = Date.now();
   if (lastClick.value.type === type && lastClick.value.index === index && (now - lastClick.value.time) < 500) {
@@ -153,11 +178,19 @@ const fillSolidLine = (type, index) => {
   saveHistory();
 };
 
-const history = ref([JSON.stringify(grid.value)]);
+const history = ref([JSON.stringify({
+  grid: grid.value,
+  markedRowClues: markedRowClues.value,
+  markedColClues: markedColClues.value
+})]);
 const historyIndex = ref(0);
 
 const saveHistory = () => {
-  const currentState = JSON.stringify(grid.value);
+  const currentState = JSON.stringify({
+    grid: grid.value,
+    markedRowClues: markedRowClues.value,
+    markedColClues: markedColClues.value
+  });
   if (currentState !== history.value[historyIndex.value]) {
     history.value = history.value.slice(0, historyIndex.value + 1);
     history.value.push(currentState);
@@ -168,14 +201,20 @@ const saveHistory = () => {
 const undo = () => {
   if (historyIndex.value > 0) {
     historyIndex.value--;
-    grid.value = JSON.parse(history.value[historyIndex.value]);
+    const state = JSON.parse(history.value[historyIndex.value]);
+    grid.value = state.grid;
+    markedRowClues.value = state.markedRowClues;
+    markedColClues.value = state.markedColClues;
   }
 };
 
 const redo = () => {
   if (historyIndex.value < history.value.length - 1) {
     historyIndex.value++;
-    grid.value = JSON.parse(history.value[historyIndex.value]);
+    const state = JSON.parse(history.value[historyIndex.value]);
+    grid.value = state.grid;
+    markedRowClues.value = state.markedRowClues;
+    markedColClues.value = state.markedColClues;
   }
 };
 
@@ -196,14 +235,14 @@ defineExpose({undo, redo, canUndo, canRedo});
       <thead>
       <tr v-for="i in maxColClues" :key="'col-clue-row-' + i">
         <th :colspan="maxRowClues" class="top-left-empty" :class="{'thick-top': i === 1, 'thick-left': true, 'thick-bottom': i === maxColClues}" @mouseenter="resetHover"></th>
-        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol, 'has-digit': col[col.length - maxColClues + i - 1], 'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1, 'thick-left': cIdx === 0, 'thick-top': i === 1, 'thick-bottom': i === maxColClues }" @mouseenter="hoveredCol = cIdx; hoveredRow = null" @click="handleLegendClick('col', cIdx)">
+        <th v-for="(col, cIdx) in colValues" :key="'col-clue-' + cIdx" class="col-clue" :class="{ highlighted: cIdx === hoveredCol, 'has-digit': col[col.length - maxColClues + i - 1], marked: markedColClues[cIdx][i-1], 'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1, 'thick-left': cIdx === 0, 'thick-top': i === 1, 'thick-bottom': i === maxColClues }" @mouseenter="hoveredCol = cIdx; hoveredRow = null" @click="handleClueClick('col', cIdx, i - 1)">
           {{ col[col.length - maxColClues + i - 1] || '' }}
         </th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(row, rIdx) in rowValues" :key="'row-' + rIdx">
-        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow, 'has-digit': row[row.length - maxRowClues + i - 1], 'thick-bottom': (rIdx + 1) % 5 === 0 || rIdx === size.rows - 1, 'thick-left': i === 1, 'thick-top': rIdx === 0, 'thick-right': i === maxRowClues }" @mouseenter="hoveredRow = rIdx; hoveredCol = null" @click="handleLegendClick('row', rIdx)">
+        <td v-for="i in maxRowClues" :key="'row-clue-' + rIdx + '-' + i" class="row-clue" :class="{ highlighted: rIdx === hoveredRow, 'has-digit': row[row.length - maxRowClues + i - 1], marked: markedRowClues[rIdx][i-1], 'thick-bottom': (rIdx + 1) % 5 === 0 || rIdx === size.rows - 1, 'thick-left': i === 1, 'thick-top': rIdx === 0, 'thick-right': i === maxRowClues }" @mouseenter="hoveredRow = rIdx; hoveredCol = null" @click="handleClueClick('row', rIdx, i - 1)">
           {{ row[row.length - maxRowClues + i - 1] || '' }}
         </td>
         <td
@@ -271,11 +310,17 @@ defineExpose({undo, redo, canUndo, canRedo});
   background-color: black;
 }
 
-.cell.marked {
+.cell.marked, .row-clue.marked, .col-clue.marked {
   position: relative;
   background-image:
       linear-gradient(to top right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px)),
       linear-gradient(to bottom right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px));
+}
+
+.row-clue.has-digit.marked, .col-clue.has-digit.marked {
+  background-image:
+      linear-gradient(to top right, transparent calc(50% - 1px), #ccc 50%, transparent calc(50% + 1px)),
+      linear-gradient(to bottom right, transparent calc(50% - 1px), #ccc 50%, transparent calc(50% + 1px));
 }
 
 .cell.marked.highlighted {
@@ -346,6 +391,7 @@ defineExpose({undo, redo, canUndo, canRedo});
   line-height: 15px;
   font-weight: normal;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .row-clue {
@@ -359,6 +405,7 @@ defineExpose({undo, redo, canUndo, canRedo});
   line-height: 15px;
   font-weight: normal;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 th, td {
