@@ -1,7 +1,7 @@
 <template>
   <div class="dialog-overlay" @click.self="$emit('no')">
     <div class="dialog-box">
-      <p class="dialog-message">Loading will erase your progress. Are you sure?</p>
+      <p class="dialog-message">{{ message }}</p>
       <div class="dialog-actions">
         <button class="dialog-button yes" @click="$emit('yes')">Yes</button>
         <button class="dialog-button no" @click="$emit('no')">No</button>
@@ -11,6 +11,12 @@
 </template>
 
 <script setup>
+defineProps({
+  message: {
+    type: String,
+    default: 'Are you sure?'
+  }
+});
 defineEmits(['yes', 'no']);
 </script>
 

@@ -256,7 +256,16 @@ const redo = () => {
 const canUndo = computed(() => historyIndex.value > 0);
 const canRedo = computed(() => historyIndex.value < history.value.length - 1);
 
-defineExpose({undo, redo, canUndo, canRedo});
+const clear = () => {
+  grid.value = Array.from({length: props.size.rows}, () =>
+      Array.from({length: props.size.cols}, () => 0)
+  );
+  markedRowClues.value = props.rowValues.map(() => Array(maxRowClues.value).fill(false));
+  markedColClues.value = props.colValues.map(() => Array(maxColClues.value).fill(false));
+  saveHistory();
+};
+
+defineExpose({undo, redo, canUndo, canRedo, clear});
 
 </script>
 
