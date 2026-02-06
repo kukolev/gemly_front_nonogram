@@ -60,9 +60,6 @@ const isInPendingLine = (r, c) => {
 const startDrawing = (event, r, c) => {
   if (event.button !== 0 && event.button !== 2) return;
   
-  // Clear errors on any drawing action
-  errors.value = errors.value.map(row => row.map(() => false));
-
   startRow.value = r;
   startCol.value = c;
   lockedAxis.value = null;
@@ -124,12 +121,14 @@ const stopDrawing = () => {
       const max = Math.max(cStart, cEnd);
       for (let c = min; c <= max; c++) {
         grid.value[rStart][c] = drawingState.value;
+        errors.value[rStart][c] = false;
       }
     } else {
       const min = Math.min(rStart, rEnd);
       const max = Math.max(rStart, rEnd);
       for (let r = min; r <= max; r++) {
         grid.value[r][cStart] = drawingState.value;
+        errors.value[r][cStart] = false;
       }
     }
     autoMarkClues();
@@ -171,9 +170,6 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
   const hasDigit = !!line[line.length - maxClues + clueIdx];
 
   if (hasDigit) {
-    // Clear errors on clue click as it may change the grid
-    errors.value = errors.value.map(row => row.map(() => false));
-
     if (type === 'row') {
       markedRowClues.value[lineIdx][clueIdx] = !markedRowClues.value[lineIdx][clueIdx];
       if (markedRowClues.value[lineIdx][clueIdx]) {
@@ -316,7 +312,6 @@ const undo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
-    errors.value = errors.value.map(row => row.map(() => false));
   }
 };
 
@@ -327,7 +322,6 @@ const redo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
-    errors.value = errors.value.map(row => row.map(() => false));
   }
 };
 
