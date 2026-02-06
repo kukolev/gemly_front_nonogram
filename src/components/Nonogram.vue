@@ -36,6 +36,7 @@ const errors = ref(
 
 
 const isDrawing = ref(false);
+const isSolved = ref(false);
 const drawingState = ref(null);
 const hoveredRow = ref(null);
 const hoveredCol = ref(null);
@@ -58,6 +59,7 @@ const isInPendingLine = (r, c) => {
 };
 
 const startDrawing = (event, r, c) => {
+  if (isSolved.value) return;
   if (event.button !== 0 && event.button !== 2) return;
   
   startRow.value = r;
@@ -76,6 +78,7 @@ const startDrawing = (event, r, c) => {
 };
 
 const continueDrawing = (event, r, c) => {
+  if (isSolved.value) return;
   if (!isDrawing.value) {
     hoveredRow.value = r;
     hoveredCol.value = c;
@@ -140,8 +143,10 @@ const stopDrawing = () => {
 };
 
 const resetHover = () => {
-  hoveredRow.value = null;
-  hoveredCol.value = null;
+  if (!isDrawing.value) {
+    hoveredRow.value = null;
+    hoveredCol.value = null;
+  }
 };
 
 onMounted(() => {
@@ -165,6 +170,7 @@ const markedColClues = ref(
 );
 
 const handleClueClick = (type, lineIdx, clueIdx) => {
+  if (isSolved.value) return;
   const line = type === 'row' ? props.rowValues[lineIdx] : props.colValues[lineIdx];
   const maxClues = type === 'row' ? maxRowClues.value : maxColClues.value;
   const hasDigit = !!line[line.length - maxClues + clueIdx];
@@ -306,6 +312,7 @@ const saveHistory = () => {
 };
 
 const undo = () => {
+  isSolved.value = false;
   if (historyIndex.value > 0) {
     historyIndex.value--;
     const state = JSON.parse(history.value[historyIndex.value]);
@@ -316,6 +323,7 @@ const undo = () => {
 };
 
 const redo = () => {
+  isSolved.value = false;
   if (historyIndex.value < history.value.length - 1) {
     historyIndex.value++;
     const state = JSON.parse(history.value[historyIndex.value]);
@@ -325,10 +333,11 @@ const redo = () => {
   }
 };
 
-const canUndo = computed(() => historyIndex.value > 0);
-const canRedo = computed(() => historyIndex.value < history.value.length - 1);
+const canUndo = computed(() => !isSolved.value && historyIndex.value > 0);
+const canRedo = computed(() => !isSolved.value && historyIndex.value < history.value.length - 1);
 
 const clear = () => {
+  isSolved.value = false;
   grid.value = Array.from({length: props.size.rows}, () =>
       Array.from({length: props.size.cols}, () => 0)
   );
@@ -344,6 +353,7 @@ const clear = () => {
 const check = () => {
   if (!props.solution) return;
 
+  let allCorrect = true;
   for (let r = 0; r < props.size.rows; r++) {
     for (let c = 0; c < props.size.cols; c++) {
       const cellValue = grid.value[r][c];
@@ -353,14 +363,25 @@ const check = () => {
       // 3. mark all incorrect grey crocced cells in main part of nonogram with red cross
       if ((cellValue === 1 && solutionValue !== 1) || (cellValue === -1 && solutionValue === 1)) {
         errors.value[r][c] = true;
+        allCorrect = false;
       } else {
         errors.value[r][c] = false;
       }
+
+      if (solutionValue === 1 && cellValue !== 1) {
+        allCorrect = false;
+      }
     }
+  }
+  if (allCorrect) {
+    isSolved.value = true;
+    hoveredRow.value = null;
+    hoveredCol.value = null;
   }
 };
 
 const drawResult = (resultGrid) => {
+  isSolved.value = false;
   if (resultGrid && resultGrid.length === props.size.rows) {
     grid.value = resultGrid.map(row => [...row]);
     errors.value = errors.value.map(row => row.map(() => false));
@@ -375,7 +396,7 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 
 <template>
   <div class="nonogram-container">
-    <table class="nonogram-table" @mouseleave="resetHover">
+    <table class="nonogram-table" :class="{ solved: isSolved }" @mouseleave="resetHover">
       <colgroup>
         <col v-for="i in maxRowClues" :key="'col-group-row-clue-' + i" style="width: 15px;">
         <col v-for="i in size.cols" :key="'col-group-cell-' + i" style="width: 15px;">
@@ -566,5 +587,27 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 th, td {
   min-width: 15px;
   box-sizing: border-box;
+}
+
+.solved .cell {
+  border: none !important;
+  cursor: default;
+}
+
+.solved .cell.marked,
+.solved .cell.error {
+  background-image: none !important;
+}
+
+.solved .cell.highlighted {
+  background-color: #fff !important;
+}
+
+.solved .cell.filled.highlighted {
+  background-color: black !important;
+}
+
+.solved .cell.cursor-cell {
+  box-shadow: none !important;
 }
 </style>
