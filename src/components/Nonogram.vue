@@ -423,7 +423,6 @@ const drawResult = (resultGrid) => {
     errors.value = errors.value.map(row => row.map(() => false));
     autoMarkClues();
     saveHistory();
-    check(true);
   }
 };
 
