@@ -3,7 +3,7 @@
     <h1 class="main-form-title">{{ message }}</h1>
     <button name="nonogram-reload-button" @click="requestReload()">Загрузить новый</button>
     <button name="nonogram-clear-button" @click="requestClear()">Очистить</button>
-    <button name="nonogram-check-button" @click="reload()">Проверить</button>
+    <button name="nonogram-check-button" @click="check()">Проверить</button>
     <button name="nonogram-undo-button" @click="undo()" :disabled="!canUndo">Undo</button>
     <button name="nonogram-redo-button" @click="redo()" :disabled="!canRedo">Redo</button>
     <button name="nonogram-draw-result-button" @click="drawResult()">Draw result</button>
@@ -50,6 +50,10 @@ async function reload() {
   componentKey.value += 1;
   [rowValues, colValues, resultData] = loadRandomNonogram();
   nonogramSize = {rows: rowValues.length, cols: colValues.length};
+}
+
+function check() {
+  nonogramComponent.value?.check();
 }
 
 function requestReload() {

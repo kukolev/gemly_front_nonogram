@@ -28,6 +28,12 @@ const grid = ref(
     )
 );
 
+const errors = ref(
+    Array.from({length: props.size.rows}, () =>
+        Array.from({length: props.size.cols}, () => false)
+    )
+);
+
 
 const isDrawing = ref(false);
 const drawingState = ref(null);
@@ -53,6 +59,10 @@ const isInPendingLine = (r, c) => {
 
 const startDrawing = (event, r, c) => {
   if (event.button !== 0 && event.button !== 2) return;
+  
+  // Clear errors on any drawing action
+  errors.value = errors.value.map(row => row.map(() => false));
+
   startRow.value = r;
   startCol.value = c;
   lockedAxis.value = null;
@@ -161,6 +171,9 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
   const hasDigit = !!line[line.length - maxClues + clueIdx];
 
   if (hasDigit) {
+    // Clear errors on clue click as it may change the grid
+    errors.value = errors.value.map(row => row.map(() => false));
+
     if (type === 'row') {
       markedRowClues.value[lineIdx][clueIdx] = !markedRowClues.value[lineIdx][clueIdx];
       if (markedRowClues.value[lineIdx][clueIdx]) {
@@ -303,6 +316,7 @@ const undo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    errors.value = errors.value.map(row => row.map(() => false));
   }
 };
 
@@ -313,6 +327,7 @@ const redo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    errors.value = errors.value.map(row => row.map(() => false));
   }
 };
 
@@ -323,21 +338,44 @@ const clear = () => {
   grid.value = Array.from({length: props.size.rows}, () =>
       Array.from({length: props.size.cols}, () => 0)
   );
+  errors.value = Array.from({length: props.size.rows}, () =>
+      Array.from({length: props.size.cols}, () => false)
+  );
   markedRowClues.value = props.rowValues.map(() => Array(maxRowClues.value).fill(false));
   markedColClues.value = props.colValues.map(() => Array(maxColClues.value).fill(false));
   autoMarkClues();
   saveHistory();
 };
 
+const check = () => {
+  if (!props.solution) return;
+
+  for (let r = 0; r < props.size.rows; r++) {
+    for (let c = 0; c < props.size.cols; c++) {
+      const cellValue = grid.value[r][c];
+      const solutionValue = props.solution[r][c];
+
+      // 2. mark all incorrect black cells with red cross
+      // 3. mark all incorrect grey crocced cells in main part of nonogram with red cross
+      if ((cellValue === 1 && solutionValue !== 1) || (cellValue === -1 && solutionValue === 1)) {
+        errors.value[r][c] = true;
+      } else {
+        errors.value[r][c] = false;
+      }
+    }
+  }
+};
+
 const drawResult = (resultGrid) => {
   if (resultGrid && resultGrid.length === props.size.rows) {
     grid.value = resultGrid.map(row => [...row]);
+    errors.value = errors.value.map(row => row.map(() => false));
     autoMarkClues();
     saveHistory();
   }
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear, drawResult});
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 
 </script>
 
@@ -368,6 +406,7 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult});
             :class="{
               filled: isInPendingLine(rIdx, cIdx) ? drawingState === 1 : cell === 1,
               marked: isInPendingLine(rIdx, cIdx) ? drawingState === -1 : cell === -1,
+              error: errors[rIdx][cIdx],
               highlighted: rIdx === hoveredRow || cIdx === hoveredCol,
               'cursor-cell': rIdx === hoveredRow && cIdx === hoveredCol,
               'thick-right': (cIdx + 1) % 5 === 0 || cIdx === size.cols - 1,
@@ -431,6 +470,12 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult});
   background-image:
       linear-gradient(to top right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px)),
       linear-gradient(to bottom right, transparent calc(50% - 1px), #5b5353 50%, transparent calc(50% + 1px));
+}
+
+.cell.error {
+  background-image:
+      linear-gradient(to top right, transparent calc(50% - 1px), red 50%, transparent calc(50% + 1px)),
+      linear-gradient(to bottom right, transparent calc(50% - 1px), red 50%, transparent calc(50% + 1px)) !important;
 }
 
 .row-clue.has-digit.marked, .col-clue.has-digit.marked {
