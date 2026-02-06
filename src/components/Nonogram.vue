@@ -44,6 +44,31 @@ const startRow = ref(null);
 const startCol = ref(null);
 const lockedAxis = ref(null);
 
+const showCongrats = ref(false);
+const congratsStyle = ref({});
+
+const triggerCongratulations = async () => {
+  if (showCongrats.value) return;
+
+  congratsStyle.value = {
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    position: 'absolute',
+    fontSize: '4rem',
+    fontWeight: 'bold',
+    color: '#ff4081',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+    pointerEvents: 'none',
+    zIndex: 1000,
+    whiteSpace: 'nowrap'
+  };
+
+  showCongrats.value = true;
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  showCongrats.value = false;
+};
+
 const isInPendingLine = (r, c) => {
   if (!isDrawing.value) return false;
   const rStart = startRow.value;
@@ -377,6 +402,7 @@ const check = () => {
     isSolved.value = true;
     hoveredRow.value = null;
     hoveredCol.value = null;
+    triggerCongratulations();
   }
 };
 
@@ -396,6 +422,9 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 
 <template>
   <div class="nonogram-container">
+    <div v-if="showCongrats" :style="congratsStyle" class="congrats-text">
+      Congratulations
+    </div>
     <table class="nonogram-table" :class="{ solved: isSolved }" @mouseleave="resetHover">
       <colgroup>
         <col v-for="i in maxRowClues" :key="'col-group-row-clue-' + i" style="width: 15px;">
@@ -441,10 +470,22 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 </template>
 
 <style scoped>
+.congrats-text {
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; scale: 0.5; }
+  10% { opacity: 1; scale: 1.1; }
+  90% { opacity: 1; scale: 1; }
+  100% { opacity: 0; scale: 0.9; }
+}
+
 .nonogram-container {
   margin: 20px 0;
   display: flex;
   justify-content: center;
+  position: relative;
 }
 
 .nonogram-table {
