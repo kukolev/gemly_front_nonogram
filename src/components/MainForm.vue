@@ -53,7 +53,7 @@ async function reload() {
 }
 
 function check() {
-  nonogramComponent.value?.check();
+  nonogramComponent.value?.check(true, true);
 }
 
 function requestReload() {

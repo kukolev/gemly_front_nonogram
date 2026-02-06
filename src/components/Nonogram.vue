@@ -54,13 +54,13 @@ const triggerCongratulations = async () => {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    position: 'absolute',
-    fontSize: '4rem',
+    position: 'fixed',
+    fontSize: '6rem',
     fontWeight: 'bold',
     color: '#ff4081',
-    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+    textShadow: '4px 4px 8px rgba(0,0,0,0.5)',
     pointerEvents: 'none',
-    zIndex: 1000,
+    zIndex: 10000,
     whiteSpace: 'nowrap'
   };
 
@@ -139,6 +139,12 @@ const continueDrawing = (event, r, c) => {
 
 const stopDrawing = () => {
   if (isDrawing.value) {
+    if (isSolved.value) {
+      isDrawing.value = false;
+      drawingState.value = null;
+      lockedAxis.value = null;
+      return;
+    }
     const rStart = startRow.value;
     const rEnd = hoveredRow.value;
     const cStart = startCol.value;
@@ -149,18 +155,17 @@ const stopDrawing = () => {
       const max = Math.max(cStart, cEnd);
       for (let c = min; c <= max; c++) {
         grid.value[rStart][c] = drawingState.value;
-        errors.value[rStart][c] = false;
       }
     } else {
       const min = Math.min(rStart, rEnd);
       const max = Math.max(rStart, rEnd);
       for (let r = min; r <= max; r++) {
         grid.value[r][cStart] = drawingState.value;
-        errors.value[r][cStart] = false;
       }
     }
     autoMarkClues();
     saveHistory();
+    check();
   }
   isDrawing.value = false;
   drawingState.value = null;
@@ -213,6 +218,7 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
       }
     }
     saveHistory();
+    check();
   }
 };
 
@@ -337,29 +343,31 @@ const saveHistory = () => {
 };
 
 const undo = () => {
-  isSolved.value = false;
   if (historyIndex.value > 0) {
+    isSolved.value = false;
     historyIndex.value--;
     const state = JSON.parse(history.value[historyIndex.value]);
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    check();
   }
 };
 
 const redo = () => {
-  isSolved.value = false;
   if (historyIndex.value < history.value.length - 1) {
+    isSolved.value = false;
     historyIndex.value++;
     const state = JSON.parse(history.value[historyIndex.value]);
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    check();
   }
 };
 
-const canUndo = computed(() => !isSolved.value && historyIndex.value > 0);
-const canRedo = computed(() => !isSolved.value && historyIndex.value < history.value.length - 1);
+const canUndo = computed(() => historyIndex.value > 0);
+const canRedo = computed(() => historyIndex.value < history.value.length - 1);
 
 const clear = () => {
   isSolved.value = false;
@@ -375,7 +383,7 @@ const clear = () => {
   saveHistory();
 };
 
-const check = () => {
+const check = (isManual = false, showCongratsManual = false) => {
   if (!props.solution) return;
 
   let allCorrect = true;
@@ -387,7 +395,7 @@ const check = () => {
       // 2. mark all incorrect black cells with red cross
       // 3. mark all incorrect grey crocced cells in main part of nonogram with red cross
       if ((cellValue === 1 && solutionValue !== 1) || (cellValue === -1 && solutionValue === 1)) {
-        errors.value[r][c] = true;
+        errors.value[r][c] = isManual;
         allCorrect = false;
       } else {
         errors.value[r][c] = false;
@@ -402,7 +410,9 @@ const check = () => {
     isSolved.value = true;
     hoveredRow.value = null;
     hoveredCol.value = null;
-    triggerCongratulations();
+    if (showCongratsManual) {
+      triggerCongratulations();
+    }
   }
 };
 
@@ -413,6 +423,7 @@ const drawResult = (resultGrid) => {
     errors.value = errors.value.map(row => row.map(() => false));
     autoMarkClues();
     saveHistory();
+    check(true);
   }
 };
 
