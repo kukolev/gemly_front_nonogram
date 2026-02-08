@@ -48,7 +48,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
 .app-header {
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 2rem;
+  padding: 1rem 1rem;
   width: 100%;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   margin-bottom: 2rem;
@@ -59,7 +59,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.5rem;
 }
 
@@ -67,6 +67,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
   .header-container {
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     gap: 2rem;
   }
 }

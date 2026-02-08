@@ -11,17 +11,23 @@
     @draw-result="drawResult"
   />
   <div class="main-form">
-    <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues" :solution="resultData"/>
+    <div class="nonogram-wrapper">
+      <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues" :solution="resultData"/>
+    </div>
   </div>
   <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
 </template>
 <style scoped>
 .main-form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 0 1rem;
   overflow-x: auto;
+}
+
+.nonogram-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
 }
 </style>
 

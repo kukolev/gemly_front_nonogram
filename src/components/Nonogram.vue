@@ -494,7 +494,7 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 .nonogram-container {
   margin: 20px 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
 }
 
