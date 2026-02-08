@@ -48,10 +48,10 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
 .app-header {
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 1rem;
+  padding: 0.65rem 1rem;
   width: 100%;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  margin-bottom: 2rem;
+  margin-bottom: 1.35rem;
 }
 
 .header-container {
@@ -60,7 +60,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 @media (min-width: 992px) {
@@ -68,13 +68,13 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 2rem;
+    gap: 1.35rem;
   }
 }
 
 .header-title {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2c4550;
   white-space: nowrap;
@@ -83,22 +83,22 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
 .header-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.65rem;
   justify-content: center;
 }
 
 .nav-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .nav-btn {
-  padding: 0.5rem 1.25rem;
+  padding: 0.35rem 0.85rem;
   border: 1px solid #cbd5e1;
   background-color: #fff;
   border-radius: 0.375rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #334155;

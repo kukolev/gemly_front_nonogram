@@ -433,7 +433,7 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
 <template>
   <div class="nonogram-container">
     <div v-if="showCongrats" :style="congratsStyle" class="congrats-text">
-      Congratulations
+      Разгадано!
     </div>
     <table class="nonogram-table" :class="{ solved: isSolved }" @mouseleave="resetHover">
       <colgroup>
