@@ -16,6 +16,7 @@
     </div>
   </div>
   <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
+  <AppFooter />
 </template>
 <style scoped>
 .main-form {
@@ -43,6 +44,7 @@ defineProps({
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 import AppHeader from './AppHeader.vue';
+import AppFooter from './AppFooter.vue';
 import {ref, computed} from 'vue';
 import {loadData, loadRandomNonogram} from '../funcs.js';
 
