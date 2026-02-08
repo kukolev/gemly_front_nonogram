@@ -1,22 +1,27 @@
 <template>
-  <div class="header">
-    <h1 class="main-form-title">{{ message }}</h1>
-    <button name="nonogram-reload-button" @click="requestReload()">Загрузить новый</button>
-    <button name="nonogram-clear-button" @click="requestClear()">Очистить</button>
-    <button name="nonogram-check-button" @click="check()">Проверить</button>
-    <button name="nonogram-undo-button" @click="undo()" :disabled="!canUndo">Undo</button>
-    <button name="nonogram-redo-button" @click="redo()" :disabled="!canRedo">Redo</button>
-    <button name="nonogram-draw-result-button" @click="drawResult()">Draw result</button>
-  </div>
+  <AppHeader
+    :title="message"
+    :can-undo="canUndo"
+    :can-redo="canRedo"
+    @reload="requestReload"
+    @clear="requestClear"
+    @check="check"
+    @undo="undo"
+    @redo="redo"
+    @draw-result="drawResult"
+  />
   <div class="main-form">
     <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues" :solution="resultData"/>
   </div>
   <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
 </template>
 <style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
+.main-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  overflow-x: auto;
 }
 </style>
 
@@ -31,6 +36,7 @@ defineProps({
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
+import AppHeader from './AppHeader.vue';
 import {ref, computed} from 'vue';
 import {loadData, loadRandomNonogram} from '../funcs.js';
 
