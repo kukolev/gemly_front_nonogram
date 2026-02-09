@@ -10,6 +10,7 @@ export function loadRandomNonogram() {
     const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
     const address = import.meta.env.ENV_SERVER_ADDRESS;
     request.open("GET", `${protocol}://${address}/api/v1/nonogram.getRandom`, false);
+    request.withCredentials = true;
     request.send(null);
 
     if (request.status === 200) {
