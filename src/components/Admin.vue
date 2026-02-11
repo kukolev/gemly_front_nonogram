@@ -52,19 +52,15 @@ async function markNonogram(mark) {
       <button @click="markNonogram(false)">Bad</button>
     </div>
     <div class="drawing-area" v-if="drawingData">
-      <div class="grid" :style="{ 
-        display: 'grid', 
-        gridTemplateColumns: `repeat(${drawingData[0].length}, 15px)`,
-        width: 'fit-content'
-      }">
-        <template v-for="(row, rIdx) in drawingData" :key="rIdx">
+      <div class="grid">
+        <div v-for="(row, rIdx) in drawingData" :key="rIdx" class="row">
           <div 
             v-for="(cell, cIdx) in row" 
             :key="cIdx" 
             class="cell"
             :class="{ filled: cell === 1 }"
           ></div>
-        </template>
+        </div>
       </div>
     </div>
   </div>
@@ -90,15 +86,18 @@ async function markNonogram(mark) {
 }
 
 .grid {
-  background-color: #000;
-  border: 1px solid #000;
-  gap: 1px;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+}
+
+.row {
+  display: flex;
 }
 
 .cell {
   width: 15px;
   height: 15px;
-  background-color: #fff;
 }
 
 .cell.filled {
