@@ -14,6 +14,33 @@ async function loadRandom() {
     console.error('Error loading random nonogram:', error);
   }
 }
+
+async function markNonogram(mark) {
+  if (!nonogramId.value) {
+    alert('No nonogram loaded');
+    return;
+  }
+  try {
+    const response = await fetch('/api/v1/nonogram/admin.markNonogram', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: nonogramId.value,
+        mark: mark
+      }),
+    });
+    if (response.ok) {
+      console.log(`Nonogram ${nonogramId.value} marked as ${mark ? 'Good' : 'Bad'}`);
+      loadRandom();
+    } else {
+      console.error('Failed to mark nonogram');
+    }
+  } catch (error) {
+    console.error('Error marking nonogram:', error);
+  }
+}
 </script>
 
 <template>
@@ -21,8 +48,8 @@ async function loadRandom() {
     <div class="admin-controls">
       <button @click="loadRandom">Load</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
-      <button>Good</button>
-      <button>Bad</button>
+      <button @click="markNonogram(true)">Good</button>
+      <button @click="markNonogram(false)">Bad</button>
     </div>
     <div class="drawing-area" v-if="drawingData">
       <div class="grid" :style="{ 
