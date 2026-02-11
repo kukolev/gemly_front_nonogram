@@ -1,18 +1,80 @@
+<script setup>
+import { ref } from 'vue';
+
+const nonogramId = ref('');
+const drawingData = ref(null);
+
+async function loadRandom() {
+  try {
+    const response = await fetch('/api/v1/nonogram/admin.getRandomNonogram');
+    const data = await response.json();
+    nonogramId.value = data.id;
+    drawingData.value = data.data;
+  } catch (error) {
+    console.error('Error loading random nonogram:', error);
+  }
+}
+</script>
+
 <template>
-  <div class="admin-controls">
-    <button>Load</button>
-    <input type="text" placeholder="ID for load" />
-    <button>Good</button>
-    <button>Bad</button>
+  <div class="admin-page">
+    <div class="admin-controls">
+      <button @click="loadRandom">Load</button>
+      <input type="text" v-model="nonogramId" placeholder="ID for load" />
+      <button>Good</button>
+      <button>Bad</button>
+    </div>
+    <div class="drawing-area" v-if="drawingData">
+      <div class="grid" :style="{ 
+        display: 'grid', 
+        gridTemplateColumns: `repeat(${drawingData[0].length}, 15px)`,
+        width: 'fit-content'
+      }">
+        <template v-for="(row, rIdx) in drawingData" :key="rIdx">
+          <div 
+            v-for="(cell, cIdx) in row" 
+            :key="cIdx" 
+            class="cell"
+            :class="{ filled: cell === 1 }"
+          ></div>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.admin-page {
+  display: flex;
+  flex-direction: column;
+}
+
 .admin-controls {
   display: flex;
   gap: 10px;
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+}
+
+.drawing-area {
+  padding: 20px;
+  flex-grow: 1;
+}
+
+.grid {
+  background-color: #000;
+  border: 1px solid #000;
+  gap: 1px;
+}
+
+.cell {
+  width: 15px;
+  height: 15px;
+  background-color: #fff;
+}
+
+.cell.filled {
+  background-color: #000;
 }
 </style>
