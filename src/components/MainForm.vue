@@ -9,10 +9,22 @@
     @undo="undo"
     @redo="redo"
     @draw-result="drawResult"
+    @save="save"
   />
   <div class="main-form">
     <div class="nonogram-wrapper">
-      <Nonogram ref="nonogramComponent" :key="componentKey" :size="nonogramSize" :row-values="rowValues" :col-values="colValues" :solution="resultData"/>
+      <Nonogram 
+        ref="nonogramComponent" 
+        :key="componentKey" 
+        :size="nonogramSize" 
+        :row-values="rowValues" 
+        :col-values="colValues" 
+        :solution="resultData" 
+        :initial-grid="initialGrid"
+        :initial-marked-row-clues="initialMarkedRowClues"
+        :initial-marked-col-clues="initialMarkedColClues"
+        @clue-click="save(false)"
+      />
     </div>
   </div>
   <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
@@ -57,13 +69,62 @@ const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
 
-let [rowValues, colValues, resultData] = loadRandomNonogram();
-let nonogramSize = {rows: rowValues.length, cols: colValues.length};
+const rowValues = ref([]);
+const colValues = ref([]);
+const resultData = ref(null);
+const nonogramId = ref(null);
+const nonogramSize = ref({rows: 0, cols: 0});
+const initialGrid = ref(null);
+const initialMarkedRowClues = ref(null);
+const initialMarkedColClues = ref(null);
+
+function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = null, markedColClues = null) {
+  rowValues.value = rows;
+  colValues.value = cols;
+  resultData.value = data;
+  nonogramId.value = id;
+  nonogramSize.value = {rows: rows.length, cols: cols.length};
+  initialGrid.value = grid;
+  initialMarkedRowClues.value = markedRowClues;
+  initialMarkedColClues.value = markedColClues;
+}
+
+const saved = localStorage.getItem('nonogram_save');
+if (saved) {
+  try {
+    const data = JSON.parse(saved);
+    setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues);
+  } catch (e) {
+    console.error('Failed to load saved nonogram', e);
+    const [rows, cols, data, id] = loadRandomNonogram();
+    setNonogramData(rows, cols, data, id);
+  }
+} else {
+  const [rows, cols, data, id] = loadRandomNonogram();
+  setNonogramData(rows, cols, data, id);
+}
 
 async function reload() {
   componentKey.value += 1;
-  [rowValues, colValues, resultData] = loadRandomNonogram();
-  nonogramSize = {rows: rowValues.length, cols: colValues.length};
+  const [rows, cols, data, id] = loadRandomNonogram();
+  setNonogramData(rows, cols, data, id);
+}
+
+function save(showAlert = true) {
+  if (!nonogramComponent.value) return;
+  const data = {
+    id: nonogramId.value,
+    grid: nonogramComponent.value.grid,
+    markedRowClues: nonogramComponent.value.markedRowClues,
+    markedColClues: nonogramComponent.value.markedColClues,
+    rowValues: rowValues.value,
+    colValues: colValues.value,
+    resultData: resultData.value
+  };
+  localStorage.setItem('nonogram_save', JSON.stringify(data));
+  if (showAlert) {
+    alert('Прогресс сохранен!');
+  }
 }
 
 function check() {
@@ -105,7 +166,7 @@ function redo() {
 }
 
 function drawResult() {
-  nonogramComponent.value?.drawResult(resultData);
+  nonogramComponent.value?.drawResult(resultData.value);
 }
 
 function clear() {

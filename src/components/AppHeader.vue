@@ -14,7 +14,7 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save'])
 </script>
 
 <template>
@@ -28,6 +28,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result'])
         </div>
         
         <div class="nav-group">
+          <button name="nonogram-save-button" class="nav-btn" @click="$emit('save')" title="Сохранить прогресс">Сохранить</button>
           <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
         </div>
 

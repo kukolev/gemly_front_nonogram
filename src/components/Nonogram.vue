@@ -19,10 +19,23 @@ const props = defineProps({
   solution: {
     type: Array,
     required: false
+  },
+  initialGrid: {
+    type: Array,
+    required: false
+  },
+  initialMarkedRowClues: {
+    type: Array,
+    required: false
+  },
+  initialMarkedColClues: {
+    type: Array,
+    required: false
   }
 });
 
 const grid = ref(
+    props.initialGrid ? JSON.parse(JSON.stringify(props.initialGrid)) :
     Array.from({length: props.size.rows}, () =>
         Array.from({length: props.size.cols}, () => 0)
     )
@@ -46,6 +59,8 @@ const lockedAxis = ref(null);
 
 const showCongrats = ref(false);
 const congratsStyle = ref({});
+
+const emit = defineEmits(['clue-click']);
 
 const triggerCongratulations = async () => {
   if (showCongrats.value) return;
@@ -192,10 +207,12 @@ const maxRowClues = computed(() => Math.max(...props.rowValues.map(v => v.length
 const maxColClues = computed(() => Math.max(...props.colValues.map(v => v.length), 0));
 
 const markedRowClues = ref(
+    props.initialMarkedRowClues ? JSON.parse(JSON.stringify(props.initialMarkedRowClues)) :
     props.rowValues.map(() => Array(maxRowClues.value).fill(false))
 );
 
 const markedColClues = ref(
+    props.initialMarkedColClues ? JSON.parse(JSON.stringify(props.initialMarkedColClues)) :
     props.colValues.map(() => Array(maxColClues.value).fill(false))
 );
 
@@ -218,6 +235,7 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
       }
     }
     saveHistory();
+    emit('clue-click');
     check();
   }
 };
@@ -321,6 +339,8 @@ const autoMarkClues = () => {
     }
   }
 };
+
+autoMarkClues();
 
 const history = ref([JSON.stringify({
   grid: grid.value,
@@ -426,7 +446,7 @@ const drawResult = (resultGrid) => {
   }
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check});
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues});
 
 </script>
 
