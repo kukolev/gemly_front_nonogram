@@ -196,7 +196,6 @@ const resetHover = () => {
 
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
-  autoMarkClues();
 });
 
 onUnmounted(() => {
@@ -310,7 +309,9 @@ const autoMarkClues = () => {
         // Check if there is a block in grid that matches this solution block
         isCorrect = gridRowBlocks.some(gb => gb.start === solBlock.start && gb.length === solBlock.length);
       }
-      markedRowClues.value[r][clueIdx] = isCorrect;
+      if (isCorrect) {
+        markedRowClues.value[r][clueIdx] = true;
+      }
     }
   }
 
@@ -335,7 +336,9 @@ const autoMarkClues = () => {
       if (solBlock) {
         isCorrect = gridColBlocks.some(gb => gb.start === solBlock.start && gb.length === solBlock.length);
       }
-      markedColClues.value[c][clueIdx] = isCorrect;
+      if (isCorrect) {
+        markedColClues.value[c][clueIdx] = true;
+      }
     }
   }
 };
