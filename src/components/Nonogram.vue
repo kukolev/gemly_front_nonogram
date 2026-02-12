@@ -180,7 +180,6 @@ const stopDrawing = () => {
     }
     autoMarkClues();
     saveHistory();
-    check();
   }
   isDrawing.value = false;
   drawingState.value = null;
@@ -234,7 +233,6 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
       }
     }
     saveHistory();
-    check();
   }
 };
 
@@ -374,7 +372,6 @@ const undo = () => {
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
     emit('change');
-    check();
   }
 };
 
@@ -387,7 +384,6 @@ const redo = () => {
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
     emit('change');
-    check();
   }
 };
 
