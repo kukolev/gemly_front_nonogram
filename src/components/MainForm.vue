@@ -10,6 +10,7 @@
     @redo="redo"
     @draw-result="drawResult"
     @save="save"
+    @load="requestLoadState"
   />
   <div class="main-form">
     <div class="nonogram-wrapper">
@@ -30,8 +31,6 @@
   <ConfirmationDialog 
     v-if="showDialog" 
     :message="dialogMessage" 
-    :show-no="pendingAction !== 'save'"
-    :yes-text="pendingAction === 'save' ? 'OK' : 'Yes'"
     @yes="handleConfirm" 
     @no="handleCancel" 
   />
@@ -94,30 +93,34 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialGrid.value = grid;
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
+  componentKey.value += 1;
 }
 
-const saved = localStorage.getItem('nonogram_save');
-if (saved) {
-  try {
-    const data = JSON.parse(saved);
-    setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues);
-  } catch (e) {
-    console.error('Failed to load saved nonogram', e);
-    const [rows, cols, data, id] = loadRandomNonogram();
-    setNonogramData(rows, cols, data, id);
+function loadSavedState() {
+  const saved = localStorage.getItem('nonogram_save');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues);
+      return true;
+    } catch (e) {
+      console.error('Failed to load saved nonogram', e);
+    }
   }
-} else {
+  return false;
+}
+
+if (!loadSavedState()) {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
 }
 
 async function reload() {
-  componentKey.value += 1;
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
 }
 
-function save(showAlert = true) {
+function performSave() {
   if (!nonogramComponent.value) return;
   const data = {
     id: nonogramId.value,
@@ -129,10 +132,15 @@ function save(showAlert = true) {
     resultData: resultData.value
   };
   localStorage.setItem('nonogram_save', JSON.stringify(data));
+}
+
+function save(showAlert = true) {
   if (showAlert) {
-    dialogMessage.value = 'Прогресс сохранен!';
+    dialogMessage.value = 'Вы уверены, что хотите сохранить прогресс?';
     pendingAction.value = 'save';
     showDialog.value = true;
+  } else {
+    performSave();
   }
 }
 
@@ -143,6 +151,12 @@ function check() {
 function requestReload() {
   dialogMessage.value = 'Loading will erase your progress. Are you sure?';
   pendingAction.value = 'reload';
+  showDialog.value = true;
+}
+
+function requestLoadState() {
+  dialogMessage.value = 'Загрузить сохраненный прогресс? Текущий прогресс будет потерян.';
+  pendingAction.value = 'load';
   showDialog.value = true;
 }
 
@@ -158,6 +172,10 @@ function handleConfirm() {
     reload();
   } else if (pendingAction.value === 'clear') {
     clear();
+  } else if (pendingAction.value === 'load') {
+    loadSavedState();
+  } else if (pendingAction.value === 'save') {
+    performSave();
   }
   pendingAction.value = null;
 }
