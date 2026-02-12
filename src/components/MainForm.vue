@@ -27,7 +27,14 @@
       />
     </div>
   </div>
-  <ConfirmationDialog v-if="showDialog" :message="dialogMessage" @yes="handleConfirm" @no="handleCancel" />
+  <ConfirmationDialog 
+    v-if="showDialog" 
+    :message="dialogMessage" 
+    :show-no="pendingAction !== 'save'"
+    :yes-text="pendingAction === 'save' ? 'OK' : 'Yes'"
+    @yes="handleConfirm" 
+    @no="handleCancel" 
+  />
   <AppFooter />
 </template>
 <style scoped>
@@ -123,7 +130,9 @@ function save(showAlert = true) {
   };
   localStorage.setItem('nonogram_save', JSON.stringify(data));
   if (showAlert) {
-    alert('Прогресс сохранен!');
+    dialogMessage.value = 'Прогресс сохранен!';
+    pendingAction.value = 'save';
+    showDialog.value = true;
   }
 }
 
@@ -150,6 +159,7 @@ function handleConfirm() {
   } else if (pendingAction.value === 'clear') {
     clear();
   }
+  pendingAction.value = null;
 }
 
 function handleCancel() {

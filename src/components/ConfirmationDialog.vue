@@ -3,8 +3,8 @@
     <div class="dialog-box">
       <p class="dialog-message">{{ message }}</p>
       <div class="dialog-actions">
-        <button class="dialog-button yes" @click="$emit('yes')">Yes</button>
-        <button class="dialog-button no" @click="$emit('no')">No</button>
+        <button class="dialog-button yes" @click="$emit('yes')">{{ yesText }}</button>
+        <button v-if="showNo" class="dialog-button no" @click="$emit('no')">{{ noText }}</button>
       </div>
     </div>
   </div>
@@ -15,6 +15,18 @@ defineProps({
   message: {
     type: String,
     default: 'Are you sure?'
+  },
+  yesText: {
+    type: String,
+    default: 'Yes'
+  },
+  noText: {
+    type: String,
+    default: 'No'
+  },
+  showNo: {
+    type: Boolean,
+    default: true
   }
 });
 defineEmits(['yes', 'no']);
