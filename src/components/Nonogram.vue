@@ -60,7 +60,7 @@ const lockedAxis = ref(null);
 const showCongrats = ref(false);
 const congratsStyle = ref({});
 
-const emit = defineEmits(['clue-click']);
+const emit = defineEmits(['clue-click', 'change']);
 
 const triggerCongratulations = async () => {
   if (showCongrats.value) return;
@@ -234,7 +234,6 @@ const handleClueClick = (type, lineIdx, clueIdx) => {
       }
     }
     saveHistory();
-    emit('clue-click');
     check();
   }
 };
@@ -362,6 +361,7 @@ const saveHistory = () => {
     history.value = history.value.slice(0, historyIndex.value + 1);
     history.value.push(currentState);
     historyIndex.value++;
+    emit('change');
   }
 };
 
@@ -373,6 +373,7 @@ const undo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    emit('change');
     check();
   }
 };
@@ -385,6 +386,7 @@ const redo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    emit('change');
     check();
   }
 };

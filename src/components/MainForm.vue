@@ -3,6 +3,7 @@
     :title="message"
     :can-undo="canUndo"
     :can-redo="canRedo"
+    :can-save="isDirty"
     @reload="requestReload"
     @clear="requestClear"
     @check="check"
@@ -25,6 +26,7 @@
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
         @clue-click="save(false)"
+        @change="isDirty = true"
       />
     </div>
   </div>
@@ -71,6 +73,7 @@ const nonogramComponent = ref(null);
 
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
+const isDirty = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
@@ -94,6 +97,7 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
   componentKey.value += 1;
+  isDirty.value = false;
 }
 
 function loadSavedState() {
@@ -132,9 +136,11 @@ function performSave() {
     resultData: resultData.value
   };
   localStorage.setItem('nonogram_save', JSON.stringify(data));
+  isDirty.value = false;
 }
 
 function save(showAlert = true) {
+  if (!isDirty.value && showAlert) return;
   if (showAlert) {
     dialogMessage.value = 'Вы уверены, что хотите сохранить прогресс?';
     pendingAction.value = 'save';
