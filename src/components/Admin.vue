@@ -3,6 +3,17 @@ import { ref } from 'vue';
 
 const nonogramId = ref('');
 const drawingData = ref(null);
+const logs = ref('');
+
+function addLog(buttonName) {
+  const now = new Date().toLocaleString();
+  const id = nonogramId.value || 'N/A';
+  let size = 'N/A';
+  if (drawingData.value && drawingData.value.length > 0) {
+    size = `${drawingData.value.length}x${drawingData.value[0].length}`;
+  }
+  logs.value = `${now} - Button: ${buttonName}, ID: ${id}, Size: ${size}\n` + logs.value;
+}
 
 async function loadRandom() {
   try {
@@ -10,6 +21,7 @@ async function loadRandom() {
     const data = await response.json();
     nonogramId.value = data.id;
     drawingData.value = data.data;
+    addLog('Load');
   } catch (error) {
     console.error('Error loading random nonogram:', error);
   }
@@ -33,6 +45,7 @@ async function markNonogram(mark) {
     });
     if (response.ok) {
       console.log(`Nonogram ${nonogramId.value} marked as ${mark ? 'Good' : 'Bad'}`);
+      addLog(mark ? 'Good' : 'Bad');
       loadRandom();
     } else {
       console.error('Failed to mark nonogram');
@@ -50,6 +63,9 @@ async function markNonogram(mark) {
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="markNonogram(true)">Good</button>
       <button @click="markNonogram(false)">Bad</button>
+    </div>
+    <div class="admin-logs">
+      <textarea v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
     </div>
     <div class="drawing-area" v-if="drawingData">
       <div class="grid">
@@ -78,6 +94,18 @@ async function markNonogram(mark) {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+}
+
+.admin-logs {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.admin-logs textarea {
+  width: 100%;
+  height: 100px;
+  font-family: monospace;
+  resize: vertical;
 }
 
 .drawing-area {
