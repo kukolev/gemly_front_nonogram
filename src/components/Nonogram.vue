@@ -35,6 +35,7 @@ const props = defineProps({
 });
 
 const canvasRef = ref(null);
+const bgCanvasRef = ref(null);
 const CELL_SIZE = 15;
 
 const grid = ref(
@@ -200,6 +201,8 @@ const canvasWidth = computed(() => totalCols.value * CELL_SIZE);
 const canvasHeight = computed(() => totalRows.value * CELL_SIZE);
 
 let rafId = null;
+let bgRafId = null;
+
 const requestDraw = () => {
   if (rafId) return;
   rafId = requestAnimationFrame(() => {
@@ -208,21 +211,38 @@ const requestDraw = () => {
   });
 };
 
+const requestDrawBg = () => {
+  if (bgRafId) return;
+  bgRafId = requestAnimationFrame(() => {
+    drawBg();
+    bgRafId = null;
+  });
+};
+
 const syncCanvasSize = () => {
   const canvas = canvasRef.value;
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d', { alpha: false }); // Optimization: disable alpha if not needed
+  const bgCanvas = bgCanvasRef.value;
+  if (!canvas || !bgCanvas) return;
+  
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = canvasWidth.value * dpr;
-  canvas.height = canvasHeight.value * dpr;
-  ctx.scale(dpr, dpr);
-  canvas.style.width = `${canvasWidth.value}px`;
-  canvas.style.height = `${canvasHeight.value}px`;
+  const w = canvasWidth.value;
+  const h = canvasHeight.value;
+
+  [canvas, bgCanvas].forEach(canv => {
+    canv.width = w * dpr;
+    canv.height = h * dpr;
+    canv.style.width = `${w}px`;
+    canv.style.height = `${h}px`;
+    const ctx = canv.getContext('2d', { alpha: canv === canvas });
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  });
+
+  requestDrawBg();
   requestDraw();
 };
 
-const draw = () => {
-  const canvas = canvasRef.value;
+const drawBg = () => {
+  const canvas = bgCanvasRef.value;
   if (!canvas) return;
   const ctx = canvas.getContext('2d', { alpha: false });
 
@@ -237,49 +257,34 @@ const draw = () => {
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, cw, ch);
 
-  const solved = isSolved.value;
-  const hRow = hoveredRow.value;
-  const hCol = hoveredCol.value;
-
   // 2. Clue Areas Backgrounds
   ctx.fillStyle = '#eeeeee';
   ctx.fillRect(0, 0, mrc * CELL_SIZE, mcc * CELL_SIZE); // Top-left
   ctx.fillRect(0, mcc * CELL_SIZE, mrc * CELL_SIZE, rows * CELL_SIZE); // Row clues
   ctx.fillRect(mrc * CELL_SIZE, 0, cols * CELL_SIZE, mcc * CELL_SIZE); // Col clues
 
-  // 3. Highlights
-  if (!solved && (hRow !== null || hCol !== null)) {
-    ctx.fillStyle = '#dfdfdf';
-    ctx.fillRect(0, 0, mrc * CELL_SIZE, mcc * CELL_SIZE);
-    
-    if (hRow !== null) {
-      ctx.fillRect(0, (mcc + hRow) * CELL_SIZE, mrc * CELL_SIZE, CELL_SIZE);
-      ctx.fillRect(mrc * CELL_SIZE, (mcc + hRow) * CELL_SIZE, cols * CELL_SIZE, CELL_SIZE);
-    }
-    if (hCol !== null) {
-      ctx.fillRect((mrc + hCol) * CELL_SIZE, 0, CELL_SIZE, mcc * CELL_SIZE);
-      ctx.fillRect((mrc + hCol) * CELL_SIZE, mcc * CELL_SIZE, CELL_SIZE, rows * CELL_SIZE);
-    }
-  }
-
-  // 4. Batch Clue Content (Dark backgrounds for digits)
+  // 4. Clue Content Backgrounds (Dark backgrounds for digits)
   ctx.fillStyle = '#555555';
   const rowVals = props.rowValues;
   const colVals = props.colValues;
 
   for (let r = 0; r < rows; r++) {
     const clues = rowVals[r];
+    const offset = clues.length - mrc;
+    const y = (mcc + r) * CELL_SIZE;
     for (let i = 0; i < mrc; i++) {
-      if (clues[clues.length - mrc + i]) {
-        ctx.fillRect(i * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      if (clues[offset + i]) {
+        ctx.fillRect(i * CELL_SIZE, y, CELL_SIZE, CELL_SIZE);
       }
     }
   }
   for (let c = 0; c < cols; c++) {
     const clues = colVals[c];
+    const offset = clues.length - mcc;
+    const x = (mrc + c) * CELL_SIZE;
     for (let i = 0; i < mcc; i++) {
-      if (clues[clues.length - mcc + i]) {
-        ctx.fillRect((mrc + c) * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      if (clues[offset + i]) {
+        ctx.fillRect(x, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
     }
   }
@@ -292,8 +297,9 @@ const draw = () => {
   for (let r = 0; r < rows; r++) {
     const clues = rowVals[r];
     const yCenter = (mcc + r) * CELL_SIZE + CELL_SIZE / 2 + 1;
+    const offset = clues.length - mrc;
     for (let i = 0; i < mrc; i++) {
-      const digit = clues[clues.length - mrc + i];
+      const digit = clues[offset + i];
       if (digit) {
         ctx.fillText(digit.toString(), i * CELL_SIZE + CELL_SIZE / 2, yCenter);
       }
@@ -302,114 +308,16 @@ const draw = () => {
   for (let c = 0; c < cols; c++) {
     const clues = colVals[c];
     const xCenter = (mrc + c) * CELL_SIZE + CELL_SIZE / 2;
+    const offset = clues.length - mcc;
     for (let i = 0; i < mcc; i++) {
-      const digit = clues[clues.length - mcc + i];
+      const digit = clues[offset + i];
       if (digit) {
         ctx.fillText(digit.toString(), xCenter, i * CELL_SIZE + CELL_SIZE / 2 + 1);
       }
     }
   }
 
-  // 6. Grid Cells (Black)
-  ctx.fillStyle = 'black';
-  const gridData = grid.value;
-  const dState = drawingState.value;
-  const drawing = isDrawing.value;
-
-  let pMinR = -1, pMaxR = -1, pMinC = -1, pMaxC = -1;
-  if (drawing) {
-    const rStart = startRow.value;
-    const rEnd = hRow;
-    const cStart = startCol.value;
-    const cEnd = hCol;
-    if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
-      pMinR = pMaxR = rStart;
-      pMinC = Math.min(cStart, cEnd);
-      pMaxC = Math.max(cStart, cEnd);
-    } else {
-      pMinC = pMaxC = cStart;
-      pMinR = Math.min(rStart, rEnd);
-      pMaxR = Math.max(rStart, rEnd);
-    }
-  }
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const cellValue = gridData[r][c];
-      const pending = drawing && (r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC);
-      const effectiveValue = pending ? dState : cellValue;
-      if (effectiveValue === 1) {
-        if (!solved && r === hRow && c === hCol) {
-          ctx.fillStyle = '#555555';
-          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-          ctx.fillStyle = 'black';
-        } else {
-          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-        }
-      }
-    }
-  }
-
-  // 7. Crosses and Marks (Batched by color)
-  const crossPositions = {
-    '#5b5353': [],
-    '#ccc': [],
-    'red': []
-  };
-
-  const mrcData = markedRowClues.value;
-  const mccData = markedColClues.value;
-  const errorData = errors.value;
-
-  for (let r = 0; r < rows; r++) {
-    const clues = rowVals[r];
-    for (let i = 0; i < mrc; i++) {
-      if (mrcData[r][i]) {
-        const digit = clues[clues.length - mrc + i];
-        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: i * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
-      }
-    }
-  }
-  for (let c = 0; c < cols; c++) {
-    const clues = colVals[c];
-    for (let i = 0; i < mcc; i++) {
-      if (mccData[c][i]) {
-        const digit = clues[clues.length - mcc + i];
-        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: i * CELL_SIZE});
-      }
-    }
-  }
-  if (!solved) {
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const cellValue = gridData[r][c];
-        const pending = drawing && (r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC);
-        const effectiveValue = pending ? dState : cellValue;
-        if (effectiveValue === -1) {
-          crossPositions['#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
-        }
-        if (errorData[r][c]) {
-          crossPositions['red'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
-        }
-      }
-    }
-  }
-
-  drawCrosses(ctx, crossPositions['#5b5353'], '#5b5353');
-  drawCrosses(ctx, crossPositions['#ccc'], '#ccc');
-  drawCrosses(ctx, crossPositions['red'], 'red');
-
-  // 8. Hover Highlight Outline
-  if (!solved && hRow !== null && hCol !== null) {
-    const cellValue = gridData[hRow][hCol];
-    const pending = drawing && (hRow >= pMinR && hRow <= pMaxR && hCol >= pMinC && hCol <= pMaxC);
-    const effectiveValue = pending ? dState : cellValue;
-    ctx.strokeStyle = effectiveValue === 1 ? '#fff' : '#000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect((mrc + hCol) * CELL_SIZE + 1, (mcc + hRow) * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
-  }
-
-  // 9. Grid Lines (optimized to 2 strokes)
+  // 9. Grid Lines (static part)
   ctx.strokeStyle = '#999';
   const totalR = totalRows.value;
   const totalC = totalCols.value;
@@ -446,17 +354,163 @@ const draw = () => {
   ctx.stroke();
 };
 
+const draw = () => {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const mrc = maxRowClues.value;
+  const mcc = maxColClues.value;
+  const cw = canvasWidth.value;
+  const ch = canvasHeight.value;
+  const rows = props.size.rows;
+  const cols = props.size.cols;
+
+  // Clear main canvas (it's transparent)
+  ctx.clearRect(0, 0, cw, ch);
+
+  const solved = isSolved.value;
+  const hRow = hoveredRow.value;
+  const hCol = hoveredCol.value;
+
+  // 3. Highlights
+  if (!solved && (hRow !== null || hCol !== null)) {
+    ctx.fillStyle = 'rgba(223, 223, 223, 0.5)'; // Use alpha for highlights over bg
+    
+    if (hRow !== null) {
+      ctx.fillRect(0, (mcc + hRow) * CELL_SIZE, mrc * CELL_SIZE, CELL_SIZE);
+      ctx.fillRect(mrc * CELL_SIZE, (mcc + hRow) * CELL_SIZE, cols * CELL_SIZE, CELL_SIZE);
+    }
+    if (hCol !== null) {
+      ctx.fillRect((mrc + hCol) * CELL_SIZE, 0, CELL_SIZE, mcc * CELL_SIZE);
+      ctx.fillRect((mrc + hCol) * CELL_SIZE, mcc * CELL_SIZE, CELL_SIZE, rows * CELL_SIZE);
+    }
+  }
+
+  // 6. Grid Cells (Black)
+  ctx.fillStyle = 'black';
+  const gridData = grid.value;
+  const dState = drawingState.value;
+  const drawing = isDrawing.value;
+
+  let pMinR = -1, pMaxR = -1, pMinC = -1, pMaxC = -1;
+  if (drawing) {
+    const rStart = startRow.value;
+    const rEnd = hRow;
+    const cStart = startCol.value;
+    const cEnd = hCol;
+    if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
+      pMinR = pMaxR = rStart;
+      pMinC = Math.min(cStart, cEnd);
+      pMaxC = Math.max(cStart, cEnd);
+    } else {
+      pMinC = pMaxC = cStart;
+      pMinR = Math.min(rStart, rEnd);
+      pMaxR = Math.max(rStart, rEnd);
+    }
+  }
+
+  for (let r = 0; r < rows; r++) {
+    const row = gridData[r];
+    const isHoveredRow = !solved && r === hRow;
+    for (let c = 0; c < cols; c++) {
+      const cellValue = row[c];
+      const pending = drawing && (r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC);
+      const effectiveValue = pending ? dState : cellValue;
+      if (effectiveValue === 1) {
+        if (isHoveredRow && c === hCol) {
+          ctx.fillStyle = '#555555';
+          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          ctx.fillStyle = 'black';
+        } else {
+          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+      }
+    }
+  }
+
+  // 7. Crosses and Marks (Batched by color)
+  const crossPositions = {
+    '#5b5353': [],
+    '#ccc': [],
+    'red': []
+  };
+
+  const mrcData = markedRowClues.value;
+  const mccData = markedColClues.value;
+  const errorData = errors.value;
+  const rowVals = props.rowValues;
+  const colVals = props.colValues;
+
+  for (let r = 0; r < rows; r++) {
+    const clues = rowVals[r];
+    const offset = clues.length - mrc;
+    for (let i = 0; i < mrc; i++) {
+      if (mrcData[r][i]) {
+        const digit = clues[offset + i];
+        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: i * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+      }
+    }
+  }
+  for (let c = 0; c < cols; c++) {
+    const clues = colVals[c];
+    const offset = clues.length - mcc;
+    for (let i = 0; i < mcc; i++) {
+      if (mccData[c][i]) {
+        const digit = clues[offset + i];
+        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: i * CELL_SIZE});
+      }
+    }
+  }
+  if (!solved) {
+    for (let r = 0; r < rows; r++) {
+      const row = gridData[r];
+      const errRow = errorData[r];
+      const isDrawingRow = drawing && r >= pMinR && r <= pMaxR;
+      for (let c = 0; c < cols; c++) {
+        const cellValue = row[c];
+        const pending = isDrawingRow && c >= pMinC && c <= pMaxC;
+        const effectiveValue = pending ? dState : cellValue;
+        if (effectiveValue === -1) {
+          crossPositions['#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+        }
+        if (errRow[c]) {
+          crossPositions['red'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+        }
+      }
+    }
+  }
+
+  drawCrosses(ctx, crossPositions['#5b5353'], '#5b5353');
+  drawCrosses(ctx, crossPositions['#ccc'], '#ccc');
+  drawCrosses(ctx, crossPositions['red'], 'red');
+
+  // 8. Hover Highlight Outline
+  if (!solved && hRow !== null && hCol !== null) {
+    const cellValue = gridData[hRow][hCol];
+    const pending = drawing && (hRow >= pMinR && hRow <= pMaxR && hCol >= pMinC && hCol <= pMaxC);
+    const effectiveValue = pending ? dState : cellValue;
+    ctx.strokeStyle = effectiveValue === 1 ? '#fff' : '#000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect((mrc + hCol) * CELL_SIZE + 1, (mcc + hRow) * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+  }
+};
+
 const drawCrosses = (ctx, positions, color) => {
   if (positions.length === 0) return;
   ctx.strokeStyle = color;
   ctx.lineWidth = 1;
   ctx.beginPath();
+  const padding = 3;
+  const size = CELL_SIZE - padding * 2;
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i];
-    ctx.moveTo(pos.x + 3, pos.y + 3);
-    ctx.lineTo(pos.x + CELL_SIZE - 3, pos.y + CELL_SIZE - 3);
-    ctx.moveTo(pos.x + CELL_SIZE - 3, pos.y + 3);
-    ctx.lineTo(pos.x + 3, pos.y + CELL_SIZE - 3);
+    const x = pos.x + padding;
+    const y = pos.y + padding;
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + size, y + size);
+    ctx.moveTo(x + size, y);
+    ctx.lineTo(x, y + size);
   }
   ctx.stroke();
 };
@@ -513,7 +567,16 @@ const handleCanvasMouseMove = (event) => {
   }
 };
 
-watch([grid, errors, markedRowClues, markedColClues, hoveredRow, hoveredCol, isDrawing, isSolved, () => props.rowValues, () => props.colValues, () => props.size], () => {
+watch([grid, errors, hoveredRow, hoveredCol, isDrawing, isSolved], () => {
+  requestDraw();
+}, { deep: true });
+
+watch([markedRowClues, markedColClues], () => {
+  requestDraw();
+}, { deep: true });
+
+watch([() => props.rowValues, () => props.colValues, () => props.size], () => {
+  requestDrawBg();
   requestDraw();
 }, { deep: true });
 
@@ -772,12 +835,19 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
     <div v-if="showCongrats" :style="congratsStyle" class="congrats-text">
       Браво!
     </div>
-    <canvas
-        ref="canvasRef"
-        @mousedown="handleCanvasMouseDown"
-        @mousemove="handleCanvasMouseMove"
-        @contextmenu.prevent
-    ></canvas>
+    <div class="canvas-wrapper" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
+      <canvas
+          ref="bgCanvasRef"
+          class="bg-canvas"
+      ></canvas>
+      <canvas
+          ref="canvasRef"
+          class="main-canvas"
+          @mousedown="handleCanvasMouseDown"
+          @mousemove="handleCanvasMouseMove"
+          @contextmenu.prevent
+      ></canvas>
+    </div>
   </div>
 </template>
 
@@ -800,9 +870,25 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
   position: relative;
 }
 
+.canvas-wrapper {
+  position: relative;
+}
+
 canvas {
   cursor: pointer;
   user-select: none;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.bg-canvas {
   background-color: #fff;
+  z-index: 1;
+}
+
+.main-canvas {
+  z-index: 2;
 }
 </style>
