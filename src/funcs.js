@@ -21,6 +21,15 @@ export function loadRandomNonogram() {
     }
 }
 
+export function countVisit() {
+    const request = new XMLHttpRequest();
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
+    const address = import.meta.env.ENV_SERVER_ADDRESS;
+    request.open("POST", `${protocol}://${address}/api/v1/nonogram.countVisit`, false);
+    request.withCredentials = true;
+    request.send(null);
+}
+
 function createRandom2DArray(rows, min, max) {
     const arr = [];
     for (let i = 0; i < rows; i++) {

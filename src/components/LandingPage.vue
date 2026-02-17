@@ -35,7 +35,14 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
+import {countVisit} from "@/funcs.js";
+
 defineEmits(['start']);
+
+onMounted(async () => {
+  countVisit()
+});
 </script>
 
 <style scoped>
