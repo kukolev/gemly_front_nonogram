@@ -64,9 +64,6 @@ async function markNonogram(mark) {
       <button @click="markNonogram(true)">Good</button>
       <button @click="markNonogram(false)">Bad</button>
     </div>
-    <div class="admin-logs">
-      <textarea v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
-    </div>
     <div class="drawing-area" v-if="drawingData">
       <div class="grid">
         <div v-for="(row, rIdx) in drawingData" :key="rIdx" class="row">
@@ -78,6 +75,9 @@ async function markNonogram(mark) {
           ></div>
         </div>
       </div>
+    </div>
+    <div class="admin-logs">
+      <textarea v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
     </div>
   </div>
 </template>
@@ -98,7 +98,7 @@ async function markNonogram(mark) {
 
 .admin-logs {
   padding: 10px;
-  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
 }
 
 .admin-logs textarea {
