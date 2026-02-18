@@ -2,12 +2,13 @@
 import { ref } from 'vue';
 
 const nonogramId = ref('');
+const loadedId = ref('');
 const drawingData = ref(null);
 const logs = ref('');
 
 function addLog(buttonName) {
   const now = new Date().toLocaleString();
-  const id = nonogramId.value || 'N/A';
+  const id = loadedId.value || 'N/A';
   let size = 'N/A';
   if (drawingData.value && drawingData.value.length > 0) {
     size = `${drawingData.value.length}x${drawingData.value[0].length}`;
@@ -19,7 +20,7 @@ async function loadRandom() {
   try {
     const response = await fetch('/api/v1/nonogram/admin.getRandomNonogram');
     const data = await response.json();
-    nonogramId.value = data.id;
+    loadedId.value = data.id;
     drawingData.value = data.data;
     addLog('Load');
   } catch (error) {
@@ -28,7 +29,7 @@ async function loadRandom() {
 }
 
 async function markNonogram(mark) {
-  if (!nonogramId.value) {
+  if (!loadedId.value) {
     alert('No nonogram loaded');
     return;
   }
@@ -39,12 +40,12 @@ async function markNonogram(mark) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id: nonogramId.value,
+        id: loadedId.value,
         mark: mark
       }),
     });
     if (response.ok) {
-      console.log(`Nonogram ${nonogramId.value} marked as ${mark ? 'Good' : 'Bad'}`);
+      console.log(`Nonogram ${loadedId.value} marked as ${mark ? 'Good' : 'Bad'}`);
       addLog(mark ? 'Good' : 'Bad');
       loadRandom();
     } else {
