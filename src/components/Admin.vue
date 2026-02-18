@@ -28,6 +28,26 @@ async function loadRandom() {
   }
 }
 
+async function loadById(id) {
+  try {
+    const response = await fetch(`/api/v1/nonogram/admin.getById?id=${id}`);
+    const data = await response.json();
+    loadedId.value = data.id;
+    drawingData.value = data.data;
+    addLog('Load');
+  } catch (error) {
+    console.error('Error loading nonogram by id:', error);
+  }
+}
+
+function handleLoad() {
+  if (nonogramId.value) {
+    loadById(nonogramId.value);
+  } else {
+    loadRandom();
+  }
+}
+
 async function markNonogram(mark) {
   if (!loadedId.value) {
     alert('No nonogram loaded');
@@ -60,7 +80,7 @@ async function markNonogram(mark) {
 <template>
   <div class="admin-page">
     <div class="admin-controls">
-      <button @click="loadRandom">Load</button>
+      <button @click="handleLoad">Load</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="markNonogram(true)">Good</button>
       <button @click="markNonogram(false)">Bad</button>
