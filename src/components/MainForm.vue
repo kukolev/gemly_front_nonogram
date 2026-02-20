@@ -66,7 +66,7 @@ import ConfirmationDialog from './ConfirmationDialog.vue';
 import AppHeader from './AppHeader.vue';
 import AppFooter from './AppFooter.vue';
 import {ref, computed} from 'vue';
-import {loadData, loadRandomNonogram} from '../funcs.js';
+import {loadData, loadRandomNonogram, checkSolution} from '../funcs.js';
 
 const componentKey = ref(0);
 const nonogramComponent = ref(null);
@@ -152,6 +152,7 @@ function save(showAlert = true) {
 
 function check() {
   nonogramComponent.value?.check(true, true);
+  checkSolution(nonogramId.value, nonogramComponent.value.grid);
 }
 
 function requestReload() {

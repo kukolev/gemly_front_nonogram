@@ -21,6 +21,28 @@ export function loadRandomNonogram() {
     }
 }
 
+export function checkSolution(id, data) {
+    const request = new XMLHttpRequest();
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
+    const address = import.meta.env.ENV_SERVER_ADDRESS;
+    request.open("POST", `${protocol}://${address}/api/v1/nonogram.checkSolution`, false);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.withCredentials = true;
+    const payload = {
+        solution: {
+            id: id,
+            data: data
+        }
+    };
+    request.send(JSON.stringify(payload));
+
+    if (request.status === 200) {
+        return JSON.parse(request.responseText);
+    } else {
+        return null;
+    }
+}
+
 export function countVisit() {
     const request = new XMLHttpRequest();
     const protocol = import.meta.env.ENV_SERVER_PROTOCOL;

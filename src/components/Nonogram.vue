@@ -76,7 +76,7 @@ const lockedAxis = ref(null);
 const showCongrats = ref(false);
 const congratsStyle = ref({});
 
-const emit = defineEmits(['clue-click', 'change']);
+const emit = defineEmits(['clue-click', 'change', 'solved']);
 
 const triggerCongratulations = async () => {
   if (showCongrats.value) return;
@@ -181,6 +181,7 @@ const stopDrawing = () => {
       }
     }
     autoMarkClues();
+    check(false, false);
     saveHistory();
   }
   isDrawing.value = false;
@@ -750,6 +751,7 @@ const undo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    check(false, false);
     emit('change');
   }
 };
@@ -762,6 +764,7 @@ const redo = () => {
     grid.value = state.grid;
     markedRowClues.value = state.markedRowClues;
     markedColClues.value = state.markedColClues;
+    check(false, false);
     emit('change');
   }
 };
@@ -807,11 +810,15 @@ const check = (isManual = false, showCongratsManual = false) => {
     }
   }
   if (allCorrect) {
+    const wasAlreadySolved = isSolved.value;
     isSolved.value = true;
     hoveredRow.value = null;
     hoveredCol.value = null;
     if (showCongratsManual) {
       triggerCongratulations();
+    }
+    if (!wasAlreadySolved) {
+      emit('solved');
     }
   }
 };
@@ -822,6 +829,7 @@ const drawResult = (resultGrid) => {
     grid.value = resultGrid.map(row => [...row]);
     errors.value = errors.value.map(row => row.map(() => false));
     autoMarkClues();
+    check(false, false);
     saveHistory();
   }
 };
