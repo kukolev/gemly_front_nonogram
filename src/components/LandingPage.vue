@@ -29,7 +29,7 @@
     </main>
 
     <footer class="footer">
-      <p>&copy; 2026 Nonogram Game</p>
+      <p>Copyright &copy; 2026 rubyruby.games</p>
     </footer>
   </div>
 </template>

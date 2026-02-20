@@ -2,7 +2,7 @@
   <footer class="app-footer">
     <div class="footer-container">
       <div class="footer-line">
-        Copyright © 2026 Aleksandr Kukolev (<a href="mailto:kukolev.info@gmail.com" class="footer-link">kukolev.info@gmail.com</a>)
+        Copyright © 2026 rubyruby.games
       </div>
       <div class="footer-line secondary">
         Reprinting, copying and reproducing of materials from the site in any form without written agreement of the owner is prohibited
