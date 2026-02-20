@@ -52,6 +52,17 @@ export function countVisit() {
     request.send(null);
 }
 
+export function checkAdmin() {
+    const request = new XMLHttpRequest();
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
+    const address = import.meta.env.ENV_SERVER_ADDRESS;
+    request.open("GET", `${protocol}://${address}/api/v1/nonogram/admin.check`, false);
+    request.withCredentials = true;
+    request.send(null);
+
+    return request.status === 200;
+}
+
 function createRandom2DArray(rows, min, max) {
     const arr = [];
     for (let i = 0; i < rows; i++) {

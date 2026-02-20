@@ -4,6 +4,7 @@
     :can-undo="canUndo"
     :can-redo="canRedo"
     :can-save="isDirty"
+    :is-admin="isAdmin"
     @reload="requestReload"
     @clear="requestClear"
     @check="check"
@@ -65,14 +66,15 @@ import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 import AppHeader from './AppHeader.vue';
 import AppFooter from './AppFooter.vue';
-import {ref, computed} from 'vue';
-import {loadData, loadRandomNonogram, checkSolution} from '../funcs.js';
+import {ref, computed, onMounted} from 'vue';
+import {loadData, loadRandomNonogram, checkSolution, checkAdmin} from '../funcs.js';
 
 const componentKey = ref(0);
 const nonogramComponent = ref(null);
 
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
+const isAdmin = ref(false);
 const isDirty = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -118,6 +120,10 @@ if (!loadSavedState()) {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
 }
+
+onMounted(() => {
+  isAdmin.value = checkAdmin();
+});
 
 async function reload() {
   const [rows, cols, data, id] = loadRandomNonogram();

@@ -15,6 +15,10 @@ defineProps({
   canSave: {
     type: Boolean,
     default: true
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -42,7 +46,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 
           <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">Redo</button>
         </div>
 
-        <div class="nav-group">
+        <div class="nav-group" v-if="isAdmin">
           <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">Draw result</button>
         </div>
       </nav>
