@@ -3,7 +3,6 @@
     :title="message"
     :can-undo="canUndo"
     :can-redo="canRedo"
-    :can-save="isDirty"
     :is-admin="isAdmin"
     @reload="requestReload"
     @clear="requestClear"
@@ -11,8 +10,6 @@
     @undo="undo"
     @redo="redo"
     @draw-result="drawResult"
-    @save="save"
-    @load="requestLoadState"
     @show-finished="$emit('show-finished')"
   />
   <div class="main-form">
@@ -27,8 +24,8 @@
         :initial-grid="initialGrid"
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
-        @clue-click="save(false)"
-        @change="save(false)"
+        @clue-click="save"
+        @change="save"
       />
     </div>
   </div>
@@ -158,15 +155,9 @@ const debouncedSave = (() => {
   };
 })();
 
-function save(showAlert = true) {
+function save() {
   isDirty.value = true;
-  if (showAlert) {
-    dialogMessage.value = 'Вы уверены, что хотите сохранить прогресс?';
-    pendingAction.value = 'save';
-    showDialog.value = true;
-  } else {
-    debouncedSave();
-  }
+  debouncedSave();
 }
 
 function check() {
@@ -177,12 +168,6 @@ function check() {
 function requestReload() {
   dialogMessage.value = 'Loading will erase your progress. Are you sure?';
   pendingAction.value = 'reload';
-  showDialog.value = true;
-}
-
-function requestLoadState() {
-  dialogMessage.value = 'Загрузить сохраненный прогресс? Текущий прогресс будет потерян.';
-  pendingAction.value = 'load';
   showDialog.value = true;
 }
 
@@ -198,10 +183,6 @@ function handleConfirm() {
     reload();
   } else if (pendingAction.value === 'clear') {
     clear();
-  } else if (pendingAction.value === 'load') {
-    loadSavedState();
-  } else if (pendingAction.value === 'save') {
-    performSave();
   }
   pendingAction.value = null;
 }

@@ -12,17 +12,13 @@ defineProps({
     type: Boolean,
     default: false
   },
-  canSave: {
-    type: Boolean,
-    default: true
-  },
   isAdmin: {
     type: Boolean,
     default: false
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 'load', 'show-finished'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished'])
 </script>
 
 <template>
@@ -36,8 +32,6 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 
         </div>
         
         <div class="nav-group">
-          <button name="nonogram-save-button" class="nav-btn" @click="$emit('save')" :disabled="!canSave" title="Сохранить прогресс">Сохранить</button>
-          <button name="nonogram-load-button" class="nav-btn" @click="$emit('load')" title="Загрузить сохраненный прогресс">Загрузить</button>
           <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
         </div>
 
