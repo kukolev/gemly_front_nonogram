@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
 import Admin from "@/components/Admin.vue";
@@ -10,9 +10,14 @@ const isAdmin = ref(false);
 const isLoading = ref(true);
 const accessDenied = ref(false);
 
-onMounted(async () => {
+const updateRoute = async () => {
   const path = window.location.pathname;
   if (path.includes('/admin')) {
+    if (isAdmin.value) {
+      isLoading.value = false;
+      return;
+    }
+    isLoading.value = true;
     try {
       const response = await fetch('/api/v1/nonogram/admin.check');
       const data = await response.json();
@@ -37,15 +42,26 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
-  } else if (path.includes('/finished_nonograms')) {
-    currentPage.value = 'finished';
-    isLoading.value = false;
-  } else if (path.includes('/nonogram')) {
-    currentPage.value = 'main';
-    isLoading.value = false;
   } else {
+    isAdmin.value = false;
+    if (path.includes('/finished_nonograms')) {
+      currentPage.value = 'finished';
+    } else if (path.includes('/nonogram')) {
+      currentPage.value = 'main';
+    } else {
+      currentPage.value = 'landing';
+    }
     isLoading.value = false;
   }
+};
+
+onMounted(() => {
+  updateRoute();
+  window.addEventListener('popstate', updateRoute);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', updateRoute);
 });
 
 function showMainForm() {
