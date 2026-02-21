@@ -28,7 +28,7 @@
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
         @clue-click="save(false)"
-        @change="isDirty = true"
+        @change="save(false)"
       />
     </div>
   </div>
@@ -69,7 +69,7 @@ import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 import AppHeader from './AppHeader.vue';
 import AppFooter from './AppFooter.vue';
-import {ref, computed, onMounted} from 'vue';
+import {ref, computed, onMounted, watch} from 'vue';
 import {loadData, loadRandomNonogram, checkSolution, checkAdmin} from '../funcs.js';
 
 const componentKey = ref(0);
@@ -148,14 +148,24 @@ function performSave() {
   isDirty.value = false;
 }
 
+const debouncedSave = (() => {
+  let timeout;
+  return () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      performSave();
+    }, 1000);
+  };
+})();
+
 function save(showAlert = true) {
-  if (!isDirty.value && showAlert) return;
+  isDirty.value = true;
   if (showAlert) {
     dialogMessage.value = 'Вы уверены, что хотите сохранить прогресс?';
     pendingAction.value = 'save';
     showDialog.value = true;
   } else {
-    performSave();
+    debouncedSave();
   }
 }
 
