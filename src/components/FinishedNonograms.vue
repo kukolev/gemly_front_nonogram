@@ -2,9 +2,6 @@
   <div class="finished-nonograms">
     <header class="page-header">
       <div class="header-container">
-        <button @click="$emit('back')" class="back-btn" title="Вернуться на главную">
-          <span class="back-icon">←</span> Назад
-        </button>
         <h1 class="page-title">Завершенные кроссворды</h1>
       </div>
     </header>
@@ -168,25 +165,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: 1px solid #cbd5e1;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-weight: 600;
-  color: #475569;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-  color: #1e293b;
-}
 
 .content {
   flex: 1;
