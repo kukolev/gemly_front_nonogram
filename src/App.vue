@@ -11,7 +11,8 @@ const isLoading = ref(true);
 const accessDenied = ref(false);
 
 onMounted(async () => {
-  if (window.location.pathname.includes('/admin')) {
+  const path = window.location.pathname;
+  if (path.includes('/admin')) {
     try {
       const response = await fetch('/api/v1/nonogram/admin.check');
       const data = await response.json();
@@ -36,6 +37,9 @@ onMounted(async () => {
     } finally {
       isLoading.value = false;
     }
+  } else if (path.includes('/finished_nonograms')) {
+    currentPage.value = 'finished';
+    isLoading.value = false;
   } else {
     isLoading.value = false;
   }
@@ -46,10 +50,12 @@ function showMainForm() {
 }
 
 function showFinished() {
+  window.history.pushState({}, '', '/finished_nonograms');
   currentPage.value = 'finished';
 }
 
 function showLanding() {
+  window.history.pushState({}, '', '/');
   currentPage.value = 'landing';
 }
 </script>
