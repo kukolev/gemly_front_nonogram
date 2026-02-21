@@ -40,12 +40,16 @@ onMounted(async () => {
   } else if (path.includes('/finished_nonograms')) {
     currentPage.value = 'finished';
     isLoading.value = false;
+  } else if (path.includes('/nonogram')) {
+    currentPage.value = 'main';
+    isLoading.value = false;
   } else {
     isLoading.value = false;
   }
 });
 
 function showMainForm() {
+  window.history.pushState({}, '', '/nonogram');
   currentPage.value = 'main';
 }
 
