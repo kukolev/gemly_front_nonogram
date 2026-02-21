@@ -22,7 +22,7 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 'load'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 'load', 'show-finished'])
 </script>
 
 <template>
@@ -44,6 +44,10 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'save', 
         <div class="nav-group">
           <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">Undo</button>
           <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">Redo</button>
+        </div>
+
+        <div class="nav-group">
+          <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Finished nonograms</button>
         </div>
 
         <div class="nav-group" v-if="isAdmin">

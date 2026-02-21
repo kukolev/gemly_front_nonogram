@@ -60,7 +60,7 @@ function showLanding() {
   <template v-else>
     <Admin v-if="isAdmin" />
     <template v-else>
-      <MainForm v-if="currentPage === 'main'" message="Японский кроссворд" />
+      <MainForm v-if="currentPage === 'main'" message="Японский кроссворд" @show-finished="showFinished" />
       <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
       <LandingPage v-else @start="showMainForm" @showFinished="showFinished" />
     </template>

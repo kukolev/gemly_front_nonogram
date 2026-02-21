@@ -13,6 +13,7 @@
     @draw-result="drawResult"
     @save="save"
     @load="requestLoadState"
+    @show-finished="$emit('show-finished')"
   />
   <div class="main-form">
     <div class="nonogram-wrapper">
@@ -61,6 +62,8 @@ defineProps({
     required: true,
   },
 })
+
+defineEmits(['show-finished'])
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
