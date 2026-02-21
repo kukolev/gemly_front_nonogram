@@ -3,7 +3,10 @@
     <header class="hero">
       <h1 class="hero-title">Японские кроссворды</h1>
       <p class="hero-subtitle">Увлекательные логические головоломки</p>
-      <button @click="$emit('start')" class="start-btn">Начать игру</button>
+      <div class="hero-actions">
+        <button @click="$emit('start')" class="start-btn">Начать игру</button>
+        <button @click="$emit('showFinished')" class="finished-btn">Finished Nonograms</button>
+      </div>
     </header>
 
     <main class="content">
@@ -38,7 +41,7 @@
 import { onMounted } from 'vue';
 import {countVisit} from "@/funcs.js";
 
-defineEmits(['start']);
+defineEmits(['start', 'showFinished']);
 
 onMounted(async () => {
   countVisit()
@@ -76,6 +79,13 @@ onMounted(async () => {
   margin-bottom: 2.5rem;
 }
 
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .start-btn {
   background-color: #2563eb;
   color: white;
@@ -96,6 +106,28 @@ onMounted(async () => {
 }
 
 .start-btn:active {
+  transform: translateY(0);
+}
+
+.finished-btn {
+  background-color: white;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  padding: 1rem 2.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.finished-btn:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.finished-btn:active {
   transform: translateY(0);
 }
 

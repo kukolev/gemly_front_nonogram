@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
 import Admin from "@/components/Admin.vue";
+import FinishedNonograms from "@/components/FinishedNonograms.vue";
 
 const currentPage = ref('landing');
 const isAdmin = ref(false);
@@ -43,6 +44,14 @@ onMounted(async () => {
 function showMainForm() {
   currentPage.value = 'main';
 }
+
+function showFinished() {
+  currentPage.value = 'finished';
+}
+
+function showLanding() {
+  currentPage.value = 'landing';
+}
 </script>
 
 <template>
@@ -52,7 +61,8 @@ function showMainForm() {
     <Admin v-if="isAdmin" />
     <template v-else>
       <MainForm v-if="currentPage === 'main'" message="Японский кроссворд" />
-      <LandingPage v-else @start="showMainForm" />
+      <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
+      <LandingPage v-else @start="showMainForm" @showFinished="showFinished" />
     </template>
   </template>
 </template>
