@@ -4,6 +4,7 @@
     :can-undo="canUndo"
     :can-redo="canRedo"
     :is-admin="isAdmin"
+    :show-plus-one="isCongratsShown"
     @reload="requestReload"
     @clear="requestClear"
     @check="check"
@@ -26,6 +27,7 @@
         :initial-marked-col-clues="initialMarkedColClues"
         @clue-click="save"
         @change="save"
+        @congrats-toggled="isCongratsShown = $event"
       />
     </div>
   </div>
@@ -75,6 +77,7 @@ const nonogramComponent = ref(null);
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const isAdmin = ref(false);
+const isCongratsShown = ref(false);
 const isDirty = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');

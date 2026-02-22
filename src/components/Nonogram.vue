@@ -76,7 +76,7 @@ const lockedAxis = ref(null);
 const showCongrats = ref(false);
 const congratsStyle = ref({});
 
-const emit = defineEmits(['clue-click', 'change', 'solved']);
+const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled']);
 
 const triggerCongratulations = async () => {
   if (showCongrats.value) return;
@@ -96,8 +96,10 @@ const triggerCongratulations = async () => {
   };
 
   showCongrats.value = true;
+  emit('congrats-toggled', true);
   await new Promise(resolve => setTimeout(resolve, 3000));
   showCongrats.value = false;
+  emit('congrats-toggled', false);
 };
 
 const startDrawing = (event, r, c) => {
