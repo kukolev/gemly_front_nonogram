@@ -123,7 +123,7 @@ function showLanding() {
     <template v-else>
       <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" />
       <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
-      <LandingPage v-else @start="showMainForm" @showFinished="showFinished" />
+      <LandingPage v-else @start="showMainForm" />
     </template>
   </template>
 </template>
