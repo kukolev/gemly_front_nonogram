@@ -28,10 +28,6 @@
         </p>
       </article>
     </main>
-
-    <footer class="footer">
-      <p>Copyright &copy; 2026 rubyruby.games</p>
-    </footer>
   </div>
 </template>
 
@@ -128,15 +124,6 @@ onMounted(async () => {
   margin-bottom: 1.2rem;
   font-size: 1.1rem;
   color: #475569;
-}
-
-.footer {
-  margin-top: 5rem;
-  text-align: left;
-  padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
-  color: #94a3b8;
-  font-size: 0.9rem;
 }
 
 @media (max-width: 640px) {

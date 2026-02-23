@@ -5,6 +5,7 @@ import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
 import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
+import AppFooter from "@/components/AppFooter.vue";
 
 import {loadData, loadRandomNonogram, checkSolution, checkAdmin} from './funcs.js';
 
@@ -119,12 +120,15 @@ function showLanding() {
       @show-finished="showFinished"
       @go-landing="showLanding"
     />
-    <Admin v-if="isAdmin" />
-    <template v-else>
-      <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" />
-      <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
-      <LandingPage v-else @start="showMainForm" />
-    </template>
+    <main class="app-content">
+      <Admin v-if="isAdmin" />
+      <template v-else>
+        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" />
+        <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
+        <LandingPage v-else @start="showMainForm" />
+      </template>
+    </main>
+    <AppFooter />
   </template>
 </template>
 

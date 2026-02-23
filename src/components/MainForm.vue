@@ -23,7 +23,6 @@
     @yes="handleConfirm" 
     @no="handleCancel" 
   />
-  <AppFooter />
 </template>
 <style scoped>
 .main-form {
@@ -45,7 +44,6 @@ defineEmits(['show-finished'])
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
-import AppFooter from './AppFooter.vue';
 import {ref, computed} from 'vue';
 import {loadRandomNonogram, checkSolution} from '../funcs.js';
 
