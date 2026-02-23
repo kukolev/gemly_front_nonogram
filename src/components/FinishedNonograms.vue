@@ -242,7 +242,7 @@ canvas {
 
 .footer {
   margin-top: 4rem;
-  text-align: center;
+  text-align: left;
   padding-top: 2rem;
   border-top: 1px solid #e2e8f0;
   color: #94a3b8;

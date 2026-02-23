@@ -28,7 +28,7 @@
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  text-align: center;
+  text-align: left;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
