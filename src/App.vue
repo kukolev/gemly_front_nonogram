@@ -117,6 +117,7 @@ function showLanding() {
       @redo="mainFormRef?.redo()"
       @draw-result="mainFormRef?.drawResult()"
       @show-finished="showFinished"
+      @go-landing="showLanding"
     />
     <Admin v-if="isAdmin" />
     <template v-else>

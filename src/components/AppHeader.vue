@@ -26,14 +26,14 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing'])
 </script>
 
 <template>
   <header class="app-header">
     <div class="header-container">
       <div class="header-brand">
-        <img src="/logo.png" alt="Logo" class="header-logo" />
+        <img src="/logo.png" alt="Logo" class="header-logo" @click="$emit('go-landing')" />
         <h1 class="header-title">{{ title }}</h1>
       </div>
       <nav class="header-nav" v-if="showButtons">
@@ -99,9 +99,10 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 }
 
 .header-logo {
-  height: 2rem;
+  height: 3.0rem;
   width: auto;
   display: block;
+  cursor: pointer;
 }
 
 .header-title {
