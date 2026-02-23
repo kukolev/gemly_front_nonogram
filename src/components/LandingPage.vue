@@ -1,7 +1,6 @@
 <template>
   <div class="landing-page">
     <header class="hero">
-      <h1 class="hero-title">Японские кроссворды</h1>
       <p class="hero-subtitle">Увлекательные логические головоломки</p>
       <div class="hero-actions">
         <button @click="$emit('start')" class="start-btn">Начать игру</button>

@@ -1,18 +1,4 @@
 <template>
-  <AppHeader
-    :title="message"
-    :can-undo="canUndo"
-    :can-redo="canRedo"
-    :is-admin="isAdmin"
-    :show-plus-one="isCongratsShown"
-    @reload="requestReload"
-    @clear="requestClear"
-    @check="check"
-    @undo="undo"
-    @redo="redo"
-    @draw-result="drawResult"
-    @show-finished="$emit('show-finished')"
-  />
   <div class="main-form">
     <div class="nonogram-wrapper">
       <Nonogram 
@@ -55,33 +41,36 @@
 
 <script setup>
 
-defineProps({
-  message: {
-    type: String,
-    required: true,
-  },
-})
-
 defineEmits(['show-finished'])
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
-import AppHeader from './AppHeader.vue';
 import AppFooter from './AppFooter.vue';
-import {ref, computed, onMounted, watch} from 'vue';
-import {loadData, loadRandomNonogram, checkSolution, checkAdmin} from '../funcs.js';
+import {ref, computed} from 'vue';
+import {loadRandomNonogram, checkSolution} from '../funcs.js';
 
 const componentKey = ref(0);
 const nonogramComponent = ref(null);
 
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
-const isAdmin = ref(false);
 const isCongratsShown = ref(false);
 const isDirty = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
+
+defineExpose({
+  canUndo,
+  canRedo,
+  isCongratsShown,
+  requestReload,
+  requestClear,
+  check,
+  undo,
+  redo,
+  drawResult
+});
 
 const rowValues = ref([]);
 const colValues = ref([]);
@@ -123,10 +112,6 @@ if (!loadSavedState()) {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
 }
-
-onMounted(() => {
-  isAdmin.value = checkAdmin();
-});
 
 async function reload() {
   const [rows, cols, data, id] = loadRandomNonogram();

@@ -1,11 +1,5 @@
 <template>
   <div class="finished-nonograms">
-    <header class="page-header">
-      <div class="header-container">
-        <h1 class="page-title">Завершенные кроссворды</h1>
-      </div>
-    </header>
-
     <main class="content">
       <div v-if="loading" class="status-message">
         <div class="loader"></div>
@@ -145,26 +139,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 }
-
-.page-header {
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 1rem;
-}
-
-.header-container {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0;
-}
-
 
 .content {
   flex: 1;

@@ -19,6 +19,10 @@ defineProps({
   showPlusOne: {
     type: Boolean,
     default: false
+  },
+  showButtons: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -28,8 +32,11 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 <template>
   <header class="app-header">
     <div class="header-container">
-      <h1 class="header-title">{{ title }}</h1>
-      <nav class="header-nav">
+      <div class="header-brand">
+        <img src="/logo.png" alt="Logo" class="header-logo" />
+        <h1 class="header-title">{{ title }}</h1>
+      </div>
+      <nav class="header-nav" v-if="showButtons">
         <div class="nav-group">
           <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Загрузить новый</button>
           <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
@@ -83,6 +90,18 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
     align-items: center;
     gap: 1.35rem;
   }
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  height: 2rem;
+  width: auto;
+  display: block;
 }
 
 .header-title {
