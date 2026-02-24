@@ -34,32 +34,34 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
     <div class="header-container">
       <div class="header-brand">
         <img src="/logo.png" alt="Logo" class="header-logo" @click="$emit('go-landing')" />
-        <h1 class="header-title">{{ title }}</h1>
+        <div class="header-title-group">
+          <h1 class="header-title">{{ title }}</h1>
+          <nav class="header-nav" v-if="showButtons">
+            <div class="nav-group">
+              <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Загрузить новый</button>
+              <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
+            </div>
+            
+            <div class="nav-group">
+              <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
+            </div>
+
+            <div class="nav-group">
+              <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">Undo</button>
+              <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">Redo</button>
+            </div>
+
+            <div class="nav-group finished-nav-group">
+              <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды</button>
+              <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
+            </div>
+
+            <div class="nav-group" v-if="isAdmin">
+              <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">Draw result</button>
+            </div>
+          </nav>
+        </div>
       </div>
-      <nav class="header-nav" v-if="showButtons">
-        <div class="nav-group">
-          <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Загрузить новый</button>
-          <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
-        </div>
-        
-        <div class="nav-group">
-          <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
-        </div>
-
-        <div class="nav-group">
-          <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">Undo</button>
-          <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">Redo</button>
-        </div>
-
-        <div class="nav-group finished-nav-group">
-          <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Finished nonograms</button>
-          <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
-        </div>
-
-        <div class="nav-group" v-if="isAdmin">
-          <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">Draw result</button>
-        </div>
-      </nav>
     </div>
   </header>
 </template>
@@ -77,25 +79,33 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-@media (min-width: 992px) {
-  .header-container {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1.35rem;
-  }
 }
 
 .header-brand {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 1.25rem;
+}
+
+.header-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.75rem;
+  flex: 1;
+}
+
+@media (min-width: 992px) {
+  .header-brand {
+    align-items: center;
+  }
+  
+  .header-title-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
 }
 
 .header-logo {
@@ -111,13 +121,14 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   font-weight: 700;
   color: #2c4550;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .header-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .nav-group {

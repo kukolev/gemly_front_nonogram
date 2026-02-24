@@ -1,9 +1,9 @@
 <template>
   <div class="landing-page">
     <header class="hero">
-      <p class="hero-subtitle">Увлекательные логические головоломки</p>
+      <p class="hero-subtitle">Добро пожаловать на сайт "Японские кроссворды"</p>
       <div class="hero-actions">
-        <button @click="$emit('start')" class="start-btn">Начать игру</button>
+        <button @click="$emit('start')" class="start-btn">Открыть кроссворд!</button>
       </div>
     </header>
 
