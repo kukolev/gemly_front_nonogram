@@ -171,9 +171,9 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 
 .nav-btn {
   padding: 0.35rem 0.85rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid transparent;
   background-color: #fff;
-  border-radius: 0.375rem;
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 500;
@@ -201,24 +201,24 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .btn-check {
   background-color: #2563eb;
   color: white;
-  border-color: #2563eb;
+  border-color: transparent;
 }
 
 .btn-check:hover:not(:disabled) {
   background-color: #1d4ed8;
-  border-color: #1d4ed8;
+  border-color: white;
   color: white;
 }
 
 .btn-secondary {
   background-color: #64748b;
   color: white;
-  border-color: #64748b;
+  border-color: transparent;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background-color: #475569;
-  border-color: #475569;
+  border-color: white;
   color: white;
 }
 

@@ -83,11 +83,11 @@ onMounted(async () => {
 .start-btn {
   background-color: #2563eb;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   padding: 1rem 2.5rem;
   font-size: 1.25rem;
   font-weight: 600;
-  border-radius: 0.5rem;
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
@@ -95,6 +95,7 @@ onMounted(async () => {
 
 .start-btn:hover {
   background-color: #1d4ed8;
+  border-color: white;
   transform: translateY(-1px);
   box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
 }

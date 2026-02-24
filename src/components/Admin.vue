@@ -117,6 +117,20 @@ async function markNonogram(mark) {
   border-bottom: 1px solid #ccc;
 }
 
+.admin-controls button {
+  padding: 5px 15px;
+  border: 1px solid transparent;
+  background-color: #eee;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-controls button:hover {
+  background-color: #ddd;
+  border-color: #999;
+}
+
 .admin-logs {
   padding: 10px;
   border-top: 1px solid #ccc;

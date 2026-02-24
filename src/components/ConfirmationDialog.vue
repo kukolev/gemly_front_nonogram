@@ -69,10 +69,10 @@ defineEmits(['yes', 'no']);
 .dialog-button {
   padding: 10px 20px;
   font-size: 1rem;
-  border: none;
-  border-radius: 4px;
+  border: 2px solid transparent;
+  border-radius: 0;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .dialog-button.yes {
@@ -82,6 +82,7 @@ defineEmits(['yes', 'no']);
 
 .dialog-button.yes:hover {
   background-color: #45a049;
+  border-color: white;
 }
 
 .dialog-button.no {
@@ -91,5 +92,6 @@ defineEmits(['yes', 'no']);
 
 .dialog-button.no:hover {
   background-color: #da190b;
+  border-color: white;
 }
 </style>

@@ -209,16 +209,17 @@ canvas {
 .retry-btn, .start-btn {
   background-color: #2563eb;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  border-radius: 0.5rem;
+  border-radius: 0;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .retry-btn:hover, .start-btn:hover {
   background-color: #1d4ed8;
+  border-color: white;
 }
 
 .loader {

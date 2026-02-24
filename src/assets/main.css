@@ -45,6 +45,16 @@ body {
     flex: 1;
 }
 
+button {
+    border-radius: 0;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+button:hover {
+    border-color: currentColor;
+}
+
 @media (min-width: 1024px) {
     body {
         display: block;
