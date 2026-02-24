@@ -55,7 +55,7 @@ onMounted(async () => {
   text-align: center;
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 1rem;
+  border-radius: 0;
   margin-bottom: 3rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
