@@ -9,6 +9,10 @@
 
     <main class="content">
       <article class="article">
+        <h2 class="welcome-title">Добро пожаловать на сайт https://rubyruby.games/nonograms</h2>
+        <p>
+          Наш сайт содержит множество японских кроссвордов, которые пополняются каждый день.
+        </p>
         <h2>Что такое японские кроссворды?</h2>
         <p>
           Японский кроссворд (нонограмма) — это логическая головоломка, в которой с помощью чисел зашифровано некоторое изображение.
@@ -113,6 +117,7 @@ onMounted(async () => {
   padding: 2rem;
 }
 
+.welcome-title,
 .article h2 {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
