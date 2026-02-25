@@ -107,6 +107,7 @@ async function markNonogram(mark) {
 .admin-page {
   display: flex;
   flex-direction: column;
+  min-height: calc(100vh - 100px); /* Adjust based on header height if known, or just use 100vh minus some buffer */
 }
 
 .admin-controls {
@@ -134,6 +135,7 @@ async function markNonogram(mark) {
 .admin-logs {
   padding: 10px;
   border-top: 1px solid #ccc;
+  margin-top: auto;
 }
 
 .admin-logs textarea {
@@ -159,8 +161,8 @@ async function markNonogram(mark) {
 }
 
 .cell {
-  width: 15px;
-  height: 15px;
+  width: 7.5px;
+  height: 7.5px;
 }
 
 .cell.filled {
