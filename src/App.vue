@@ -63,7 +63,7 @@ const updateRoute = async () => {
     }
   } else {
     isAdmin.value = false;
-    if (path.includes('/finished_nonograms')) {
+    if (path.includes('/nonogram/finished_nonograms')) {
       currentPage.value = 'finished';
     } else if (path.includes('/nonogram')) {
       currentPage.value = 'main';
@@ -90,7 +90,7 @@ function showMainForm() {
 }
 
 function showFinished() {
-  window.history.pushState({}, '', '/finished_nonograms');
+  window.history.pushState({}, '', '/nonogram/finished_nonograms');
   currentPage.value = 'finished';
 }
 
