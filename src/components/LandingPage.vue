@@ -1,18 +1,14 @@
 <template>
   <div class="landing-page">
-    <header class="hero">
-      <p class="hero-subtitle">Добро пожаловать на сайт "Японские кроссворды"</p>
-      <div class="hero-actions">
-        <button @click="$emit('start')" class="start-btn">Открыть кроссворд!</button>
-      </div>
-    </header>
-
     <main class="content">
       <article class="article">
         <h2 class="welcome-title">Добро пожаловать на RubyRuby.games!</h2>
         <p>
           Наш сайт содержит... ну точнее будет содержать множество увлекательных игр и развлечений на любой вкус! Ну а пока у нас есть просто Японские Кроссворды!
         </p>
+        <div class="hero-actions">
+          <button @click="$emit('start')" class="start-btn">Открыть кроссворд!</button>
+        </div>
       </article>
     </main>
   </div>
@@ -41,10 +37,9 @@ onMounted(async () => {
 .hero {
   text-align: center;
   padding: 4rem 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: white;
   border-radius: 0;
   margin-bottom: 3rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .hero-title {
@@ -52,12 +47,6 @@ onMounted(async () => {
   font-weight: 800;
   margin-bottom: 1rem;
   color: #1e293b;
-}
-
-.hero-subtitle {
-  font-size: 1.25rem;
-  color: #64748b;
-  margin-bottom: 2.5rem;
 }
 
 .hero-actions {
