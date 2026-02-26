@@ -63,6 +63,22 @@ export function checkAdmin() {
     return request.status === 200;
 }
 
+export function getFinishedCount() {
+    const request = new XMLHttpRequest();
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL;
+    const address = import.meta.env.ENV_SERVER_ADDRESS;
+    request.open("GET", `${protocol}://${address}/api/v1/nonogram.getFinishedCount`, false);
+    request.withCredentials = true;
+    request.send(null);
+
+    if (request.status === 200) {
+        const response = JSON.parse(request.responseText);
+        return response.count;
+    } else {
+        return 0;
+    }
+}
+
 function createRandom2DArray(rows, min, max) {
     const arr = [];
     for (let i = 0; i < rows; i++) {

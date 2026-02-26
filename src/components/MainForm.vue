@@ -40,7 +40,7 @@
 
 <script setup>
 
-defineEmits(['show-finished'])
+const emit = defineEmits(['show-finished', 'loaded'])
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
@@ -90,6 +90,7 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialMarkedColClues.value = markedColClues;
   componentKey.value += 1;
   isDirty.value = false;
+  emit('loaded');
 }
 
 function loadSavedState() {

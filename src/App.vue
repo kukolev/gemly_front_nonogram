@@ -7,13 +7,18 @@ import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
 import AppFooter from "@/components/AppFooter.vue";
 
-import {loadData, loadRandomNonogram, checkSolution, checkAdmin} from './funcs.js';
+import {loadData, loadRandomNonogram, checkSolution, checkAdmin, getFinishedCount} from './funcs.js';
 
 const currentPage = ref('landing');
 const isAdmin = ref(false);
 const isLoading = ref(true);
 const accessDenied = ref(false);
 const mainFormRef = ref(null);
+const finishedCount = ref(0);
+
+const updateFinishedCount = () => {
+  finishedCount.value = getFinishedCount();
+};
 
 const pageTitle = computed(() => {
   if (isAdmin.value) return 'Панель администратора';
@@ -77,6 +82,7 @@ const updateRoute = async () => {
 onMounted(() => {
   headerIsAdmin.value = checkAdmin();
   updateRoute();
+  updateFinishedCount();
   window.addEventListener('popstate', updateRoute);
 });
 
@@ -98,6 +104,11 @@ function showLanding() {
   window.history.pushState({}, '', '/');
   currentPage.value = 'landing';
 }
+
+function handleCheck() {
+  mainFormRef.value?.check();
+  updateFinishedCount();
+}
 </script>
 
 <template>
@@ -106,6 +117,7 @@ function showLanding() {
   <template v-else>
     <AppHeader
       :title="pageTitle"
+      :finished-count="finishedCount"
       :can-undo="canUndo"
       :can-redo="canRedo"
       :is-admin="headerIsAdmin"
@@ -113,7 +125,7 @@ function showLanding() {
       :show-buttons="currentPage === 'main'"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
-      @check="mainFormRef?.check()"
+      @check="handleCheck"
       @undo="mainFormRef?.undo()"
       @redo="mainFormRef?.redo()"
       @draw-result="mainFormRef?.drawResult()"
@@ -123,7 +135,7 @@ function showLanding() {
     <main class="app-content">
       <Admin v-if="isAdmin" />
       <template v-else>
-        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" />
+        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" @loaded="updateFinishedCount" />
         <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
         <LandingPage v-else @start="showMainForm" />
       </template>
