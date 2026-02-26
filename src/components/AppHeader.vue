@@ -30,7 +30,7 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about'])
 </script>
 
 <template>
@@ -58,6 +58,10 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
             <div class="nav-group finished-nav-group">
               <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды ({{ finishedCount }})</button>
               <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
+            </div>
+
+            <div class="nav-group">
+              <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">About</button>
             </div>
 
             <div class="nav-group" v-if="isAdmin">

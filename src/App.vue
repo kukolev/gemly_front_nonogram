@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import AppHeader from "@/components/AppHeader.vue";
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
+import AboutPage from "@/components/AboutPage.vue";
 import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
 import AppFooter from "@/components/AppFooter.vue";
@@ -25,6 +26,7 @@ const pageTitle = computed(() => {
   switch (currentPage.value) {
     case 'main': return 'Японский кроссворд';
     case 'finished': return 'Завершенные кроссворды';
+    case 'about': return 'О проекте';
     default: return 'Японские кроссворды';
   }
 });
@@ -70,6 +72,8 @@ const updateRoute = async () => {
     isAdmin.value = false;
     if (path.includes('/nonogram/finished_nonograms')) {
       currentPage.value = 'finished';
+    } else if (path.includes('/nonogram/about')) {
+      currentPage.value = 'about';
     } else if (path.includes('/nonogram')) {
       currentPage.value = 'main';
     } else {
@@ -98,6 +102,11 @@ function showMainForm() {
 function showFinished() {
   window.history.pushState({}, '', '/nonogram/finished_nonograms');
   currentPage.value = 'finished';
+}
+
+function showAbout() {
+  window.history.pushState({}, '', '/nonogram/about');
+  currentPage.value = 'about';
 }
 
 function showLanding() {
@@ -130,6 +139,7 @@ function handleCheck() {
       @redo="mainFormRef?.redo()"
       @draw-result="mainFormRef?.drawResult()"
       @show-finished="showFinished"
+      @show-about="showAbout"
       @go-landing="showLanding"
     />
     <main class="app-content">
@@ -137,6 +147,7 @@ function handleCheck() {
       <template v-else>
         <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" @loaded="updateFinishedCount" />
         <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
+        <AboutPage v-else-if="currentPage === 'about'" />
         <LandingPage v-else @start="showMainForm" />
       </template>
     </main>
