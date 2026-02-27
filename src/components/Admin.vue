@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import ConfirmationDialog from './ConfirmationDialog.vue';
 
 const nonogramId = ref('');
 const loadedId = ref('');
@@ -14,6 +15,10 @@ const hoveredCol = ref(null);
 const drawingState = ref(null);
 const lockedAxis = ref(null);
 const isDirty = ref(false);
+
+const showDialog = ref(false);
+const dialogMessage = ref('');
+const pendingAction = ref(null);
 
 function startDrawing(r, c, event) {
   if (event.button !== 0) return;
@@ -159,10 +164,7 @@ async function loadById(id) {
   }
 }
 
-function handleLoad() {
-  if (isDirty.value && !confirm('Image was changed. Unsaved changes will be lost. Continue loading?')) {
-    return;
-  }
+function performLoad() {
   if (nonogramId.value) {
     loadById(nonogramId.value);
   } else {
@@ -170,14 +172,31 @@ function handleLoad() {
   }
 }
 
-async function markNonogram(mark) {
+function handleLoad() {
+  if (isDirty.value) {
+    dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue loading?';
+    pendingAction.value = { type: 'load' };
+    showDialog.value = true;
+    return;
+  }
+  performLoad();
+}
+
+function markNonogram(mark) {
   if (!loadedId.value) {
     alert('No nonogram loaded');
     return;
   }
-  if (isDirty.value && !confirm('Image was changed. Unsaved changes will be lost. Continue?')) {
+  if (isDirty.value) {
+    dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue?';
+    pendingAction.value = { type: 'mark', mark: mark };
+    showDialog.value = true;
     return;
   }
+  performMarkNonogram(mark);
+}
+
+async function performMarkNonogram(mark) {
   try {
     const response = await fetch('/api/v1/nonogram/admin.markNonogram', {
       method: 'POST',
@@ -201,14 +220,21 @@ async function markNonogram(mark) {
   }
 }
 
-async function saveNonogram() {
+function saveNonogram() {
   if (!loadedId.value) {
     alert('No nonogram loaded');
     return;
   }
-  if (isDirty.value && !confirm('Are you sure you want to save changes to the image?')) {
+  if (isDirty.value) {
+    dialogMessage.value = 'Are you sure you want to save changes to the image?';
+    pendingAction.value = { type: 'save' };
+    showDialog.value = true;
     return;
   }
+  performSaveNonogram();
+}
+
+async function performSaveNonogram() {
   try {
     const response = await fetch('/api/v1/nonogram/admin.saveNonogram', {
       method: 'POST',
@@ -231,6 +257,25 @@ async function saveNonogram() {
     console.error('Error saving nonogram:', error);
     alert('Error saving nonogram');
   }
+}
+
+function handleConfirm() {
+  showDialog.value = false;
+  const action = pendingAction.value;
+  pendingAction.value = null;
+  
+  if (action.type === 'load') {
+    performLoad();
+  } else if (action.type === 'mark') {
+    performMarkNonogram(action.mark);
+  } else if (action.type === 'save') {
+    performSaveNonogram();
+  }
+}
+
+function handleCancel() {
+  showDialog.value = false;
+  pendingAction.value = null;
 }
 </script>
 
@@ -261,6 +306,12 @@ async function saveNonogram() {
       <textarea v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
     </div>
   </div>
+  <ConfirmationDialog
+    v-if="showDialog"
+    :message="dialogMessage"
+    @yes="handleConfirm"
+    @no="handleCancel"
+  />
 </template>
 
 <style scoped>
