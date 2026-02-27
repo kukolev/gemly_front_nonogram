@@ -135,9 +135,9 @@ async function reload() {
 function performSave() {
   const data = {
     id: nonogramId.value,
-    grid: isDirty.value ? (nonogramComponent.value?.grid || initialGrid.value) : initialGrid.value,
-    markedRowClues: isDirty.value ? (nonogramComponent.value?.markedRowClues || initialMarkedRowClues.value) : initialMarkedRowClues.value,
-    markedColClues: isDirty.value ? (nonogramComponent.value?.markedColClues || initialMarkedColClues.value) : initialMarkedColClues.value,
+    grid: nonogramComponent.value?.grid || initialGrid.value,
+    markedRowClues: nonogramComponent.value?.markedRowClues || initialMarkedRowClues.value,
+    markedColClues: nonogramComponent.value?.markedColClues || initialMarkedColClues.value,
     rowValues: rowValues.value,
     colValues: colValues.value,
     resultData: resultData.value
@@ -207,6 +207,7 @@ function drawResult() {
 
 function clear() {
   nonogramComponent.value?.clear();
+  performSave();
 }
 </script>
 
