@@ -2,12 +2,13 @@
   <div class="landing-page">
     <main class="content">
       <article class="article">
-        <h2 class="welcome-title">Добро пожаловать на RubyRuby.games!</h2>
+        <h2 class="welcome-title">Добро пожаловать на сайт Ruby Ruby Games!</h2>
         <p>
-          Наш сайт содержит... ну точнее будет содержать множество увлекательных игр и развлечений на любой вкус! Ну а пока у нас есть просто Японские Кроссворды!
+          Наш сайт содержит... ну точнее будет содержать множество увлекательных игр и развлечений на любой вкус!
+          Ну а пока у нас есть просто
         </p>
         <div class="hero-actions">
-          <button @click="$emit('start')" class="start-btn">Открыть кроссворд!</button>
+          <button @click="$emit('start')" class="start-btn">Японские кроссворды</button>
         </div>
       </article>
     </main>
@@ -57,7 +58,7 @@ onMounted(async () => {
 }
 
 .start-btn {
-  background-color: #2563eb;
+  background-color: #2c3e50;
   color: white;
   border: 2px solid transparent;
   padding: 1rem 2.5rem;
@@ -66,14 +67,14 @@ onMounted(async () => {
   border-radius: 0;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .start-btn:hover {
-  background-color: #1d4ed8;
+  background-color: #34495e;
   border-color: white;
   transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
 }
 
 .start-btn:active {

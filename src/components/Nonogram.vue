@@ -36,7 +36,7 @@ const props = defineProps({
 
 const canvasRef = ref(null);
 const bgCanvasRef = ref(null);
-const CELL_SIZE = 15;
+const CELL_SIZE = 13;
 
 const grid = ref(
     props.initialGrid ? JSON.parse(JSON.stringify(props.initialGrid)) :

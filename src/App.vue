@@ -24,10 +24,10 @@ const updateFinishedCount = () => {
 const pageTitle = computed(() => {
   if (isAdmin.value) return 'Панель администратора';
   switch (currentPage.value) {
-    case 'main': return 'Японский кроссворд';
+    case 'main': return 'Японские кроссворды';
     case 'finished': return 'Завершенные кроссворды';
     case 'about': return 'О проекте';
-    default: return 'Японские кроссворды';
+    default: return 'Добро пожаловать!';
   }
 });
 

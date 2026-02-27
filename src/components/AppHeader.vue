@@ -42,7 +42,12 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
           <h1 class="header-title">{{ title }}</h1>
           <nav class="header-nav" v-if="showButtons">
             <div class="nav-group">
-              <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Загрузить новый</button>
+              <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">←</button>
+              <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">→</button>
+            </div>
+
+            <div class="nav-group">
+              <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Новый кроссворд</button>
               <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
             </div>
             
@@ -50,10 +55,6 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
             </div>
 
-            <div class="nav-group">
-              <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">↶</button>
-              <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">↷</button>
-            </div>
 
             <div class="nav-group finished-nav-group">
               <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды ({{ finishedCount }})</button>
@@ -61,7 +62,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
             </div>
 
             <div class="nav-group">
-              <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">About</button>
+              <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">О проекте</button>
             </div>
 
             <div class="nav-group" v-if="isAdmin">
@@ -76,8 +77,8 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 
 <style scoped>
 .app-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: #2c3e50;
+  border-bottom: 1px solid #1a252f;
   padding: 0.65rem 1rem;
   width: 100%;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -127,7 +128,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #2c4550;
+  color: #ffffff;
   white-space: nowrap;
   line-height: 1.2;
 }
@@ -180,20 +181,20 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .nav-btn {
   padding: 0.35rem 0.85rem;
   border: 1px solid transparent;
-  background-color: #fff;
+  background-color: #2c3e50;
   border-radius: 0;
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: #334155;
+  color: #ffffff;
   outline: none;
 }
 
 .nav-btn:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-  color: #1e293b;
+  background-color: #34495e;
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 .nav-btn:active:not(:disabled) {
@@ -203,29 +204,29 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .nav-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  background-color: #f1f5f9;
+  background-color: #2c3e50;
 }
 
 .btn-check {
-  background-color: #2563eb;
+  background-color: #2c3e50;
   color: white;
   border-color: transparent;
 }
 
 .btn-check:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: #34495e;
   border-color: white;
   color: white;
 }
 
 .btn-secondary {
-  background-color: #64748b;
+  background-color: #2c3e50;
   color: white;
   border-color: transparent;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #475569;
+  background-color: #34495e;
   border-color: white;
   color: white;
 }

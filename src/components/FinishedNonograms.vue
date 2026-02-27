@@ -207,7 +207,7 @@ canvas {
 }
 
 .retry-btn, .start-btn {
-  background-color: #2563eb;
+  background-color: #2c3e50;
   color: white;
   border: 2px solid transparent;
   padding: 0.75rem 1.5rem;
@@ -218,7 +218,7 @@ canvas {
 }
 
 .retry-btn:hover, .start-btn:hover {
-  background-color: #1d4ed8;
+  background-color: #34495e;
   border-color: white;
 }
 

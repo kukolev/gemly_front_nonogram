@@ -76,22 +76,22 @@ defineEmits(['yes', 'no']);
 }
 
 .dialog-button.yes {
-  background-color: #4caf50;
+  background-color: #2c3e50;
   color: white;
 }
 
 .dialog-button.yes:hover {
-  background-color: #45a049;
+  background-color: #34495e;
   border-color: white;
 }
 
 .dialog-button.no {
-  background-color: #f44336;
+  background-color: #2c3e50;
   color: white;
 }
 
 .dialog-button.no:hover {
-  background-color: #da190b;
+  background-color: #34495e;
   border-color: white;
 }
 </style>
