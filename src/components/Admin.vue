@@ -13,6 +13,7 @@ const hoveredRow = ref(null);
 const hoveredCol = ref(null);
 const drawingState = ref(null);
 const lockedAxis = ref(null);
+const isDirty = ref(false);
 
 function startDrawing(r, c, event) {
   if (event.button !== 0) return;
@@ -73,6 +74,7 @@ function stopDrawing() {
         drawingData.value[r][c] = drawingState.value;
       }
     }
+    isDirty.value = true;
   }
   isDrawing.value = false;
   drawingState.value = null;
@@ -137,6 +139,7 @@ async function loadRandom() {
     const data = await response.json();
     loadedId.value = data.id;
     drawingData.value = data.data;
+    isDirty.value = false;
     addLog('Load');
   } catch (error) {
     console.error('Error loading random nonogram:', error);
@@ -149,6 +152,7 @@ async function loadById(id) {
     const data = await response.json();
     loadedId.value = data.id;
     drawingData.value = data.data;
+    isDirty.value = false;
     addLog('Load');
   } catch (error) {
     console.error('Error loading nonogram by id:', error);
@@ -156,6 +160,9 @@ async function loadById(id) {
 }
 
 function handleLoad() {
+  if (isDirty.value && !confirm('Image was changed. Unsaved changes will be lost. Continue loading?')) {
+    return;
+  }
   if (nonogramId.value) {
     loadById(nonogramId.value);
   } else {
@@ -166,6 +173,9 @@ function handleLoad() {
 async function markNonogram(mark) {
   if (!loadedId.value) {
     alert('No nonogram loaded');
+    return;
+  }
+  if (isDirty.value && !confirm('Image was changed. Unsaved changes will be lost. Continue?')) {
     return;
   }
   try {
@@ -196,6 +206,9 @@ async function saveNonogram() {
     alert('No nonogram loaded');
     return;
   }
+  if (isDirty.value && !confirm('Are you sure you want to save changes to the image?')) {
+    return;
+  }
   try {
     const response = await fetch('/api/v1/nonogram/admin.saveNonogram', {
       method: 'POST',
@@ -209,6 +222,7 @@ async function saveNonogram() {
     });
     if (response.status === 200) {
       console.log(`Nonogram ${loadedId.value} saved successfully`);
+      isDirty.value = false;
       addLog('Save');
     } else {
       alert(`Error: ${response.status}`);
