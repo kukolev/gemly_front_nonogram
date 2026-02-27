@@ -75,6 +75,34 @@ async function markNonogram(mark) {
     console.error('Error marking nonogram:', error);
   }
 }
+
+async function saveNonogram() {
+  if (!loadedId.value) {
+    alert('No nonogram loaded');
+    return;
+  }
+  try {
+    const response = await fetch('/api/v1/nonogram/admin.saveNonogram', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: loadedId.value,
+        data: drawingData.value
+      }),
+    });
+    if (response.status === 200) {
+      console.log(`Nonogram ${loadedId.value} saved successfully`);
+      addLog('Save');
+    } else {
+      alert(`Error: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error saving nonogram:', error);
+    alert('Error saving nonogram');
+  }
+}
 </script>
 
 <template>
@@ -82,6 +110,7 @@ async function markNonogram(mark) {
     <div class="admin-controls">
       <button @click="handleLoad">Load</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
+      <button @click="saveNonogram">Save</button>
       <button @click="markNonogram(true)">Good</button>
       <button @click="markNonogram(false)">Bad</button>
     </div>
