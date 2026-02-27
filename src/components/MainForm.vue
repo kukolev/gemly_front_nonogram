@@ -85,6 +85,19 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   resultData.value = data;
   nonogramId.value = id;
   nonogramSize.value = {rows: rows.length, cols: cols.length};
+  
+  if (!grid) {
+    grid = Array.from({length: rows.length}, () => Array.from({length: cols.length}, () => 0));
+  }
+  if (!markedRowClues) {
+    const maxRowClues = Math.max(...rows.map(v => v.length), 0);
+    markedRowClues = rows.map(() => Array(maxRowClues).fill(false));
+  }
+  if (!markedColClues) {
+    const maxColClues = Math.max(...cols.map(v => v.length), 0);
+    markedColClues = cols.map(() => Array(maxColClues).fill(false));
+  }
+
   initialGrid.value = grid;
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
@@ -110,20 +123,21 @@ function loadSavedState() {
 if (!loadSavedState()) {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
+  performSave();
 }
 
 async function reload() {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
+  performSave();
 }
 
 function performSave() {
-  if (!nonogramComponent.value) return;
   const data = {
     id: nonogramId.value,
-    grid: nonogramComponent.value.grid,
-    markedRowClues: nonogramComponent.value.markedRowClues,
-    markedColClues: nonogramComponent.value.markedColClues,
+    grid: isDirty.value ? (nonogramComponent.value?.grid || initialGrid.value) : initialGrid.value,
+    markedRowClues: isDirty.value ? (nonogramComponent.value?.markedRowClues || initialMarkedRowClues.value) : initialMarkedRowClues.value,
+    markedColClues: isDirty.value ? (nonogramComponent.value?.markedColClues || initialMarkedColClues.value) : initialMarkedColClues.value,
     rowValues: rowValues.value,
     colValues: colValues.value,
     resultData: resultData.value
