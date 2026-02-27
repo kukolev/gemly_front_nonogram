@@ -100,11 +100,13 @@ function showMainForm() {
 }
 
 function showFinished() {
+  mainFormRef.value?.performSave();
   window.history.pushState({}, '', '/nonogram/finished_nonograms');
   currentPage.value = 'finished';
 }
 
 function showAbout() {
+  mainFormRef.value?.performSave();
   window.history.pushState({}, '', '/nonogram/about');
   currentPage.value = 'about';
 }

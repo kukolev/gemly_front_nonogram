@@ -67,7 +67,8 @@ defineExpose({
   check,
   undo,
   redo,
-  drawResult
+  drawResult,
+  performSave
 });
 
 const rowValues = ref([]);
