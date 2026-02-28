@@ -135,7 +135,7 @@ function addLog(buttonName) {
   if (drawingData.value && drawingData.value.length > 0) {
     size = `${drawingData.value.length}x${drawingData.value[0].length}`;
   }
-  logs.value = `${now} - Button: ${buttonName}, ID: ${id}, Size: ${size}\n` + logs.value;
+  logs.value = logs.value + `${now} - Button: ${buttonName}, ID: ${id}, Size: ${size}\n`;
 }
 
 async function loadRandom() {

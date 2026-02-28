@@ -5,7 +5,7 @@
         Copyright © 2026 rubyruby.games
       </div>
       <div class="footer-line secondary">
-        Reprinting, copying and reproducing of materials from the site in any form without written agreement of the owner is prohibited
+        Reproduction of content from this site in any form is prohibited without the written agreement of the owner.
       </div>
     </div>
   </footer>
