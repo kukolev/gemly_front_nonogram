@@ -1,11 +1,20 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 
 const nonogramId = ref('');
 const loadedId = ref('');
 const drawingData = ref(null);
 const logs = ref('');
+const logTextArea = ref(null);
+
+watch(logs, () => {
+  nextTick(() => {
+    if (logTextArea.value) {
+      logTextArea.value.scrollTop = logTextArea.value.scrollHeight;
+    }
+  });
+});
 
 const isDrawing = ref(false);
 const startRow = ref(null);
@@ -303,7 +312,7 @@ function handleCancel() {
       </div>
     </div>
     <div class="admin-logs">
-      <textarea v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
+      <textarea ref="logTextArea" v-model="logs" readonly placeholder="Logs will appear here..."></textarea>
     </div>
   </div>
   <ConfirmationDialog
