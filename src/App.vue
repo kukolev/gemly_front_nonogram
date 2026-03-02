@@ -100,13 +100,11 @@ function showMainForm() {
 }
 
 function showFinished() {
-  mainFormRef.value?.performSave();
   window.history.pushState({}, '', '/nonogram/finished_nonograms');
   currentPage.value = 'finished';
 }
 
 function showAbout() {
-  mainFormRef.value?.performSave();
   window.history.pushState({}, '', '/nonogram/about');
   currentPage.value = 'about';
 }
@@ -136,6 +134,7 @@ function handleCheck() {
       :show-buttons="currentPage === 'main'"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
+      @save="mainFormRef?.performSave()"
       @check="handleCheck"
       @undo="mainFormRef?.undo()"
       @redo="mainFormRef?.redo()"

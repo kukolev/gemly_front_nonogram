@@ -11,8 +11,6 @@
         :initial-grid="initialGrid"
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
-        @clue-click="save"
-        @change="save"
         @congrats-toggled="isCongratsShown = $event"
       />
     </div>
@@ -53,7 +51,6 @@ const nonogramComponent = ref(null);
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const isCongratsShown = ref(false);
-const isDirty = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
@@ -103,7 +100,6 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
   componentKey.value += 1;
-  isDirty.value = false;
   emit('loaded');
 }
 
@@ -124,13 +120,11 @@ function loadSavedState() {
 if (!loadSavedState()) {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
-  performSave();
 }
 
 async function reload() {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
-  performSave();
 }
 
 function performSave() {
@@ -144,22 +138,6 @@ function performSave() {
     resultData: resultData.value
   };
   localStorage.setItem('nonogram_save', JSON.stringify(data));
-  isDirty.value = false;
-}
-
-const debouncedSave = (() => {
-  let timeout;
-  return () => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      performSave();
-    }, 1000);
-  };
-})();
-
-function save() {
-  isDirty.value = true;
-  debouncedSave();
 }
 
 function check() {
@@ -208,7 +186,6 @@ function drawResult() {
 
 function clear() {
   nonogramComponent.value?.clear();
-  performSave();
 }
 </script>
 
