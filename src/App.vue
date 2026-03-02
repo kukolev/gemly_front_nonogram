@@ -142,7 +142,6 @@ function handleCheck() {
       :show-buttons="currentPage === 'main'"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
-      @save="mainFormRef?.performSave()"
       @check="handleCheck"
       @undo="mainFormRef?.undo()"
       @redo="mainFormRef?.redo()"

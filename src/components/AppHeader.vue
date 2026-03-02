@@ -30,7 +30,7 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'save'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about'])
 </script>
 
 <template>
@@ -47,7 +47,6 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
             </div>
 
             <div class="nav-group">
-              <button name="nonogram-save-button" class="nav-btn" @click="$emit('save')" title="Сохранить прогресс">Сохранить</button>
               <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Новый кроссворд</button>
               <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
             </div>
