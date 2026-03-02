@@ -12,6 +12,7 @@
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
         @congrats-toggled="isCongratsShown = $event"
+        @change="performSave"
       />
     </div>
   </div>

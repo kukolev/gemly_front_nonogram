@@ -186,6 +186,7 @@ const stopDrawing = () => {
     autoMarkClues();
     check(false, false);
     saveHistory();
+    emit('change');
   }
   isDrawing.value = false;
   drawingState.value = null;
@@ -787,6 +788,7 @@ const clear = () => {
   markedColClues.value = props.colValues.map(() => Array(maxColClues.value).fill(false));
   autoMarkClues();
   saveHistory();
+  emit('change');
 };
 
 const check = (isManual = false, showCongratsManual = false) => {
