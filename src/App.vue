@@ -36,7 +36,7 @@ const canRedo = computed(() => mainFormRef.value?.canRedo || false);
 const showPlusOne = computed(() => mainFormRef.value?.isCongratsShown || false);
 const headerIsAdmin = ref(false);
 
-const updateRoute = async () => {
+const updateRoute = () => {
   const path = window.location.pathname;
   if (path.includes('/admin')) {
     if (isAdmin.value) {
@@ -45,17 +45,23 @@ const updateRoute = async () => {
     }
     isLoading.value = true;
     try {
-      const response = await fetch('/api/v1/nonogram/admin.check');
-      const data = await response.json();
-      if (data.isAdmin) {
-        isAdmin.value = true;
+      const request = new XMLHttpRequest();
+      request.open("GET", "/api/v1/nonogram/admin.check", false);
+      request.send(null);
+      if (request.status === 200) {
+        const data = JSON.parse(request.responseText);
+        if (data.isAdmin) {
+          isAdmin.value = true;
+        } else {
+          accessDenied.value = true;
+          setTimeout(() => {
+            accessDenied.value = false;
+            window.history.pushState({}, '', '/');
+            currentPage.value = 'landing';
+          }, 3000);
+        }
       } else {
-        accessDenied.value = true;
-        setTimeout(() => {
-          accessDenied.value = false;
-          window.history.pushState({}, '', '/');
-          currentPage.value = 'landing';
-        }, 3000);
+        throw new Error('Failed to check admin status');
       }
     } catch (error) {
       console.error('Error checking admin status:', error);

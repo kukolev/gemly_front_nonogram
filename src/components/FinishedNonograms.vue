@@ -92,29 +92,32 @@ const drawNonogram = (canvas, data) => {
   }
 };
 
-const fetchList = async () => {
+const fetchList = () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await fetch('/api/v1/nonogram.getFinishedList');
-    if (!response.ok) {
+    const request = new XMLHttpRequest();
+    request.open("GET", "/api/v1/nonogram.getFinishedList", false);
+    request.send(null);
+    if (request.status === 200) {
+      const data = JSON.parse(request.responseText);
+      list.value = data.list || [];
+      loading.value = false;
+      
+      nextTick(() => {
+        list.value.forEach(item => {
+          const canvas = canvasRefs[item.nonogram.id];
+          if (canvas) {
+            drawNonogram(canvas, item.nonogram.data);
+          }
+        });
+      });
+    } else {
       throw new Error('Не удалось загрузить список завершенных кроссвордов');
     }
-    const data = await response.json();
-    list.value = data.list || [];
-    loading.value = false;
-    
-    await nextTick();
-    list.value.forEach(item => {
-      const canvas = canvasRefs[item.nonogram.id];
-      if (canvas) {
-        drawNonogram(canvas, item.nonogram.data);
-      }
-    });
   } catch (e) {
     console.error('Error fetching finished nonograms:', e);
     error.value = e.message;
-  } finally {
     loading.value = false;
   }
 };

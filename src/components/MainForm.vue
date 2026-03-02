@@ -42,7 +42,7 @@ const emit = defineEmits(['show-finished', 'loaded'])
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
-import {ref, computed} from 'vue';
+import {ref, computed, nextTick} from 'vue';
 import {loadRandomNonogram, checkSolution} from '../funcs.js';
 
 const componentKey = ref(0);
@@ -100,7 +100,10 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
   componentKey.value += 1;
-  emit('loaded');
+  nextTick(() => {
+    performSave();
+    emit('loaded');
+  });
 }
 
 function loadSavedState() {
@@ -122,7 +125,7 @@ if (!loadSavedState()) {
   setNonogramData(rows, cols, data, id);
 }
 
-async function reload() {
+function reload() {
   const [rows, cols, data, id] = loadRandomNonogram();
   setNonogramData(rows, cols, data, id);
 }
@@ -159,12 +162,14 @@ function requestClear() {
 
 function handleConfirm() {
   showDialog.value = false;
-  if (pendingAction.value === 'reload') {
-    reload();
-  } else if (pendingAction.value === 'clear') {
-    clear();
-  }
+  const action = pendingAction.value;
   pendingAction.value = null;
+  if (action === 'reload') {
+    reload();
+  } else if (action === 'clear') {
+    clear();
+    performSave();
+  }
 }
 
 function handleCancel() {

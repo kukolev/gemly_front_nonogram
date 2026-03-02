@@ -77,27 +77,39 @@ function addLog(buttonName) {
   logs.value = logs.value + `${now} - Button: ${buttonName}, ID: ${id}, Size: ${size}\n`;
 }
 
-async function loadRandom() {
+function loadRandom() {
   try {
-    const response = await fetch('/api/v1/nonogram/admin.getRandomNonogram');
-    const data = await response.json();
-    loadedId.value = data.id;
-    drawingData.value = data.data;
-    isDirty.value = false;
-    addLog('Load');
+    const request = new XMLHttpRequest();
+    request.open("GET", "/api/v1/nonogram/admin.getRandomNonogram", false);
+    request.send(null);
+    if (request.status === 200) {
+      const data = JSON.parse(request.responseText);
+      loadedId.value = data.id;
+      drawingData.value = data.data;
+      isDirty.value = false;
+      addLog('Load');
+    } else {
+      throw new Error('Failed to load random nonogram');
+    }
   } catch (error) {
     console.error('Error loading random nonogram:', error);
   }
 }
 
-async function loadById(id) {
+function loadById(id) {
   try {
-    const response = await fetch(`/api/v1/nonogram/admin.getById?id=${id}`);
-    const data = await response.json();
-    loadedId.value = data.id;
-    drawingData.value = data.data;
-    isDirty.value = false;
-    addLog('Load');
+    const request = new XMLHttpRequest();
+    request.open("GET", `/api/v1/nonogram/admin.getById?id=${id}`, false);
+    request.send(null);
+    if (request.status === 200) {
+      const data = JSON.parse(request.responseText);
+      loadedId.value = data.id;
+      drawingData.value = data.data;
+      isDirty.value = false;
+      addLog('Load');
+    } else {
+      throw new Error('Failed to load nonogram by id');
+    }
   } catch (error) {
     console.error('Error loading nonogram by id:', error);
   }
@@ -135,19 +147,16 @@ function markNonogram(mark) {
   performMarkNonogram(mark);
 }
 
-async function performMarkNonogram(mark) {
+function performMarkNonogram(mark) {
   try {
-    const response = await fetch('/api/v1/nonogram/admin.markNonogram', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: loadedId.value,
-        mark: mark
-      }),
-    });
-    if (response.ok) {
+    const request = new XMLHttpRequest();
+    request.open("POST", "/api/v1/nonogram/admin.markNonogram", false);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(JSON.stringify({
+      id: loadedId.value,
+      mark: mark
+    }));
+    if (request.status === 200) {
       console.log(`Nonogram ${loadedId.value} marked as ${mark ? 'Good' : 'Bad'}`);
       addLog(mark ? 'Good' : 'Bad');
       loadRandom();
@@ -173,24 +182,21 @@ function saveNonogram() {
   performSaveNonogram();
 }
 
-async function performSaveNonogram() {
+function performSaveNonogram() {
   try {
-    const response = await fetch('/api/v1/nonogram/admin.saveNonogram', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: loadedId.value,
-        data: drawingData.value
-      }),
-    });
-    if (response.status === 200) {
+    const request = new XMLHttpRequest();
+    request.open("POST", "/api/v1/nonogram/admin.saveNonogram", false);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(JSON.stringify({
+      id: loadedId.value,
+      data: drawingData.value
+    }));
+    if (request.status === 200) {
       console.log(`Nonogram ${loadedId.value} saved successfully`);
       isDirty.value = false;
       addLog('Save');
     } else {
-      alert(`Error: ${response.status}`);
+      alert(`Error: ${request.status}`);
     }
   } catch (error) {
     console.error('Error saving nonogram:', error);

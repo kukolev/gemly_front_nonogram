@@ -78,7 +78,7 @@ const congratsStyle = ref({});
 
 const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled']);
 
-const triggerCongratulations = async () => {
+const triggerCongratulations = () => {
   if (showCongrats.value) return;
 
   congratsStyle.value = {
@@ -97,9 +97,10 @@ const triggerCongratulations = async () => {
 
   showCongrats.value = true;
   emit('congrats-toggled', true);
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  showCongrats.value = false;
-  emit('congrats-toggled', false);
+  setTimeout(() => {
+    showCongrats.value = false;
+    emit('congrats-toggled', false);
+  }, 3000);
 };
 
 const startDrawing = (event, r, c) => {

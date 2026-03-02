@@ -21,7 +21,7 @@ import {countVisit} from "@/funcs.js";
 
 defineEmits(['start']);
 
-onMounted(async () => {
+onMounted(() => {
   countVisit()
 });
 </script>
