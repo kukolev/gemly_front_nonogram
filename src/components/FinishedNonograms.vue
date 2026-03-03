@@ -13,7 +13,7 @@
       
       <div v-else-if="list.length === 0" class="status-message empty">
         <p>У вас пока нет завершенных кроссвордов.</p>
-        <button @click="$emit('back')" class="start-btn">Начать игру</button>
+        <button @click="$emit('back')" class="start-btn">Назад к кросворду</button>
       </div>
       
       <div v-else class="nonograms-grid">
