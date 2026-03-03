@@ -154,7 +154,7 @@ function handleCheck() {
       <Admin v-if="isAdmin" />
       <template v-else>
         <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" @loaded="updateFinishedCount" />
-        <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showLanding" />
+        <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
         <AboutPage v-else-if="currentPage === 'about'" />
         <LandingPage v-else @start="showMainForm" />
       </template>
