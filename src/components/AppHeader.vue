@@ -37,9 +37,8 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   <header class="app-header">
     <div class="header-container">
       <div class="header-brand">
-        <img src="/logo.png" alt="Logo" class="header-logo" @click="$emit('go-landing')" />
         <div class="header-title-group">
-          <h1 class="header-title">{{ title }}</h1>
+          <h1 class="header-title" @click="$emit('go-landing')">{{ title }}</h1>
           <nav class="header-nav" v-if="showButtons">
             <div class="nav-group">
               <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">←</button>
@@ -117,13 +116,6 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   }
 }
 
-.header-logo {
-  height: 3.0rem;
-  width: auto;
-  display: block;
-  cursor: pointer;
-}
-
 .header-title {
   margin: 0;
   font-size: 1.2rem;
@@ -131,6 +123,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   color: #ffffff;
   white-space: nowrap;
   line-height: 1.2;
+  cursor: pointer;
 }
 
 .header-nav {
