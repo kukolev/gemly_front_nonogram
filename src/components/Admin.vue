@@ -20,6 +20,33 @@ const isDrawing = ref(false);
 const drawingState = ref(null);
 const isDirty = ref(false);
 const isFillMode = ref(false);
+const undoStack = ref([]);
+const redoStack = ref([]);
+
+function saveToUndo() {
+  if (!drawingData.value) return;
+  if (undoStack.value.length >= 50) {
+    undoStack.value.shift();
+  }
+  undoStack.value.push(JSON.parse(JSON.stringify(drawingData.value)));
+  redoStack.value = [];
+}
+
+function undo() {
+  if (!drawingData.value || undoStack.value.length === 0) return;
+  redoStack.value.push(JSON.parse(JSON.stringify(drawingData.value)));
+  drawingData.value = undoStack.value.pop();
+  isDirty.value = true;
+  addLog('Undo');
+}
+
+function redo() {
+  if (!drawingData.value || redoStack.value.length === 0) return;
+  undoStack.value.push(JSON.parse(JSON.stringify(drawingData.value)));
+  drawingData.value = redoStack.value.pop();
+  isDirty.value = true;
+  addLog('Redo');
+}
 
 function fillArea(r, c, newColor) {
   const oldColor = drawingData.value[r][c];
@@ -58,13 +85,19 @@ function startDrawing(r, c, event) {
   }
   
   if (isFillMode.value) {
-    fillArea(r, c, color);
-    addLog('Fill area');
+    if (drawingData.value[r][c] !== color) {
+      saveToUndo();
+      fillArea(r, c, color);
+      addLog('Fill area');
+    }
   } else {
+    saveToUndo();
     drawingState.value = color;
     isDrawing.value = true;
-    drawingData.value[r][c] = drawingState.value;
-    isDirty.value = true;
+    if (drawingData.value[r][c] !== drawingState.value) {
+      drawingData.value[r][c] = drawingState.value;
+      isDirty.value = true;
+    }
   }
   
   event.preventDefault();
@@ -89,12 +122,25 @@ function isCellFilled(r, c) {
   return drawingData.value[r][c] === 1;
 }
 
+function handleKeydown(event) {
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+  if (event.ctrlKey && event.key.toLowerCase() === 'z') {
+    undo();
+    event.preventDefault();
+  } else if (event.ctrlKey && event.key.toLowerCase() === 'x') {
+    redo();
+    event.preventDefault();
+  }
+}
+
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
+  window.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('mouseup', stopDrawing);
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 function addLog(buttonName) {
@@ -116,6 +162,8 @@ function loadRandom() {
       const data = JSON.parse(request.responseText);
       loadedId.value = data.id;
       drawingData.value = data.data;
+      undoStack.value = [];
+      redoStack.value = [];
       isDirty.value = false;
       addLog('Load');
     } else {
@@ -135,6 +183,8 @@ function loadById(id) {
       const data = JSON.parse(request.responseText);
       loadedId.value = data.id;
       drawingData.value = data.data;
+      undoStack.value = [];
+      redoStack.value = [];
       isDirty.value = false;
       addLog('Load');
     } else {
@@ -257,6 +307,8 @@ function handleCancel() {
 <template>
   <div class="admin-page">
     <div class="admin-controls">
+      <button @click="undo" :disabled="undoStack.length === 0">Undo</button>
+      <button @click="redo" :disabled="redoStack.length === 0">Redo</button>
       <button @click="handleLoad">Load</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="saveNonogram">Save</button>
@@ -318,6 +370,12 @@ function handleCancel() {
 .admin-controls button:hover {
   background-color: #34495e;
   border-color: white;
+}
+
+.admin-controls button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  border-color: transparent;
 }
 
 .admin-controls button.toggled {
