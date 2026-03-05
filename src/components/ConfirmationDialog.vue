@@ -14,15 +14,15 @@
 defineProps({
   message: {
     type: String,
-    default: 'Are you sure?'
+    default: 'Вы точно уверены?'
   },
   yesText: {
     type: String,
-    default: 'Yes'
+    default: 'Да'
   },
   noText: {
     type: String,
-    default: 'No'
+    default: 'Нет'
   },
   showNo: {
     type: Boolean,

@@ -150,7 +150,7 @@ function check() {
 }
 
 function requestReload() {
-  dialogMessage.value = 'Loading will erase your progress. Are you sure?';
+  dialogMessage.value = 'Ваш прогресс по данному кроссворду будет потерян, вы точно уверены?';
   pendingAction.value = 'reload';
   showDialog.value = true;
 }
