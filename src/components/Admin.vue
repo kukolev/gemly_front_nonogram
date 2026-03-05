@@ -19,23 +19,53 @@ watch(logs, () => {
 const isDrawing = ref(false);
 const drawingState = ref(null);
 const isDirty = ref(false);
+const isFillMode = ref(false);
+
+function fillArea(r, c, newColor) {
+  const oldColor = drawingData.value[r][c];
+  if (oldColor === newColor) return;
+  
+  const stack = [[r, c]];
+  const rows = drawingData.value.length;
+  const cols = drawingData.value[0].length;
+  
+  while (stack.length > 0) {
+    const [currR, currC] = stack.pop();
+    if (drawingData.value[currR][currC] === oldColor) {
+      drawingData.value[currR][currC] = newColor;
+      isDirty.value = true;
+      
+      if (currR > 0) stack.push([currR - 1, currC]);
+      if (currR < rows - 1) stack.push([currR + 1, currC]);
+      if (currC > 0) stack.push([currR, currC - 1]);
+      if (currC < cols - 1) stack.push([currR, currC + 1]);
+    }
+  }
+}
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
 
 function startDrawing(r, c, event) {
+  let color;
   if (event.button === 0) {
-    drawingState.value = 1; // black
+    color = 1; // black
   } else if (event.button === 2) {
-    drawingState.value = 0; // white
+    color = 0; // white
   } else {
     return;
   }
   
-  isDrawing.value = true;
-  drawingData.value[r][c] = drawingState.value;
-  isDirty.value = true;
+  if (isFillMode.value) {
+    fillArea(r, c, color);
+    addLog('Fill area');
+  } else {
+    drawingState.value = color;
+    isDrawing.value = true;
+    drawingData.value[r][c] = drawingState.value;
+    isDirty.value = true;
+  }
   
   event.preventDefault();
 }
@@ -230,6 +260,7 @@ function handleCancel() {
       <button @click="handleLoad">Load</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="saveNonogram">Save</button>
+      <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }">Fill area</button>
       <button @click="markNonogram(true)">Good</button>
       <button @click="markNonogram(false)">Bad</button>
     </div>
@@ -286,6 +317,11 @@ function handleCancel() {
 
 .admin-controls button:hover {
   background-color: #34495e;
+  border-color: white;
+}
+
+.admin-controls button.toggled {
+  background-color: #3498db;
   border-color: white;
 }
 
