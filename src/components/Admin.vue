@@ -235,16 +235,18 @@ function markNonogram(mark) {
     alert('No nonogram loaded');
     return;
   }
-  if (mark) {
-    performSaveNonogram();
-    performMarkNonogram(mark);
-    return;
-  }
   if (isDirty.value) {
-    dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue?';
+    if (mark) {
+      dialogMessage.value = 'Image was changed. Are you sure you want to save changes and mark it as Good?';
+    } else {
+      dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue?';
+    }
     pendingAction.value = { type: 'mark', mark: mark };
     showDialog.value = true;
     return;
+  }
+  if (mark) {
+    performSaveNonogram();
   }
   performMarkNonogram(mark);
 }
@@ -315,6 +317,9 @@ function handleConfirm() {
   if (action.type === 'load') {
     performLoad();
   } else if (action.type === 'mark') {
+    if (action.mark) {
+      performSaveNonogram();
+    }
     performMarkNonogram(action.mark);
   } else if (action.type === 'save') {
     performSaveNonogram();
