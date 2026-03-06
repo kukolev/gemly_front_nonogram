@@ -1,13 +1,21 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 
 const nonogramId = ref('');
 const loadedId = ref('');
+const verificationStatus = ref('UNVERIFIED');
 const drawingData = ref(null);
 const logs = ref('');
 const logTextArea = ref(null);
 const unverifiedCount = ref(0);
+
+const statusBackgroundColor = computed(() => {
+  if (verificationStatus.value === 'GOOD') return 'green';
+  if (verificationStatus.value === 'BAD') return 'red';
+  if (verificationStatus.value === 'UNVERIFIED') return 'white';
+  return 'white';
+});
 
 function fetchStatistics() {
   try {
@@ -178,6 +186,7 @@ function loadRandom() {
       const data = JSON.parse(request.responseText);
       loadedId.value = data.id;
       drawingData.value = data.data;
+      verificationStatus.value = data.verificationStatus || 'UNVERIFIED';
       undoStack.value = [];
       redoStack.value = [];
       isDirty.value = false;
@@ -199,6 +208,7 @@ function loadById(id) {
       const data = JSON.parse(request.responseText);
       loadedId.value = data.id;
       drawingData.value = data.data;
+      verificationStatus.value = data.verificationStatus || 'UNVERIFIED';
       undoStack.value = [];
       redoStack.value = [];
       isDirty.value = false;
@@ -334,7 +344,7 @@ function handleCancel() {
 
 <template>
   <div class="admin-page">
-    <div class="admin-controls">
+    <div class="admin-controls" :style="{ backgroundColor: statusBackgroundColor }">
       <button @click="handleLoad">Load ({{ unverifiedCount }})</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="saveNonogram">Save</button>
