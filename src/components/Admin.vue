@@ -7,6 +7,21 @@ const loadedId = ref('');
 const drawingData = ref(null);
 const logs = ref('');
 const logTextArea = ref(null);
+const unverifiedCount = ref(0);
+
+function fetchStatistics() {
+  try {
+    const request = new XMLHttpRequest();
+    request.open("GET", "/api/v1/nonogram/admin.getVerificationStatistics", false);
+    request.send(null);
+    if (request.status === 200) {
+      const data = JSON.parse(request.responseText);
+      unverifiedCount.value = data.unverified;
+    }
+  } catch (error) {
+    console.error('Error fetching statistics:', error);
+  }
+}
 
 watch(logs, () => {
   nextTick(() => {
@@ -136,6 +151,7 @@ function handleKeydown(event) {
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
   window.addEventListener('keydown', handleKeydown);
+  fetchStatistics();
 });
 
 onUnmounted(() => {
@@ -201,6 +217,7 @@ function performLoad() {
   } else {
     loadRandom();
   }
+  fetchStatistics();
 }
 
 function handleLoad() {
@@ -216,6 +233,11 @@ function handleLoad() {
 function markNonogram(mark) {
   if (!loadedId.value) {
     alert('No nonogram loaded');
+    return;
+  }
+  if (mark) {
+    performSaveNonogram();
+    performMarkNonogram(mark);
     return;
   }
   if (isDirty.value) {
@@ -240,6 +262,7 @@ function performMarkNonogram(mark) {
       console.log(`Nonogram ${loadedId.value} marked as ${mark ? 'Good' : 'Bad'}`);
       addLog(mark ? 'Good' : 'Bad');
       loadRandom();
+      fetchStatistics();
     } else {
       console.error('Failed to mark nonogram');
     }
@@ -307,13 +330,13 @@ function handleCancel() {
 <template>
   <div class="admin-page">
     <div class="admin-controls">
-      <button @click="undo" :disabled="undoStack.length === 0">Undo</button>
-      <button @click="redo" :disabled="redoStack.length === 0">Redo</button>
-      <button @click="handleLoad">Load</button>
+      <button @click="handleLoad">Load ({{ unverifiedCount }})</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
       <button @click="saveNonogram">Save</button>
+      <button @click="undo" :disabled="undoStack.length === 0">Undo</button>
+      <button @click="redo" :disabled="redoStack.length === 0">Redo</button>
       <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }">Fill area</button>
-      <button @click="markNonogram(true)">Good</button>
+      <button @click="markNonogram(true)" style="margin-left: 100px">Good</button>
       <button @click="markNonogram(false)">Bad</button>
     </div>
     <div class="drawing-area" v-if="drawingData">
