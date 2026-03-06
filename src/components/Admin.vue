@@ -236,7 +236,7 @@ function markNonogram(mark) {
     return;
   }
   if (isDirty.value) {
-    if (mark) {
+    if (mark === 'GOOD') {
       dialogMessage.value = 'Image was changed. Are you sure you want to save changes and mark it as Good?';
     } else {
       dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue?';
@@ -245,7 +245,7 @@ function markNonogram(mark) {
     showDialog.value = true;
     return;
   }
-  if (mark) {
+  if (mark === 'GOOD') {
     performSaveNonogram();
   }
   performMarkNonogram(mark);
@@ -261,8 +261,8 @@ function performMarkNonogram(mark) {
       mark: mark
     }));
     if (request.status === 200) {
-      console.log(`Nonogram ${loadedId.value} marked as ${mark ? 'Good' : 'Bad'}`);
-      addLog(mark ? 'Good' : 'Bad');
+      console.log(`Nonogram ${loadedId.value} marked as ${mark}`);
+      addLog(mark);
       loadRandom();
       fetchStatistics();
     } else {
@@ -317,7 +317,7 @@ function handleConfirm() {
   if (action.type === 'load') {
     performLoad();
   } else if (action.type === 'mark') {
-    if (action.mark) {
+    if (action.mark === 'GOOD') {
       performSaveNonogram();
     }
     performMarkNonogram(action.mark);
@@ -341,8 +341,8 @@ function handleCancel() {
       <button @click="undo" :disabled="undoStack.length === 0">Undo</button>
       <button @click="redo" :disabled="redoStack.length === 0">Redo</button>
       <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }">Fill area</button>
-      <button @click="markNonogram(true)" style="margin-left: 100px">Good</button>
-      <button @click="markNonogram(false)">Bad</button>
+      <button @click="markNonogram('GOOD')" style="margin-left: 100px">Good</button>
+      <button @click="markNonogram('BAD')">Bad</button>
     </div>
     <div class="drawing-area" v-if="drawingData">
       <div class="grid" @contextmenu.prevent>
