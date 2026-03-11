@@ -13,6 +13,9 @@ const unverifiedCount = ref(0);
 const statusBackgroundColor = computed(() => {
   if (verificationStatus.value === 'GOOD') return 'green';
   if (verificationStatus.value === 'BAD') return 'red';
+  if (verificationStatus.value === 'BAD_MULTIPLE_SOLUTIONS') return 'yellow';
+  if (verificationStatus.value === 'BAD_NO_LOGICAL_SOLUTION') return 'orange';
+  if (verificationStatus.value === 'BAD_TOO_COMPLEX') return 'darkgrey';
   if (verificationStatus.value === 'UNVERIFIED') return 'white';
   return 'white';
 });
@@ -256,7 +259,8 @@ function markNonogram(mark) {
     return;
   }
   if (mark === 'GOOD') {
-    performSaveNonogram();
+    performSaveNonogram('GOOD');
+    return;
   }
   performMarkNonogram(mark);
 }
@@ -268,7 +272,8 @@ function performMarkNonogram(mark) {
     request.setRequestHeader("Content-Type", "application/json");
     request.send(JSON.stringify({
       id: loadedId.value,
-      mark: mark
+      mark: mark,
+      verificationStatus: mark
     }));
     if (request.status === 200) {
       console.log(`Nonogram ${loadedId.value} marked as ${mark}`);
@@ -297,19 +302,24 @@ function saveNonogram() {
   performSaveNonogram();
 }
 
-function performSaveNonogram() {
+function performSaveNonogram(markAs = null) {
   try {
     const request = new XMLHttpRequest();
     request.open("POST", "/api/v1/nonogram/admin.saveNonogram", false);
     request.setRequestHeader("Content-Type", "application/json");
     request.send(JSON.stringify({
       id: loadedId.value,
-      data: drawingData.value
+      data: drawingData.value,
+      ...(markAs && { verificationStatus: markAs })
     }));
     if (request.status === 200) {
       console.log(`Nonogram ${loadedId.value} saved successfully`);
       isDirty.value = false;
       addLog('Save');
+      const data = JSON.parse(request.responseText);
+      if (data.verificationStatus) {
+        verificationStatus.value = data.verificationStatus;
+      }
     } else {
       alert(`Error: ${request.status}`);
     }
@@ -328,7 +338,8 @@ function handleConfirm() {
     performLoad();
   } else if (action.type === 'mark') {
     if (action.mark === 'GOOD') {
-      performSaveNonogram();
+      performSaveNonogram('GOOD');
+      return;
     }
     performMarkNonogram(action.mark);
   } else if (action.type === 'save') {
