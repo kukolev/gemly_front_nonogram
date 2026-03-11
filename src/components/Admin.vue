@@ -96,6 +96,8 @@ function fillArea(r, c, newColor) {
   }
 }
 
+const isSaving = ref(false);
+
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
@@ -302,30 +304,34 @@ function saveNonogram() {
   performSaveNonogram();
 }
 
-function performSaveNonogram(markAs = null) {
+async function performSaveNonogram(markAs = null) {
+  isSaving.value = true;
   try {
-    const request = new XMLHttpRequest();
-    request.open("POST", "/api/v1/nonogram/admin.saveNonogram", false);
-    request.setRequestHeader("Content-Type", "application/json");
-    request.send(JSON.stringify({
-      id: loadedId.value,
-      data: drawingData.value,
-      ...(markAs && { verificationStatus: markAs })
-    }));
-    if (request.status === 200) {
+    const response = await fetch('/api/v1/nonogram/admin.saveNonogram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: loadedId.value,
+        data: drawingData.value,
+        ...(markAs && { verificationStatus: markAs })
+      })
+    });
+    if (response.ok) {
       console.log(`Nonogram ${loadedId.value} saved successfully`);
       isDirty.value = false;
       addLog('Save');
-      const data = JSON.parse(request.responseText);
+      const data = await response.json();
       if (data.verificationStatus) {
         verificationStatus.value = data.verificationStatus;
       }
     } else {
-      alert(`Error: ${request.status}`);
+      alert(`Error: ${response.status}`);
     }
   } catch (error) {
     console.error('Error saving nonogram:', error);
     alert('Error saving nonogram');
+  } finally {
+    isSaving.value = false;
   }
 }
 
@@ -355,15 +361,19 @@ function handleCancel() {
 
 <template>
   <div class="admin-page">
+    <div v-if="isSaving" class="saving-overlay">
+      <div class="saving-spinner"></div>
+      <span>Saving…</span>
+    </div>
     <div class="admin-controls" :style="{ backgroundColor: statusBackgroundColor }">
-      <button @click="handleLoad">Load ({{ unverifiedCount }})</button>
+      <button @click="handleLoad" :disabled="isSaving">Load ({{ unverifiedCount }})</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
-      <button @click="saveNonogram">Save</button>
-      <button @click="undo" :disabled="undoStack.length === 0">Undo</button>
-      <button @click="redo" :disabled="redoStack.length === 0">Redo</button>
-      <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }">Fill area</button>
-      <button @click="markNonogram('GOOD')" style="margin-left: 100px">Good</button>
-      <button @click="markNonogram('BAD')">Bad</button>
+      <button @click="saveNonogram" :disabled="isSaving">Save</button>
+      <button @click="undo" :disabled="undoStack.length === 0 || isSaving">Undo</button>
+      <button @click="redo" :disabled="redoStack.length === 0 || isSaving">Redo</button>
+      <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }" :disabled="isSaving">Fill area</button>
+      <button @click="markNonogram('GOOD')" style="margin-left: 100px" :disabled="isSaving">Good</button>
+      <button @click="markNonogram('BAD')" :disabled="isSaving">Bad</button>
     </div>
     <div class="drawing-area" v-if="drawingData">
       <div class="grid" @contextmenu.prevent>
@@ -393,6 +403,7 @@ function handleCancel() {
 
 <style scoped>
 .admin-page {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 100px); /* Adjust based on header height if known, or just use 100vh minus some buffer */
@@ -474,5 +485,33 @@ function handleCancel() {
 .cell.filled {
   background-color: #000;
   border-color: #000;
+}
+
+.saving-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 100;
+  color: #fff;
+  font-size: 16px;
+  pointer-events: all;
+}
+
+.saving-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
