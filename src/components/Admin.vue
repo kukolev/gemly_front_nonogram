@@ -368,7 +368,6 @@ function handleCancel() {
     <div class="admin-controls" :style="{ backgroundColor: statusBackgroundColor }">
       <button @click="handleLoad" :disabled="isSaving">Load ({{ unverifiedCount }})</button>
       <input type="text" v-model="nonogramId" placeholder="ID for load" />
-      <button @click="saveNonogram" :disabled="isSaving">Save</button>
       <button @click="undo" :disabled="undoStack.length === 0 || isSaving">Undo</button>
       <button @click="redo" :disabled="redoStack.length === 0 || isSaving">Redo</button>
       <button @click="isFillMode = !isFillMode" :class="{ toggled: isFillMode }" :disabled="isSaving">Fill area</button>
