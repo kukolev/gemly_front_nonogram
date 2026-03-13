@@ -31,6 +31,14 @@ const props = defineProps({
   initialMarkedColClues: {
     type: Array,
     required: false
+  },
+  initialHistory: {
+    type: Array,
+    required: false
+  },
+  initialHistoryIndex: {
+    type: Number,
+    required: false
   }
 });
 
@@ -726,12 +734,12 @@ const autoMarkClues = () => {
 
 autoMarkClues();
 
-const history = ref([JSON.stringify({
+const history = ref(props.initialHistory ?? [JSON.stringify({
   grid: grid.value,
   markedRowClues: markedRowClues.value,
   markedColClues: markedColClues.value
 })]);
-const historyIndex = ref(0);
+const historyIndex = ref(props.initialHistoryIndex ?? 0);
 
 const saveHistory = () => {
   const currentState = JSON.stringify({
@@ -839,7 +847,7 @@ const drawResult = (resultGrid) => {
   }
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues});
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues, history, historyIndex});
 
 </script>
 

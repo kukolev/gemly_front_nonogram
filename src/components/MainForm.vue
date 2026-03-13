@@ -11,6 +11,8 @@
         :initial-grid="initialGrid"
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
+        :initial-history="initialHistory"
+        :initial-history-index="initialHistoryIndex"
         @congrats-toggled="isCongratsShown = $event"
         @change="performSave"
       />
@@ -77,8 +79,10 @@ const nonogramSize = ref({rows: 0, cols: 0});
 const initialGrid = ref(null);
 const initialMarkedRowClues = ref(null);
 const initialMarkedColClues = ref(null);
+const initialHistory = ref(null);
+const initialHistoryIndex = ref(null);
 
-function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = null, markedColClues = null) {
+function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = null, markedColClues = null, history = null, historyIndex = null) {
   rowValues.value = rows;
   colValues.value = cols;
   resultData.value = data;
@@ -100,6 +104,8 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   initialGrid.value = grid;
   initialMarkedRowClues.value = markedRowClues;
   initialMarkedColClues.value = markedColClues;
+  initialHistory.value = history;
+  initialHistoryIndex.value = historyIndex;
   componentKey.value += 1;
   nextTick(() => {
     performSave();
@@ -112,7 +118,7 @@ function loadSavedState() {
   if (saved) {
     try {
       const data = JSON.parse(saved);
-      setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues);
+      setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues, data.history ?? null, data.historyIndex ?? null);
       return true;
     } catch (e) {
       console.error('Failed to load saved nonogram', e);
@@ -137,6 +143,8 @@ function performSave() {
     grid: nonogramComponent.value?.grid || initialGrid.value,
     markedRowClues: nonogramComponent.value?.markedRowClues || initialMarkedRowClues.value,
     markedColClues: nonogramComponent.value?.markedColClues || initialMarkedColClues.value,
+    history: nonogramComponent.value?.history || null,
+    historyIndex: nonogramComponent.value?.historyIndex ?? null,
     rowValues: rowValues.value,
     colValues: colValues.value,
     resultData: resultData.value
