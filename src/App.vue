@@ -33,6 +33,7 @@ const pageTitle = computed(() => {
 
 const canUndo = computed(() => mainFormRef.value?.canUndo || false);
 const canRedo = computed(() => mainFormRef.value?.canRedo || false);
+const showPlusOne = computed(() => mainFormRef.value?.isCongratsShown || false);
 const checkErrorVisible = ref(false);
 const headerIsAdmin = ref(false);
 
@@ -148,6 +149,7 @@ function handleCheck() {
       :can-undo="canUndo"
       :can-redo="canRedo"
       :is-admin="headerIsAdmin"
+      :show-plus-one="showPlusOne"
       :check-error="checkErrorVisible"
       :show-buttons="currentPage === 'main'"
       @reload="mainFormRef?.requestReload()"

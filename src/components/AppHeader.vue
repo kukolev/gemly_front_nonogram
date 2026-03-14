@@ -20,6 +20,10 @@ defineProps({
     type: Boolean,
     default: false
   },
+  showPlusOne: {
+    type: Boolean,
+    default: false
+  },
   showButtons: {
     type: Boolean,
     default: false
@@ -55,8 +59,9 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
             </div>
 
 
-            <div class="nav-group">
+            <div class="nav-group finished-nav-group">
               <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды ({{ finishedCount }})</button>
+              <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
             </div>
 
             <div class="nav-group">
@@ -135,6 +140,39 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .nav-group {
   display: flex;
   gap: 0.35rem;
+}
+
+.finished-nav-group {
+  position: relative;
+}
+
+.plus-one-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4081;
+  color: white;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  pointer-events: none;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @keyframes shake {
