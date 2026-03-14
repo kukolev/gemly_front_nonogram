@@ -496,7 +496,7 @@ const draw = () => {
 
   drawCrosses(ctx, crossPositions['#5b5353'], '#5b5353');
   drawCrosses(ctx, crossPositions['#ccc'], '#ccc');
-  drawCrosses(ctx, crossPositions['red'], 'red');
+  drawCrosses(ctx, crossPositions['red'], 'red', 2.5);
 
   // 8. Hover Highlight Outline
   if (!solved && hRow !== null && hCol !== null) {
@@ -509,10 +509,10 @@ const draw = () => {
   }
 };
 
-const drawCrosses = (ctx, positions, color) => {
+const drawCrosses = (ctx, positions, color, lineWidth = 1) => {
   if (positions.length === 0) return;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   const padding = 3;
   const size = CELL_SIZE - padding * 2;
