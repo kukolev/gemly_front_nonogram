@@ -16,7 +16,7 @@ defineProps({
     type: Boolean,
     default: false
   },
-  showPlusOne: {
+  checkError: {
     type: Boolean,
     default: false
   },
@@ -51,13 +51,12 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
             </div>
             
             <div class="nav-group">
-              <button name="nonogram-check-button" class="nav-btn btn-check" @click="$emit('check')" title="Проверить решение">Проверить</button>
+              <button name="nonogram-check-button" class="nav-btn btn-check" :class="{'btn-check-error': checkError}" @click="$emit('check')" title="Проверить решение">{{ checkError ? 'Есть ошибки...' : 'Проверить' }}</button>
             </div>
 
 
-            <div class="nav-group finished-nav-group">
+            <div class="nav-group">
               <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды ({{ finishedCount }})</button>
-              <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
             </div>
 
             <div class="nav-group">
@@ -138,37 +137,20 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   gap: 0.35rem;
 }
 
-.finished-nav-group {
-  position: relative;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-5px); }
+  35%       { transform: translateX(5px); }
+  55%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+  90%       { transform: translateX(-2px); }
 }
 
-.plus-one-tooltip {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #ff4081;
-  color: white;
-  padding: 0.1rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-top: 0.25rem;
-  z-index: 100;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  pointer-events: none;
-  animation: fadeInDown 0.3s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -5px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+.btn-check-error {
+  background-color: #922b21 !important;
+  border-color: #c0392b !important;
+  color: white !important;
+  animation: shake 0.45s ease-in-out;
 }
 
 .nav-btn {

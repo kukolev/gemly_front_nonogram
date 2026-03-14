@@ -783,6 +783,7 @@ const redo = () => {
 
 const canUndo = computed(() => historyIndex.value > 0);
 const canRedo = computed(() => historyIndex.value < history.value.length - 1);
+const hasErrors = computed(() => errors.value.some(row => row.some(cell => cell)));
 
 const clear = () => {
   isSolved.value = false;
@@ -847,7 +848,7 @@ const drawResult = (resultGrid) => {
   }
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues, history, historyIndex});
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues, history, historyIndex, hasErrors});
 
 </script>
 

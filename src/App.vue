@@ -33,7 +33,7 @@ const pageTitle = computed(() => {
 
 const canUndo = computed(() => mainFormRef.value?.canUndo || false);
 const canRedo = computed(() => mainFormRef.value?.canRedo || false);
-const showPlusOne = computed(() => mainFormRef.value?.isCongratsShown || false);
+const checkErrorVisible = ref(false);
 const headerIsAdmin = ref(false);
 
 const updateRoute = () => {
@@ -122,9 +122,19 @@ function showLanding() {
   currentPage.value = 'landing';
 }
 
+let checkErrorTimer = null;
 function handleCheck() {
   mainFormRef.value?.check();
   updateFinishedCount();
+  if (mainFormRef.value?.hasErrors) {
+    checkErrorVisible.value = false;
+    clearTimeout(checkErrorTimer);
+    // re-trigger on next tick so the animation replays even on repeated clicks
+    setTimeout(() => {
+      checkErrorVisible.value = true;
+      checkErrorTimer = setTimeout(() => { checkErrorVisible.value = false; }, 2000);
+    }, 0);
+  }
 }
 </script>
 
@@ -138,7 +148,7 @@ function handleCheck() {
       :can-undo="canUndo"
       :can-redo="canRedo"
       :is-admin="headerIsAdmin"
-      :show-plus-one="showPlusOne"
+      :check-error="checkErrorVisible"
       :show-buttons="currentPage === 'main'"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
