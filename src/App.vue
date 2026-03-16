@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import AppHeader from "@/components/AppHeader.vue";
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
@@ -122,6 +122,47 @@ function showLanding() {
   window.history.pushState({}, '', '/');
   currentPage.value = 'landing';
 }
+
+// --- SEO: per-page meta ---
+const PAGE_META = {
+  landing: {
+    title: 'Японские кроссворды онлайн — нонограммы бесплатно',
+    description: 'Решайте японские кроссворды (нонограммы) онлайн бесплатно. Тренируйте логику, память и концентрацию внимания.',
+  },
+  main: {
+    title: 'Решить кроссворд — Японские кроссворды онлайн',
+    description: 'Откройте новую головоломку и решайте японские кроссворды онлайн. Проверьте свои логические способности.',
+  },
+  finished: {
+    title: 'Завершённые кроссворды — Японские кроссворды',
+    description: 'Ваши решённые японские кроссворды. Просматривайте историю завершённых головоломок.',
+  },
+  about: {
+    title: 'О нонограммах и методах решения — Японские кроссворды',
+    description: 'Узнайте, что такое японские кроссворды и как их решать. Методы решения нонограмм с иллюстрациями.',
+  },
+};
+
+function setMeta(title, description) {
+  document.title = title;
+  const setContent = (selector, value) =>
+    document.querySelector(selector)?.setAttribute('content', value);
+  setContent('meta[name="description"]', description);
+  setContent('meta[property="og:title"]', title);
+  setContent('meta[property="og:description"]', description);
+  setContent('meta[name="twitter:title"]', title);
+  setContent('meta[name="twitter:description"]', description);
+}
+
+watch([currentPage, isAdmin], ([page, admin]) => {
+  if (admin) {
+    setMeta('Панель администратора', '');
+  } else {
+    const meta = PAGE_META[page] ?? PAGE_META.landing;
+    setMeta(meta.title, meta.description);
+  }
+}, { immediate: true });
+// --- end SEO ---
 
 let checkErrorTimer = null;
 function handleCheck() {

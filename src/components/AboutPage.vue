@@ -182,11 +182,31 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { countVisit } from "@/funcs.js";
+
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Что такое японские кроссворды и как их решать',
+  description: 'Узнайте, что такое нонограммы, как читать подсказки и какие методы — перекрытие, анализ пересечений и метод от противного — помогут решить любой японский кроссворд.',
+  inLanguage: 'ru',
+  author: { '@type': 'Organization', name: 'Японские кроссворды онлайн' },
+  about: { '@type': 'Thing', name: 'Нонограмма' },
+};
+
+let ldScript = null;
 
 onMounted(() => {
   countVisit();
+  ldScript = document.createElement('script');
+  ldScript.type = 'application/ld+json';
+  ldScript.textContent = JSON.stringify(JSON_LD);
+  document.head.appendChild(ldScript);
+});
+
+onUnmounted(() => {
+  ldScript?.remove();
 });
 </script>
 
