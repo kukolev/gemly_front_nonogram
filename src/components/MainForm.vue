@@ -54,6 +54,7 @@ const nonogramComponent = ref(null);
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const hasErrors = computed(() => nonogramComponent.value?.hasErrors || false);
+const isSolved = computed(() => nonogramComponent.value?.isSolved || false);
 const isCongratsShown = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -63,6 +64,7 @@ defineExpose({
   canUndo,
   canRedo,
   hasErrors,
+  isSolved,
   isCongratsShown,
   requestReload,
   requestClear,

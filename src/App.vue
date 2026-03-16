@@ -127,7 +127,7 @@ let checkErrorTimer = null;
 function handleCheck() {
   mainFormRef.value?.check();
   updateFinishedCount();
-  if (mainFormRef.value?.hasErrors) {
+  if (!mainFormRef.value?.isSolved) {
     checkErrorVisible.value = false;
     clearTimeout(checkErrorTimer);
     // re-trigger on next tick so the animation replays even on repeated clicks

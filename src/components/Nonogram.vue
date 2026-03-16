@@ -848,7 +848,7 @@ const drawResult = (resultGrid) => {
   }
 };
 
-defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues, history, historyIndex, hasErrors});
+defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, markedRowClues, markedColClues, history, historyIndex, hasErrors, isSolved});
 
 </script>
 
