@@ -48,7 +48,9 @@ const props = defineProps({
 
 const canvasRef = ref(null);
 const bgCanvasRef = ref(null);
-const CELL_SIZE = 13;
+const isMobileSize = ref(window.innerWidth <= 640);
+const handleResize = () => { isMobileSize.value = window.innerWidth <= 640; };
+const CELL_SIZE = computed(() => isMobileSize.value ? 20 : 13);
 
 const grid = ref(
     props.initialGrid ? JSON.parse(JSON.stringify(props.initialGrid)) :
@@ -169,6 +171,17 @@ const continueDrawing = (event, r, c) => {
   hoveredCol.value = targetC;
 };
 
+// Discard the current stroke without writing anything to the grid
+const cancelDrawing = () => {
+  isDrawing.value = false;
+  drawingState.value = null;
+  lockedAxis.value = null;
+  startRow.value = null;
+  startCol.value = null;
+  hoveredRow.value = null;
+  hoveredCol.value = null;
+};
+
 const stopDrawing = () => {
   if (isDrawing.value) {
     if (isSolved.value) {
@@ -214,8 +227,8 @@ const resetHover = () => {
 
 const totalCols = computed(() => maxRowClues.value + props.size.cols);
 const totalRows = computed(() => maxColClues.value + props.size.rows);
-const canvasWidth = computed(() => totalCols.value * CELL_SIZE);
-const canvasHeight = computed(() => totalRows.value * CELL_SIZE);
+const canvasWidth = computed(() => totalCols.value * CELL_SIZE.value);
+const canvasHeight = computed(() => totalRows.value * CELL_SIZE.value);
 
 let rafId = null;
 let bgRafId = null;
@@ -262,6 +275,7 @@ const drawBg = () => {
   const canvas = bgCanvasRef.value;
   if (!canvas) return;
   const ctx = canvas.getContext('2d', { alpha: false });
+  const cs = CELL_SIZE.value;
 
   const mrc = maxRowClues.value;
   const mcc = maxColClues.value;
@@ -276,9 +290,9 @@ const drawBg = () => {
 
   // 2. Clue Areas Backgrounds
   ctx.fillStyle = '#eeeeee';
-  ctx.fillRect(0, 0, mrc * CELL_SIZE, mcc * CELL_SIZE); // Top-left
-  ctx.fillRect(0, mcc * CELL_SIZE, mrc * CELL_SIZE, rows * CELL_SIZE); // Row clues
-  ctx.fillRect(mrc * CELL_SIZE, 0, cols * CELL_SIZE, mcc * CELL_SIZE); // Col clues
+  ctx.fillRect(0, 0, mrc * cs, mcc * cs); // Top-left
+  ctx.fillRect(0, mcc * cs, mrc * cs, rows * cs); // Row clues
+  ctx.fillRect(mrc * cs, 0, cols * cs, mcc * cs); // Col clues
 
   // 4. Clue Content Backgrounds (Dark backgrounds for digits)
   ctx.fillStyle = '#555555';
@@ -288,48 +302,48 @@ const drawBg = () => {
   for (let r = 0; r < rows; r++) {
     const clues = rowVals[r];
     const offset = clues.length - mrc;
-    const y = (mcc + r) * CELL_SIZE;
+    const y = (mcc + r) * cs;
     for (let i = 0; i < mrc; i++) {
       if (clues[offset + i]) {
-        ctx.fillRect(i * CELL_SIZE, y, CELL_SIZE, CELL_SIZE);
+        ctx.fillRect(i * cs, y, cs, cs);
       }
     }
   }
   for (let c = 0; c < cols; c++) {
     const clues = colVals[c];
     const offset = clues.length - mcc;
-    const x = (mrc + c) * CELL_SIZE;
+    const x = (mrc + c) * cs;
     for (let i = 0; i < mcc; i++) {
       if (clues[offset + i]) {
-        ctx.fillRect(x, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.fillRect(x, i * cs, cs, cs);
       }
     }
   }
 
   // 5. Digits
   ctx.fillStyle = 'white';
-  ctx.font = '10px Arial';
+  ctx.font = `${Math.round(10 * cs / 13)}px Arial`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (let r = 0; r < rows; r++) {
     const clues = rowVals[r];
-    const yCenter = (mcc + r) * CELL_SIZE + CELL_SIZE / 2 + 1;
+    const yCenter = (mcc + r) * cs + cs / 2 + 1;
     const offset = clues.length - mrc;
     for (let i = 0; i < mrc; i++) {
       const digit = clues[offset + i];
       if (digit) {
-        ctx.fillText(digit.toString(), i * CELL_SIZE + CELL_SIZE / 2, yCenter);
+        ctx.fillText(digit.toString(), i * cs + cs / 2, yCenter);
       }
     }
   }
   for (let c = 0; c < cols; c++) {
     const clues = colVals[c];
-    const xCenter = (mrc + c) * CELL_SIZE + CELL_SIZE / 2;
+    const xCenter = (mrc + c) * cs + cs / 2;
     const offset = clues.length - mcc;
     for (let i = 0; i < mcc; i++) {
       const digit = clues[offset + i];
       if (digit) {
-        ctx.fillText(digit.toString(), xCenter, i * CELL_SIZE + CELL_SIZE / 2 + 1);
+        ctx.fillText(digit.toString(), xCenter, i * cs + cs / 2 + 1);
       }
     }
   }
@@ -343,14 +357,14 @@ const drawBg = () => {
   ctx.beginPath();
   for (let r = 1; r < totalR; r++) {
     if (!(r === mcc || (r > mcc && (r - mcc) % 5 === 0))) {
-      ctx.moveTo(0, r * CELL_SIZE);
-      ctx.lineTo(cw, r * CELL_SIZE);
+      ctx.moveTo(0, r * cs);
+      ctx.lineTo(cw, r * cs);
     }
   }
   for (let c = 1; c < totalC; c++) {
     if (!(c === mrc || (c > mrc && (c - mrc) % 5 === 0))) {
-      ctx.moveTo(c * CELL_SIZE, 0);
-      ctx.lineTo(c * CELL_SIZE, ch);
+      ctx.moveTo(c * cs, 0);
+      ctx.lineTo(c * cs, ch);
     }
   }
   ctx.stroke();
@@ -360,13 +374,13 @@ const drawBg = () => {
   // Outer border
   ctx.strokeRect(1, 1, cw - 2, ch - 2);
   // Major lines
-  ctx.moveTo(0, mcc * CELL_SIZE); ctx.lineTo(cw, mcc * CELL_SIZE);
-  ctx.moveTo(mrc * CELL_SIZE, 0); ctx.lineTo(mrc * CELL_SIZE, ch);
+  ctx.moveTo(0, mcc * cs); ctx.lineTo(cw, mcc * cs);
+  ctx.moveTo(mrc * cs, 0); ctx.lineTo(mrc * cs, ch);
   for (let r = mcc + 5; r < totalR; r += 5) {
-    ctx.moveTo(0, r * CELL_SIZE); ctx.lineTo(cw, r * CELL_SIZE);
+    ctx.moveTo(0, r * cs); ctx.lineTo(cw, r * cs);
   }
   for (let c = mrc + 5; c < totalC; c += 5) {
-    ctx.moveTo(c * CELL_SIZE, 0); ctx.lineTo(c * CELL_SIZE, ch);
+    ctx.moveTo(c * cs, 0); ctx.lineTo(c * cs, ch);
   }
   ctx.stroke();
 };
@@ -375,6 +389,7 @@ const draw = () => {
   const canvas = canvasRef.value;
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const cs = CELL_SIZE.value;
 
   const mrc = maxRowClues.value;
   const mcc = maxColClues.value;
@@ -393,14 +408,14 @@ const draw = () => {
   // 3. Highlights
   if (!solved && (hRow !== null || hCol !== null)) {
     ctx.fillStyle = 'rgba(223, 223, 223, 0.5)'; // Use alpha for highlights over bg
-    
+
     if (hRow !== null) {
-      ctx.fillRect(0, (mcc + hRow) * CELL_SIZE, mrc * CELL_SIZE, CELL_SIZE);
-      ctx.fillRect(mrc * CELL_SIZE, (mcc + hRow) * CELL_SIZE, cols * CELL_SIZE, CELL_SIZE);
+      ctx.fillRect(0, (mcc + hRow) * cs, mrc * cs, cs);
+      ctx.fillRect(mrc * cs, (mcc + hRow) * cs, cols * cs, cs);
     }
     if (hCol !== null) {
-      ctx.fillRect((mrc + hCol) * CELL_SIZE, 0, CELL_SIZE, mcc * CELL_SIZE);
-      ctx.fillRect((mrc + hCol) * CELL_SIZE, mcc * CELL_SIZE, CELL_SIZE, rows * CELL_SIZE);
+      ctx.fillRect((mrc + hCol) * cs, 0, cs, mcc * cs);
+      ctx.fillRect((mrc + hCol) * cs, mcc * cs, cs, rows * cs);
     }
   }
 
@@ -437,10 +452,10 @@ const draw = () => {
       if (effectiveValue === 1) {
         if (isHoveredRow && c === hCol) {
           ctx.fillStyle = '#555555';
-          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect((mrc + c) * cs, (mcc + r) * cs, cs, cs);
           ctx.fillStyle = 'black';
         } else {
-          ctx.fillRect((mrc + c) * CELL_SIZE, (mcc + r) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect((mrc + c) * cs, (mcc + r) * cs, cs, cs);
         }
       }
     }
@@ -465,7 +480,7 @@ const draw = () => {
     for (let i = 0; i < mrc; i++) {
       if (mrcData[r][i]) {
         const digit = clues[offset + i];
-        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: i * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: i * cs, y: (mcc + r) * cs});
       }
     }
   }
@@ -475,7 +490,7 @@ const draw = () => {
     for (let i = 0; i < mcc; i++) {
       if (mccData[c][i]) {
         const digit = clues[offset + i];
-        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: i * CELL_SIZE});
+        crossPositions[digit ? '#ccc' : '#5b5353'].push({x: (mrc + c) * cs, y: i * cs});
       }
     }
   }
@@ -489,10 +504,10 @@ const draw = () => {
         const pending = isDrawingRow && c >= pMinC && c <= pMaxC;
         const effectiveValue = pending ? dState : cellValue;
         if (effectiveValue === -1) {
-          crossPositions['#5b5353'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+          crossPositions['#5b5353'].push({x: (mrc + c) * cs, y: (mcc + r) * cs});
         }
         if (errRow[c]) {
-          crossPositions['red'].push({x: (mrc + c) * CELL_SIZE, y: (mcc + r) * CELL_SIZE});
+          crossPositions['red'].push({x: (mrc + c) * cs, y: (mcc + r) * cs});
         }
       }
     }
@@ -509,7 +524,7 @@ const draw = () => {
     const effectiveValue = pending ? dState : cellValue;
     ctx.strokeStyle = effectiveValue === 1 ? '#fff' : '#000';
     ctx.lineWidth = 2;
-    ctx.strokeRect((mrc + hCol) * CELL_SIZE + 1, (mcc + hRow) * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+    ctx.strokeRect((mrc + hCol) * cs + 1, (mcc + hRow) * cs + 1, cs - 2, cs - 2);
   }
 };
 
@@ -518,8 +533,9 @@ const drawCrosses = (ctx, positions, color, lineWidth = 1) => {
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
+  const cs = CELL_SIZE.value;
   const padding = 3;
-  const size = CELL_SIZE - padding * 2;
+  const size = cs - padding * 2;
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i];
     const x = pos.x + padding;
@@ -538,9 +554,10 @@ const getMousePos = (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
+  const cs = CELL_SIZE.value;
   return {
-    col: Math.floor(x / CELL_SIZE),
-    row: Math.floor(y / CELL_SIZE)
+    col: Math.floor(x / cs),
+    row: Math.floor(y / cs)
   };
 };
 
@@ -550,16 +567,29 @@ const getTouchPos = (touch) => {
   const rect = canvas.getBoundingClientRect();
   const x = touch.clientX - rect.left;
   const y = touch.clientY - rect.top;
+  const cs = CELL_SIZE.value;
   return {
-    col: Math.floor(x / CELL_SIZE),
-    row: Math.floor(y / CELL_SIZE)
+    col: Math.floor(x / cs),
+    row: Math.floor(y / cs)
   };
 };
 
+// Two-finger scroll: track midpoint between both fingers
+let twoFingerPrev = null;
+
 const handleCanvasTouchStart = (event) => {
+  if (event.touches.length >= 2) {
+    // Second finger added — cancel any drawing and start tracking for manual scroll
+    if (isDrawing.value) cancelDrawing();
+    twoFingerPrev = {
+      x: (event.touches[0].clientX + event.touches[1].clientX) / 2,
+      y: (event.touches[0].clientY + event.touches[1].clientY) / 2
+    };
+    return;
+  }
+
   if (isSolved.value) return;
-  if (event.touches.length !== 1) return;
-  event.preventDefault();
+  event.preventDefault(); // block single-finger scroll while drawing
 
   const touch = event.touches[0];
   const { row, col } = getTouchPos(touch);
@@ -576,9 +606,35 @@ const handleCanvasTouchStart = (event) => {
 };
 
 const handleCanvasTouchMove = (event) => {
+  if (event.touches.length >= 2) {
+    // Manual two-finger scroll: browser won't scroll (touch-action:none),
+    // so we apply the midpoint delta ourselves.
+    if (!twoFingerPrev) return;
+    const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+    const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+    const dx = twoFingerPrev.x - midX;
+    const dy = twoFingerPrev.y - midY;
+
+    // Vertical: scroll the page
+    window.scrollBy(0, dy);
+
+    // Horizontal: scroll the nearest scrollable ancestor (e.g. .main-form)
+    let el = canvasRef.value?.parentElement;
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      if (/(auto|scroll)/.test(style.overflowX)) {
+        el.scrollLeft += dx;
+        break;
+      }
+      el = el.parentElement;
+    }
+
+    twoFingerPrev = { x: midX, y: midY };
+    return;
+  }
+
   if (!isDrawing.value) return;
-  if (event.touches.length !== 1) return;
-  event.preventDefault();
+  event.preventDefault(); // block single-finger scroll while drawing
 
   const touch = event.touches[0];
   const { row, col } = getTouchPos(touch);
@@ -591,7 +647,9 @@ const handleCanvasTouchMove = (event) => {
 };
 
 const handleCanvasTouchEnd = (event) => {
-  event.preventDefault();
+  // When fingers drop below 2, reset the two-finger scroll tracker
+  if (event.touches.length < 2) twoFingerPrev = null;
+  if (isDrawing.value) event.preventDefault();
   stopDrawing();
 };
 
@@ -654,12 +712,14 @@ watch([canvasWidth, canvasHeight], () => {
 
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
+  window.addEventListener('resize', handleResize);
   canvasRef.value?.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
   syncCanvasSize();
 });
 
 onUnmounted(() => {
   window.removeEventListener('mouseup', stopDrawing);
+  window.removeEventListener('resize', handleResize);
   canvasRef.value?.removeEventListener('touchmove', handleCanvasTouchMove);
 });
 
@@ -925,8 +985,8 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
           @mousedown="handleCanvasMouseDown"
           @mousemove="handleCanvasMouseMove"
           @contextmenu.prevent
-          @touchstart.prevent="handleCanvasTouchStart"
-          @touchend.prevent="handleCanvasTouchEnd"
+          @touchstart="handleCanvasTouchStart"
+          @touchend="handleCanvasTouchEnd"
       ></canvas>
     </div>
   </div>
