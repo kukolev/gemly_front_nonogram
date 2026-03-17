@@ -29,7 +29,14 @@
 <style scoped>
 .main-form {
   padding: 0 1rem;
-  overflow-x: auto;
+  overflow-x: auto; /* desktop horizontal scroll */
+}
+
+@media (max-width: 640px) {
+  .main-form {
+    padding: 0;
+    overflow-x: visible; /* Nonogram's own container handles scroll on mobile */
+  }
 }
 
 .nonogram-wrapper {
