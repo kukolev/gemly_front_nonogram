@@ -31,10 +31,14 @@ defineProps({
   finishedCount: {
     type: Number,
     default: 0
+  },
+  touchMarkMode: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode'])
 </script>
 
 <template>
@@ -44,33 +48,96 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
         <div class="header-title-group">
           <h1 class="header-title" @click="$emit('go-landing')">{{ title }}</h1>
           <nav class="header-nav" v-if="showButtons">
+
             <div class="nav-group">
-              <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">←</button>
-              <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">→</button>
+              <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                </svg>
+              </button>
+              <button name="nonogram-redo-button" class="nav-btn" @click="$emit('redo')" :disabled="!canRedo" title="Вернуть отмененное действие">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
+                </svg>
+              </button>
             </div>
 
             <div class="nav-group">
-              <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">Новый кроссворд</button>
-              <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">Очистить</button>
-            </div>
-            
-            <div class="nav-group">
-              <button name="nonogram-check-button" class="nav-btn btn-check" :class="{'btn-check-error': checkError}" @click="$emit('check')" title="Проверить решение">{{ checkError ? 'Есть ошибки...' : 'Проверить' }}</button>
+              <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span class="btn-label">Новый кроссворд</span>
+              </button>
+              <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                </svg>
+                <span class="btn-label">Очистить</span>
+              </button>
             </div>
 
+            <div class="nav-group">
+              <button name="nonogram-check-button" class="nav-btn btn-check" :class="{'btn-check-error': checkError}" @click="$emit('check')" title="Проверить решение">
+                <svg v-if="!checkError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                <span class="btn-label">{{ checkError ? 'Есть ошибки...' : 'Проверить' }}</span>
+              </button>
+            </div>
+
+            <div class="nav-group touch-mode-group">
+              <button name="nonogram-touch-mode-button" class="nav-btn" :class="{'btn-active': touchMarkMode}" @click="$emit('toggle-touch-mode')" :title="touchMarkMode ? 'Режим касания: пометить (нажать для переключения)' : 'Режим касания: закрасить (нажать для переключения)'">
+                <svg v-if="!touchMarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16" fill="currentColor" stroke="currentColor"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
+                </svg>
+                <span class="btn-label">{{ touchMarkMode ? 'Пометить' : 'Закрасить' }}</span>
+              </button>
+            </div>
 
             <div class="nav-group finished-nav-group">
-              <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">Завершенные кроссворды ({{ finishedCount }})</button>
+              <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                  <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+                  <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+                <span class="btn-label">Завершённые</span>
+                <span class="finished-count">({{ finishedCount }})</span>
+              </button>
               <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
             </div>
 
             <div class="nav-group">
-              <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">О проекте</button>
+              <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span class="btn-label">О проекте</span>
+              </button>
             </div>
 
             <div class="nav-group" v-if="isAdmin">
-              <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">Draw result</button>
+              <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span class="btn-label">Решение</span>
+              </button>
             </div>
+
           </nav>
         </div>
       </div>
@@ -112,7 +179,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   .header-brand {
     align-items: center;
   }
-  
+
   .header-title-group {
     flex-direction: row;
     align-items: center;
@@ -133,13 +200,13 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
 .header-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.5rem;
   justify-content: flex-start;
 }
 
 .nav-group {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .finished-nav-group {
@@ -159,20 +226,14 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   font-weight: 700;
   margin-top: 0.25rem;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   animation: fadeInDown 0.3s ease-out;
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -5px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, -5px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @keyframes shake {
@@ -191,6 +252,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   animation: shake 0.45s ease-in-out;
 }
 
+/* ── Base button ── */
 .nav-btn {
   padding: 0.35rem 0.85rem;
   border: 1px solid transparent;
@@ -202,6 +264,19 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #ffffff;
   outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .nav-btn:hover:not(:disabled) {
@@ -220,6 +295,11 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   background-color: #2c3e50;
 }
 
+.btn-active {
+  background-color: #34495e;
+  border-color: #ffffff;
+}
+
 .btn-check {
   background-color: #2c3e50;
   color: white;
@@ -230,6 +310,11 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   background-color: #34495e;
   border-color: white;
   color: white;
+}
+
+.finished-count {
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .btn-secondary {
@@ -244,19 +329,33 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   color: white;
 }
 
+/* ── Hide touch-mode toggle on pointer devices (mouse/trackpad) ── */
+@media (hover: hover) and (pointer: fine) {
+  .touch-mode-group {
+    display: none;
+  }
+}
+
+/* ── Mobile: icon-only ── */
 @media (max-width: 640px) {
-  .header-nav {
-    flex-direction: column;
-    width: 100%;
+  .btn-label {
+    display: none;
   }
-  
-  .nav-group {
-    width: 100%;
-  }
-  
+
   .nav-btn {
-    flex: 1;
-    text-align: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.6rem;
+  }
+
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* keep count visible even without label */
+  .finished-count {
+    font-size: 0.7rem;
   }
 }
 </style>

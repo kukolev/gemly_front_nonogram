@@ -16,6 +16,7 @@ const isLoading = ref(true);
 const accessDenied = ref(false);
 const mainFormRef = ref(null);
 const finishedCount = ref(0);
+const touchMarkMode = ref(false);
 
 const updateFinishedCount = () => {
   finishedCount.value = getFinishedCount();
@@ -193,6 +194,7 @@ function handleCheck() {
       :show-plus-one="showPlusOne"
       :check-error="checkErrorVisible"
       :show-buttons="currentPage === 'main'"
+      :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
       @check="handleCheck"
@@ -202,11 +204,12 @@ function handleCheck() {
       @show-finished="showFinished"
       @show-about="showAbout"
       @go-landing="showLanding"
+      @toggle-touch-mode="touchMarkMode = !touchMarkMode"
     />
     <main class="app-content">
       <Admin v-if="isAdmin" />
       <template v-else>
-        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" @show-finished="showFinished" @loaded="updateFinishedCount" />
+        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" :touch-mark-mode="touchMarkMode" @show-finished="showFinished" @loaded="updateFinishedCount" />
         <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
         <AboutPage v-else-if="currentPage === 'about'" />
         <LandingPage v-else @start="showMainForm" />

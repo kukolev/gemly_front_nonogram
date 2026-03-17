@@ -39,6 +39,10 @@ const props = defineProps({
   initialHistoryIndex: {
     type: Number,
     required: false
+  },
+  touchMarkMode: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -540,6 +544,57 @@ const getMousePos = (event) => {
   };
 };
 
+const getTouchPos = (touch) => {
+  const canvas = canvasRef.value;
+  if (!canvas) return { row: -1, col: -1 };
+  const rect = canvas.getBoundingClientRect();
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  return {
+    col: Math.floor(x / CELL_SIZE),
+    row: Math.floor(y / CELL_SIZE)
+  };
+};
+
+const handleCanvasTouchStart = (event) => {
+  if (isSolved.value) return;
+  if (event.touches.length !== 1) return;
+  event.preventDefault();
+
+  const touch = event.touches[0];
+  const { row, col } = getTouchPos(touch);
+  const mrc = maxRowClues.value;
+  const mcc = maxColClues.value;
+
+  if (row >= mcc && col >= mrc) {
+    startDrawing({ button: props.touchMarkMode ? 2 : 0 }, row - mcc, col - mrc);
+  } else if (row < mcc && col >= mrc) {
+    handleClueClick('col', col - mrc, row);
+  } else if (col < mrc && row >= mcc) {
+    handleClueClick('row', row - mcc, col);
+  }
+};
+
+const handleCanvasTouchMove = (event) => {
+  if (!isDrawing.value) return;
+  if (event.touches.length !== 1) return;
+  event.preventDefault();
+
+  const touch = event.touches[0];
+  const { row, col } = getTouchPos(touch);
+  const mrc = maxRowClues.value;
+  const mcc = maxColClues.value;
+
+  if (row >= mcc && col >= mrc) {
+    continueDrawing({ shiftKey: false }, row - mcc, col - mrc);
+  }
+};
+
+const handleCanvasTouchEnd = (event) => {
+  event.preventDefault();
+  stopDrawing();
+};
+
 const handleCanvasMouseDown = (event) => {
   if (isSolved.value) return;
   const { row, col } = getMousePos(event);
@@ -599,11 +654,13 @@ watch([canvasWidth, canvasHeight], () => {
 
 onMounted(() => {
   window.addEventListener('mouseup', stopDrawing);
+  canvasRef.value?.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
   syncCanvasSize();
 });
 
 onUnmounted(() => {
   window.removeEventListener('mouseup', stopDrawing);
+  canvasRef.value?.removeEventListener('touchmove', handleCanvasTouchMove);
 });
 
 const handleClueClick = (type, lineIdx, clueIdx) => {
@@ -868,6 +925,8 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
           @mousedown="handleCanvasMouseDown"
           @mousemove="handleCanvasMouseMove"
           @contextmenu.prevent
+          @touchstart.prevent="handleCanvasTouchStart"
+          @touchend.prevent="handleCanvasTouchEnd"
       ></canvas>
     </div>
   </div>
@@ -903,6 +962,7 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
+  touch-action: none;
 }
 
 .bg-canvas {

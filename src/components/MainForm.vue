@@ -1,18 +1,19 @@
 <template>
   <div class="main-form">
     <div class="nonogram-wrapper">
-      <Nonogram 
-        ref="nonogramComponent" 
-        :key="componentKey" 
-        :size="nonogramSize" 
-        :row-values="rowValues" 
-        :col-values="colValues" 
-        :solution="resultData" 
+      <Nonogram
+        ref="nonogramComponent"
+        :key="componentKey"
+        :size="nonogramSize"
+        :row-values="rowValues"
+        :col-values="colValues"
+        :solution="resultData"
         :initial-grid="initialGrid"
         :initial-marked-row-clues="initialMarkedRowClues"
         :initial-marked-col-clues="initialMarkedColClues"
         :initial-history="initialHistory"
         :initial-history-index="initialHistoryIndex"
+        :touch-mark-mode="touchMarkMode"
         @congrats-toggled="isCongratsShown = $event"
         @change="performSave"
       />
@@ -42,6 +43,13 @@
 <script setup>
 
 const emit = defineEmits(['show-finished', 'loaded'])
+
+const props = defineProps({
+  touchMarkMode: {
+    type: Boolean,
+    default: false
+  }
+});
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
