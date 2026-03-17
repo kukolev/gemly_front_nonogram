@@ -1,4 +1,6 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
 defineProps({
   title: {
     type: String,
@@ -39,6 +41,18 @@ defineProps({
 })
 
 defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode'])
+
+const moreMenuOpen = ref(false);
+const moreMenuRef = ref(null);
+
+const closeMoreMenu = (e) => {
+  if (moreMenuRef.value && !moreMenuRef.value.contains(e.target)) {
+    moreMenuOpen.value = false;
+  }
+};
+
+onMounted(() => document.addEventListener('click', closeMoreMenu));
+onUnmounted(() => document.removeEventListener('click', closeMoreMenu));
 </script>
 
 <template>
@@ -49,6 +63,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
           <h1 class="header-title" @click="$emit('go-landing')">{{ title }}</h1>
           <nav class="header-nav" v-if="showButtons">
 
+            <!-- Undo / Redo -->
             <div class="nav-group">
               <button name="nonogram-undo-button" class="nav-btn" @click="$emit('undo')" :disabled="!canUndo" title="Отменить последнее действие">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -62,6 +77,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               </button>
             </div>
 
+            <!-- New crossword + Clear (Clear hidden on mobile → moves to dropdown) -->
             <div class="nav-group">
               <button name="nonogram-reload-button" class="nav-btn" @click="$emit('reload')" title="Загрузить новый кроссворд">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -69,7 +85,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
                 </svg>
                 <span class="btn-label">Новый кроссворд</span>
               </button>
-              <button name="nonogram-clear-button" class="nav-btn" @click="$emit('clear')" title="Очистить поле">
+              <button name="nonogram-clear-button" class="nav-btn mobile-hide" @click="$emit('clear')" title="Очистить поле">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="3 6 5 6 21 6"/>
                   <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -79,6 +95,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               </button>
             </div>
 
+            <!-- Check -->
             <div class="nav-group">
               <button name="nonogram-check-button" class="nav-btn btn-check" :class="{'btn-check-error': checkError}" @click="$emit('check')" title="Проверить решение">
                 <svg v-if="!checkError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -91,6 +108,7 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               </button>
             </div>
 
+            <!-- Touch mode (hidden on pointer devices) -->
             <div class="nav-group touch-mode-group">
               <button name="nonogram-touch-mode-button" class="nav-btn" :class="{'btn-active': touchMarkMode}" @click="$emit('toggle-touch-mode')" :title="touchMarkMode ? 'Режим касания: пометить (нажать для переключения)' : 'Режим касания: закрасить (нажать для переключения)'">
                 <svg v-if="!touchMarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -104,7 +122,52 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               </button>
             </div>
 
-            <div class="nav-group finished-nav-group">
+            <!-- "..." dropdown (mobile-only) -->
+            <div class="nav-group more-menu-group mobile-only" ref="moreMenuRef">
+              <button class="nav-btn" :class="{'btn-active': moreMenuOpen}" @click.stop="moreMenuOpen = !moreMenuOpen" title="Ещё">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+                </svg>
+              </button>
+              <div v-if="moreMenuOpen" class="more-dropdown">
+                <button class="dropdown-item" @click="moreMenuOpen = false; $emit('clear')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                  Очистить
+                </button>
+                <button class="dropdown-item" @click="moreMenuOpen = false; $emit('show-finished')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                  </svg>
+                  Завершённые
+                  <span class="dropdown-count">({{ finishedCount }})</span>
+                  <span v-if="showPlusOne" class="dropdown-plus-one">+1</span>
+                </button>
+                <button class="dropdown-item" @click="moreMenuOpen = false; $emit('show-about')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  О проекте
+                </button>
+                <button v-if="isAdmin" class="dropdown-item" @click="moreMenuOpen = false; $emit('draw-result')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Решение
+                </button>
+              </div>
+            </div>
+
+            <!-- Finished (desktop) -->
+            <div class="nav-group finished-nav-group mobile-hide">
               <button name="nonogram-finished-button" class="nav-btn" @click="$emit('show-finished')" title="Список завершенных кроссвордов">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
@@ -117,7 +180,8 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               <div v-if="showPlusOne" class="plus-one-tooltip">+1</div>
             </div>
 
-            <div class="nav-group">
+            <!-- About (desktop) -->
+            <div class="nav-group mobile-hide">
               <button name="nonogram-about-button" class="nav-btn" @click="$emit('show-about')" title="О проекте">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"/>
@@ -128,7 +192,8 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
               </button>
             </div>
 
-            <div class="nav-group" v-if="isAdmin">
+            <!-- Draw result - admin (desktop) -->
+            <div class="nav-group mobile-hide" v-if="isAdmin">
               <button name="nonogram-draw-result-button" class="nav-btn btn-secondary" @click="$emit('draw-result')" title="Показать решение">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -336,8 +401,19 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
   }
 }
 
-/* ── Mobile: icon-only ── */
+/* ── Desktop: hide mobile-only elements ── */
+@media (min-width: 641px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* ── Mobile: icon-only, hide desktop-only elements ── */
 @media (max-width: 640px) {
+  .mobile-hide {
+    display: none !important;
+  }
+
   .btn-label {
     display: none;
   }
@@ -352,10 +428,73 @@ defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-fi
     width: 18px;
     height: 18px;
   }
+}
 
-  /* keep count visible even without label */
-  .finished-count {
-    font-size: 0.7rem;
-  }
+/* ── "..." dropdown ── */
+.more-menu-group {
+  position: relative;
+}
+
+.more-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 300;
+  background-color: #2c3e50;
+  border: 1px solid #4a6278;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.dropdown-item:active {
+  background-color: #3d5a73;
+}
+
+.dropdown-count {
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+
+.dropdown-plus-one {
+  margin-left: auto;
+  background-color: #ff4081;
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  animation: fadeInDown 0.3s ease-out;
 }
 </style>
