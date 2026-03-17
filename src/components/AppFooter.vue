@@ -1,11 +1,11 @@
 <template>
   <footer class="app-footer">
     <div class="footer-container">
-      <div class="footer-line">
-        Copyright © 2026 rubyruby.games
-      </div>
+<!--      <div class="footer-line">-->
+<!--        © 2026 rubyruby.games-->
+<!--      </div>-->
       <div class="footer-line secondary">
-        Reproduction of content from this site in any form is prohibited without the written agreement of the owner.
+        Воспроизведение материалов сайта в любой форме запрещено без письменного согласия владельца.
       </div>
     </div>
   </footer>
