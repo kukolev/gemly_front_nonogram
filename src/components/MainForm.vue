@@ -177,7 +177,7 @@ function check() {
 }
 
 function requestReload() {
-  dialogMessage.value = 'Ваш прогресс по данному кроссворду будет потерян, вы точно уверены?';
+  dialogMessage.value = 'Будет загружен новый кроссворд, вы точно уверены?';
   pendingAction.value = 'reload';
   showDialog.value = true;
 }
