@@ -442,13 +442,6 @@ const draw = () => {
   const dState  = drawingState.value;
   const drawing = isDrawing.value;
 
-  // Row/col highlight in main area
-  if (!solved && (hRow !== null || hCol !== null)) {
-    ctx.fillStyle = 'rgba(173,216,230,0.5)';
-    if (hRow !== null) ctx.fillRect(0,       hRow * cs, w, cs);
-    if (hCol !== null) ctx.fillRect(hCol * cs, 0,       cs, h);
-  }
-
   // Compute pending stroke region
   let pMinR = -1, pMaxR = -1, pMinC = -1, pMaxC = -1;
   if (drawing) {
@@ -498,6 +491,13 @@ const draw = () => {
   }
   drawCrosses(ctx, cp['#5b5353'], '#5b5353');
   drawCrosses(ctx, cp['red'], 'red', 2.5);
+
+  // Row/col highlight in main area — drawn after cells so tint is visible on black cells too
+  if (!solved && (hRow !== null || hCol !== null)) {
+    ctx.fillStyle = 'rgba(173,216,230,0.35)';
+    if (hRow !== null) ctx.fillRect(0,        hRow * cs, w, cs);
+    if (hCol !== null) ctx.fillRect(hCol * cs, 0,        cs, h);
+  }
 
   // Hover outline
   if (!solved && hRow !== null && hCol !== null) {
