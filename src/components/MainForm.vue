@@ -25,6 +25,14 @@
     @yes="handleConfirm"
     @no="handleCancel"
   />
+  <ConfirmationDialog
+    v-if="showAnswerConfirm"
+    message="Очень хочется посмотреть ответ, да?"
+    yes-text="Да!"
+    no-text="Нет, я отгадаю самостоятельно!"
+    @yes="showAnswerConfirm = false; showAnswerDialog = true"
+    @no="showAnswerConfirm = false"
+  />
   <AnswerDialog
     v-if="showAnswerDialog && resultData"
     :solution="resultData"
@@ -81,9 +89,10 @@ const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
 const showAnswerDialog = ref(false);
+const showAnswerConfirm = ref(false);
 
 function showAnswer() {
-  showAnswerDialog.value = true;
+  showAnswerConfirm.value = true;
 }
 
 defineExpose({
