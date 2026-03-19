@@ -266,7 +266,7 @@ const drawColHeader = () => {
 
   // Column hover highlight
   if (!isSolved.value && hCol !== null) {
-    ctx.fillStyle = 'rgba(223,223,223,0.6)';
+    ctx.fillStyle = 'rgba(173,216,230,0.7)';
     ctx.fillRect(hCol * cs, 0, cs, h);
   }
 
@@ -338,7 +338,7 @@ const drawRowHeader = () => {
 
   // Row hover highlight
   if (!isSolved.value && hRow !== null) {
-    ctx.fillStyle = 'rgba(223,223,223,0.6)';
+    ctx.fillStyle = 'rgba(173,216,230,0.7)';
     ctx.fillRect(0, hRow * cs, w, cs);
   }
 
@@ -444,7 +444,7 @@ const draw = () => {
 
   // Row/col highlight in main area
   if (!solved && (hRow !== null || hCol !== null)) {
-    ctx.fillStyle = 'rgba(223,223,223,0.5)';
+    ctx.fillStyle = 'rgba(173,216,230,0.5)';
     if (hRow !== null) ctx.fillRect(0,       hRow * cs, w, cs);
     if (hCol !== null) ctx.fillRect(hCol * cs, 0,       cs, h);
   }

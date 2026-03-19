@@ -57,7 +57,7 @@ watch(() => props.solution, () => nextTick(drawAnswer), { deep: true });
         <canvas ref="canvasRef"></canvas>
       </div>
       <div class="answer-footer">
-        <button class="ok-btn" @click="$emit('ok')">Ok</button>
+        <button class="ok-btn" @click="$emit('ok')">Ага, спасибо :)</button>
       </div>
     </div>
   </div>
