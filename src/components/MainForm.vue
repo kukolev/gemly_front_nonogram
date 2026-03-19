@@ -19,11 +19,16 @@
       />
     </div>
   </div>
-  <ConfirmationDialog 
-    v-if="showDialog" 
-    :message="dialogMessage" 
-    @yes="handleConfirm" 
-    @no="handleCancel" 
+  <ConfirmationDialog
+    v-if="showDialog"
+    :message="dialogMessage"
+    @yes="handleConfirm"
+    @no="handleCancel"
+  />
+  <AnswerDialog
+    v-if="showAnswerDialog && resultData"
+    :solution="resultData"
+    @ok="showAnswerDialog = false"
   />
 </template>
 <style scoped>
@@ -60,6 +65,7 @@ const props = defineProps({
 
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
+import AnswerDialog from './AnswerDialog.vue';
 import {ref, computed, nextTick} from 'vue';
 import {loadRandomNonogram, checkSolution} from '../funcs.js';
 
@@ -74,6 +80,11 @@ const isCongratsShown = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);
+const showAnswerDialog = ref(false);
+
+function showAnswer() {
+  showAnswerDialog.value = true;
+}
 
 defineExpose({
   canUndo,
@@ -87,6 +98,7 @@ defineExpose({
   undo,
   redo,
   drawResult,
+  showAnswer,
   performSave
 });
 

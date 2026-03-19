@@ -40,7 +40,7 @@ defineProps({
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode', 'show-answer'])
 
 const moreMenuOpen = ref(false);
 const moreMenuRef = ref(null);
@@ -138,6 +138,13 @@ onUnmounted(() => document.removeEventListener('click', closeMoreMenu));
                   </svg>
                   Очистить
                 </button>
+                <button class="dropdown-item" @click="moreMenuOpen = false; $emit('show-answer')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M2 12C4.4 7 8 4 12 4s7.6 3 10 8c-2.4 5-6 8-10 8S4.4 17 2 12z"/>
+                  </svg>
+                  Ответ
+                </button>
                 <button class="dropdown-item" @click="moreMenuOpen = false; $emit('show-finished')">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
@@ -164,6 +171,17 @@ onUnmounted(() => document.removeEventListener('click', closeMoreMenu));
                   Решение
                 </button>
               </div>
+            </div>
+
+            <!-- Answer (desktop) -->
+            <div class="nav-group mobile-hide">
+              <button name="nonogram-answer-button" class="nav-btn" @click="$emit('show-answer')" title="Показать ответ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M2 12C4.4 7 8 4 12 4s7.6 3 10 8c-2.4 5-6 8-10 8S4.4 17 2 12z"/>
+                </svg>
+                <span class="btn-label">Ответ</span>
+              </button>
             </div>
 
             <!-- Finished (desktop) -->

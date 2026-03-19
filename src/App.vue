@@ -205,6 +205,7 @@ function handleCheck() {
       @show-about="showAbout"
       @go-landing="showLanding"
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
+      @show-answer="mainFormRef?.showAnswer()"
     />
     <main class="app-content">
       <Admin v-if="isAdmin" />
