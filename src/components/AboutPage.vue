@@ -185,6 +185,8 @@
 import { onMounted, onUnmounted } from 'vue';
 import { countVisit } from "@/funcs.js";
 
+defineEmits(['back']);
+
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Article',

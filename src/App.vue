@@ -194,6 +194,7 @@ function handleCheck() {
       :show-plus-one="showPlusOne"
       :check-error="checkErrorVisible"
       :show-buttons="currentPage === 'main'"
+      :show-back-button="currentPage === 'finished' || currentPage === 'about'"
       :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @clear="mainFormRef?.requestClear()"
@@ -206,13 +207,14 @@ function handleCheck() {
       @go-landing="showLanding"
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
       @show-answer="mainFormRef?.showAnswer()"
+      @back="showMainForm"
     />
     <main class="app-content">
       <Admin v-if="isAdmin" />
       <template v-else>
         <MainForm v-if="currentPage === 'main'" ref="mainFormRef" :touch-mark-mode="touchMarkMode" @show-finished="showFinished" @loaded="updateFinishedCount" />
         <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
-        <AboutPage v-else-if="currentPage === 'about'" />
+        <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
         <LandingPage v-else @start="showMainForm" />
       </template>
     </main>

@@ -37,10 +37,14 @@ defineProps({
   touchMarkMode: {
     type: Boolean,
     default: false
+  },
+  showBackButton: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode', 'show-answer'])
+defineEmits(['reload', 'clear', 'check', 'undo', 'redo', 'draw-result', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode', 'show-answer', 'back'])
 
 const moreMenuOpen = ref(false);
 const moreMenuRef = ref(null);
@@ -61,6 +65,12 @@ onUnmounted(() => document.removeEventListener('click', closeMoreMenu));
       <div class="header-brand">
         <div class="header-title-group">
           <h1 class="header-title" @click="$emit('go-landing')">{{ title }}</h1>
+          <button v-if="showBackButton" class="nav-btn back-nav-btn" @click="$emit('back')" title="Назад к кроссворду">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span>Назад к кроссворду</span>
+          </button>
           <nav class="header-nav" v-if="showButtons">
 
             <!-- Undo / Redo -->
@@ -410,6 +420,11 @@ onUnmounted(() => document.removeEventListener('click', closeMoreMenu));
   background-color: #34495e;
   border-color: white;
   color: white;
+}
+
+/* ── Back button (always shows label, never icon-only) ── */
+.back-nav-btn span {
+  display: inline;
 }
 
 /* ── Hide touch-mode toggle on pointer devices (mouse/trackpad) ── */
