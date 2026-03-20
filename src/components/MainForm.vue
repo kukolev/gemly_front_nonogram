@@ -116,8 +116,8 @@
   gap: 0.25rem;
   padding: 0 0.5rem;
   height: 50px;
-  background: #2c3e50;
-  border-bottom: 1px solid #1a252f;
+  background: #ffffff;
+  border-bottom: 1px solid #d0d0d0;
   flex-wrap: nowrap;
   overflow: hidden;
   position: fixed;
@@ -144,7 +144,7 @@
   padding: 0.3rem 0.6rem;
   background: transparent;
   border: 1px solid transparent;
-  color: #d0d8e0;
+  color: #2c3e50;
   font-size: 0.78rem;
   cursor: pointer;
   white-space: nowrap;
@@ -161,13 +161,13 @@
 }
 
 .tb-btn:hover:not(:disabled) {
-  background: #34495e;
-  border-color: #4a6278;
-  color: #fff;
+  background: #e8edf0;
+  border-color: #b0bec5;
+  color: #1a252f;
 }
 
 .tb-btn:active:not(:disabled) {
-  background: #3d5a73;
+  background: #d0dbe2;
 }
 
 .tb-btn:disabled {
@@ -196,7 +196,7 @@
 
 .toolbar-size {
   font-size: 0.75rem;
-  color: #8ca0b0;
+  color: #7a8a95;
   font-family: monospace;
   user-select: none;
   white-space: nowrap;
