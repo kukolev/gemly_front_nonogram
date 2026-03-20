@@ -162,12 +162,15 @@ const stopDrawing = () => {
   if (isDrawing.value) {
     const rStart = startRow.value, rEnd = hoveredRow.value;
     const cStart = startCol.value, cEnd = hoveredCol.value;
+    const sol = props.solution;
+    const cellValue = (r, c) =>
+      props.helpMode && sol ? (sol[r]?.[c] === 1 ? 1 : 0) : drawingState.value;
     if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
       for (let c = Math.min(cStart, cEnd); c <= Math.max(cStart, cEnd); c++)
-        grid.value[rStart][c] = drawingState.value;
+        grid.value[rStart][c] = cellValue(rStart, c);
     } else {
       for (let r = Math.min(rStart, rEnd); r <= Math.max(rStart, rEnd); r++)
-        grid.value[r][cStart] = drawingState.value;
+        grid.value[r][cStart] = cellValue(r, cStart);
     }
     autoMarkClues(); check(false, false); saveHistory(); emit('change');
   }
