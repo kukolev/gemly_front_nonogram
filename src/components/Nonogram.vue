@@ -458,6 +458,7 @@ const draw = () => {
   }
 
   // Filled cells
+  const help = props.helpMode;
   ctx.fillStyle = 'black';
   for (let r = 0; r < rows; r++) {
     const row = gridData[r];
@@ -466,13 +467,11 @@ const draw = () => {
       const pending = drawing && r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC;
       const val = pending ? dState : row[c];
       if (val === 1) {
-        if (isHovRow && c === hCol) {
-          ctx.fillStyle = '#555555';
-          ctx.fillRect(c * cs, r * cs, cs, cs);
-          ctx.fillStyle = 'black';
-        } else {
-          ctx.fillRect(c * cs, r * cs, cs, cs);
-        }
+        const color = (pending && help) ? (isHovRow && c === hCol ? '#0096cc' : '#00bfff')
+                                        : (isHovRow && c === hCol ? '#555555' : 'black');
+        ctx.fillStyle = color;
+        ctx.fillRect(c * cs, r * cs, cs, cs);
+        ctx.fillStyle = 'black';
       }
     }
   }
