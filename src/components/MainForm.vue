@@ -114,9 +114,7 @@
 </template>
 <style scoped>
 .main-form {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+  padding-top: 42px; /* space for the fixed toolbar */
 }
 
 /* ── Toolbar ─────────────────────────────────── */
@@ -127,12 +125,22 @@
   padding: 0.3rem 0.5rem;
   background: #2c3e50;
   border-bottom: 1px solid #1a252f;
-  flex-shrink: 0;
   flex-wrap: wrap;
-  position: sticky;
+  position: fixed;
   top: 0;
-  left: 0;
-  z-index: 10;
+  left: 180px; /* sidebar width */
+  right: 0;
+  z-index: 50;
+}
+
+@media (max-width: 640px) {
+  .main-form {
+    padding-top: 42px;
+  }
+
+  .nonogram-toolbar {
+    left: 48px; /* mobile sidebar width */
+  }
 }
 
 .tb-btn {

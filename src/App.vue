@@ -219,15 +219,11 @@ function handleCheck() {
 
 <style scoped>
 .app-layout {
-  display: flex;
-  flex-direction: row;
   min-height: 100vh;
-  align-items: flex-start;
 }
 
 .app-body {
-  flex: 1;
-  min-width: 0;
+  margin-left: 180px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -235,5 +231,11 @@ function handleCheck() {
 
 .app-content {
   flex: 1;
+}
+
+@media (max-width: 640px) {
+  .app-body {
+    margin-left: 48px;
+  }
 }
 </style>
