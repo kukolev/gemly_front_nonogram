@@ -122,15 +122,15 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #fff;
+  color: #222;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.3;
   height: 50px;
   padding: 0 1rem;
   cursor: pointer;
-  background-color: #2c3e50;
-  border-bottom: 1px solid #1a252f;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
   user-select: none;
   white-space: nowrap;
   flex-shrink: 0;
@@ -144,7 +144,7 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
 }
 
 .sidebar-title:hover {
-  color: #a8c6e0;
+  color: #4e83a6;
 }
 
 /* ── Nav ── */
@@ -165,7 +165,7 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
   border: none;
   border-left: 3px solid transparent;
   background: none;
-  color: #2c3e50;
+  color: #000;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -195,8 +195,8 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
 
 .side-btn:hover:not(:disabled) {
   background-color: #dce3e8;
-  border-left-color: #2c3e50;
-  color: #1a252f;
+  border-left-color: #4e83a6;
+  color: #3a6a8a;
 }
 
 .side-btn:active:not(:disabled) {
@@ -210,8 +210,8 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
 
 .btn-active {
   background-color: #dce3e8;
-  border-left-color: #2c3e50;
-  color: #1a252f;
+  border-left-color: #4e83a6;
+  color: #3a6a8a;
 }
 
 /* ── Check error state ── */
@@ -267,7 +267,7 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
 .back-btn {
   border-bottom: 1px solid #c8c8c8;
   margin-bottom: 0.25rem;
-  color: #2c3e50;
+  color: #4e83a6;
 }
 
 /* ── Touch-mode: hide on pointer devices ── */
