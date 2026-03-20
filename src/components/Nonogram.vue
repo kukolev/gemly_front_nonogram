@@ -119,7 +119,6 @@ const triggerCongratulations = () => {
 
 // ── Drawing state machine ─────────────────────────────────────────────────────
 const startDrawing = (event, r, c) => {
-  if (isSolved.value) return;
   if (event.button !== 0 && event.button !== 2) return;
   startRow.value = r; startCol.value = c;
   lockedAxis.value = null;
@@ -131,7 +130,6 @@ const startDrawing = (event, r, c) => {
 };
 
 const continueDrawing = (event, r, c) => {
-  if (isSolved.value) return;
   if (!isDrawing.value) { hoveredRow.value = r; hoveredCol.value = c; return; }
 
   let targetR = r, targetC = c;
@@ -158,9 +156,6 @@ const cancelDrawing = () => {
 
 const stopDrawing = () => {
   if (isDrawing.value) {
-    if (isSolved.value) {
-      isDrawing.value = false; drawingState.value = null; lockedAxis.value = null; return;
-    }
     const rStart = startRow.value, rEnd = hoveredRow.value;
     const cStart = startCol.value, cEnd = hoveredCol.value;
     if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
@@ -267,7 +262,7 @@ const drawColHeader = () => {
   ctx.fillRect(0, 0, w, h);
 
   // Column hover highlight
-  if (!isSolved.value && hCol !== null) {
+  if (hCol !== null) {
     ctx.fillStyle = 'rgba(173,216,230,0.7)';
     ctx.fillRect(hCol * cs, 0, cs, h);
   }
@@ -339,7 +334,7 @@ const drawRowHeader = () => {
   ctx.fillRect(0, 0, w, h);
 
   // Row hover highlight
-  if (!isSolved.value && hRow !== null) {
+  if (hRow !== null) {
     ctx.fillStyle = 'rgba(173,216,230,0.7)';
     ctx.fillRect(0, hRow * cs, w, cs);
   }
@@ -437,7 +432,6 @@ const draw = () => {
 
   ctx.clearRect(0, 0, w, h);
 
-  const solved  = isSolved.value;
   const hRow    = hoveredRow.value;
   const hCol    = hoveredCol.value;
   const gridData = grid.value;
@@ -460,7 +454,7 @@ const draw = () => {
   ctx.fillStyle = 'black';
   for (let r = 0; r < rows; r++) {
     const row = gridData[r];
-    const isHovRow = !solved && r === hRow;
+    const isHovRow = r === hRow;
     for (let c = 0; c < cols; c++) {
       const pending = drawing && r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC;
       const val = pending ? dState : row[c];
@@ -479,30 +473,28 @@ const draw = () => {
   // Crosses in main grid (empty markers + errors)
   const cp = { '#5b5353': [], 'red': [] };
   const errorData = errors.value;
-  if (!solved) {
-    for (let r = 0; r < rows; r++) {
-      const row = gridData[r], errRow = errorData[r];
-      const isDrawRow = drawing && r >= pMinR && r <= pMaxR;
-      for (let c = 0; c < cols; c++) {
-        const pending = isDrawRow && c >= pMinC && c <= pMaxC;
-        const val = pending ? dState : row[c];
-        if (val === -1)    cp['#5b5353'].push({x: c * cs, y: r * cs});
-        if (errRow[c])     cp['red'].push({x: c * cs, y: r * cs});
-      }
+  for (let r = 0; r < rows; r++) {
+    const row = gridData[r], errRow = errorData[r];
+    const isDrawRow = drawing && r >= pMinR && r <= pMaxR;
+    for (let c = 0; c < cols; c++) {
+      const pending = isDrawRow && c >= pMinC && c <= pMaxC;
+      const val = pending ? dState : row[c];
+      if (val === -1)    cp['#5b5353'].push({x: c * cs, y: r * cs});
+      if (errRow[c])     cp['red'].push({x: c * cs, y: r * cs});
     }
   }
   drawCrosses(ctx, cp['#5b5353'], '#5b5353');
   drawCrosses(ctx, cp['red'], 'red', 2.5);
 
   // Row/col highlight in main area — drawn after cells so tint is visible on black cells too
-  if (!solved && (hRow !== null || hCol !== null)) {
+  if (hRow !== null || hCol !== null) {
     ctx.fillStyle = 'rgba(173,216,230,0.35)';
     if (hRow !== null) ctx.fillRect(0,        hRow * cs, w, cs);
     if (hCol !== null) ctx.fillRect(hCol * cs, 0,        cs, h);
   }
 
   // Hover outline
-  if (!solved && hRow !== null && hCol !== null) {
+  if (hRow !== null && hCol !== null) {
     const pending = drawing && hRow >= pMinR && hRow <= pMaxR && hCol >= pMinC && hCol <= pMaxC;
     const val = pending ? dState : gridData[hRow][hCol];
     ctx.strokeStyle = val === 1 ? '#fff' : '#000';
@@ -525,7 +517,6 @@ let twoFingerPrev = null;
 
 // ── Main-canvas mouse events ──────────────────────────────────────────────────
 const handleCanvasMouseDown = (event) => {
-  if (isSolved.value) return;
   const {row, col} = getMainPos(event.clientX, event.clientY);
   if (row >= 0 && row < props.size.rows && col >= 0 && col < props.size.cols)
     startDrawing(event, row, col);
@@ -581,7 +572,6 @@ const handleMainTouchStart = (event) => {
     };
     return;
   }
-  if (isSolved.value) return;
   event.preventDefault();
   const touch = event.touches[0];
   const {row, col} = getMainPos(touch.clientX, touch.clientY);
@@ -624,7 +614,6 @@ const handleColHeaderTouchStart = (event) => {
     };
     return;
   }
-  if (isSolved.value) return;
   const touch = event.touches[0];
   const rect = colHeaderCanvasRef.value?.getBoundingClientRect();
   if (!rect) return;
@@ -642,7 +631,6 @@ const handleRowHeaderTouchStart = (event) => {
     };
     return;
   }
-  if (isSolved.value) return;
   const touch = event.touches[0];
   const rect = rowHeaderCanvasRef.value?.getBoundingClientRect();
   if (!rect) return;
@@ -685,7 +673,6 @@ onUnmounted(() => {
 
 // ── Clue click ────────────────────────────────────────────────────────────────
 const handleClueClick = (type, lineIdx, clueIdx) => {
-  if (isSolved.value) return;
   const line = type === 'row' ? props.rowValues[lineIdx] : props.colValues[lineIdx];
   if (!line) return;
   const maxClues = type === 'row' ? maxRowClues.value : maxColClues.value;
