@@ -41,7 +41,7 @@
 </template>
 <style scoped>
 .main-form {
-  padding: 0 1rem;
+  padding: 1rem 1rem 0;
   overflow-x: auto; /* desktop horizontal scroll */
 }
 

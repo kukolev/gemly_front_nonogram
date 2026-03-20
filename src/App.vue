@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
-import AppHeader from "@/components/AppHeader.vue";
+import AppSidebar from "@/components/AppSidebar.vue";
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
 import AboutPage from "@/components/AboutPage.vue";
@@ -184,9 +184,8 @@ function handleCheck() {
 <template>
   <div v-if="isLoading">Loading...</div>
   <div v-else-if="accessDenied">Access denied</div>
-  <template v-else>
-    <AppHeader
-      :title="pageTitle"
+  <div v-else class="app-layout">
+    <AppSidebar
       :finished-count="finishedCount"
       :can-undo="canUndo"
       :can-redo="canRedo"
@@ -209,18 +208,38 @@ function handleCheck() {
       @show-answer="mainFormRef?.showAnswer()"
       @back="showMainForm"
     />
-    <main class="app-content">
-      <Admin v-if="isAdmin" />
-      <template v-else>
-        <MainForm v-if="currentPage === 'main'" ref="mainFormRef" :touch-mark-mode="touchMarkMode" @show-finished="showFinished" @loaded="updateFinishedCount" />
-        <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
-        <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
-        <LandingPage v-else @start="showMainForm" />
-      </template>
-    </main>
-    <AppFooter />
-  </template>
+    <div class="app-body">
+      <main class="app-content">
+        <Admin v-if="isAdmin" />
+        <template v-else>
+          <MainForm v-if="currentPage === 'main'" ref="mainFormRef" :touch-mark-mode="touchMarkMode" @show-finished="showFinished" @loaded="updateFinishedCount" />
+          <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
+          <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
+          <LandingPage v-else @start="showMainForm" />
+        </template>
+      </main>
+      <AppFooter />
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  align-items: flex-start;
+}
+
+.app-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+}
 </style>

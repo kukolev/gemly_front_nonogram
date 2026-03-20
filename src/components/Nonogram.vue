@@ -89,6 +89,8 @@ const isSolved     = ref(false);
 const drawingState = ref(null);
 const hoveredRow   = ref(null);
 const hoveredCol   = ref(null);
+const cursorClientX = ref(0);
+const cursorClientY = ref(0);
 const startRow     = ref(null);
 const startCol     = ref(null);
 const lockedAxis   = ref(null);
@@ -302,7 +304,7 @@ const drawColHeader = () => {
   ctx.stroke();
 
   // Thick lines
-  ctx.lineWidth = 2; ctx.beginPath();
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath();
   ctx.moveTo(0, h - 1); ctx.lineTo(w, h - 1); // bottom boundary
   for (let c = 5; c < cols; c += 5) { ctx.moveTo(c * cs, 0); ctx.lineTo(c * cs, h); }
   ctx.stroke();
@@ -374,7 +376,7 @@ const drawRowHeader = () => {
   ctx.stroke();
 
   // Thick lines
-  ctx.lineWidth = 2; ctx.beginPath();
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath();
   ctx.moveTo(w - 1, 0); ctx.lineTo(w - 1, h); // right boundary
   for (let r = 5; r < rows; r += 5) { ctx.moveTo(0, r * cs); ctx.lineTo(w, r * cs); }
   ctx.stroke();
@@ -417,7 +419,7 @@ const drawBg = () => {
   ctx.stroke();
 
   // Thick lines + outer border
-  ctx.lineWidth = 2; ctx.beginPath();
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath();
   ctx.strokeRect(1, 1, w - 2, h - 2);
   for (let r = 5; r < rows; r += 5) { ctx.moveTo(0, r * cs); ctx.lineTo(w, r * cs); }
   for (let c = 5; c < cols; c += 5) { ctx.moveTo(c * cs, 0); ctx.lineTo(c * cs, h); }
@@ -530,6 +532,8 @@ const handleCanvasMouseDown = (event) => {
 };
 
 const handleCanvasMouseMove = (event) => {
+  cursorClientX.value = event.clientX;
+  cursorClientY.value = event.clientY;
   const {row, col} = getMainPos(event.clientX, event.clientY);
   if (row >= 0 && row < props.size.rows && col >= 0 && col < props.size.cols) {
     continueDrawing(event, row, col);
@@ -834,6 +838,10 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
 </script>
 
 <template>
+  <div class="nonogram-outer">
+  <div class="nonogram-info-bar">
+    <span class="info-size">Размер: {{ props.size.cols }}&thinsp;×&thinsp;{{ props.size.rows }}</span>
+  </div>
   <div
     ref="scrollContainerRef"
     class="nonogram-scroll-container"
@@ -883,6 +891,17 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
 
     </div>
   </div>
+
+  <!-- Floating cursor label -->
+  <Teleport to="body">
+    <div
+      v-if="hoveredCol !== null && hoveredRow !== null"
+      class="cursor-tooltip"
+      :style="{ left: cursorClientX + 14 + 'px', top: cursorClientY - 28 + 'px' }"
+    >{{ hoveredCol + 1 }},&thinsp;{{ hoveredRow + 1 }}</div>
+  </Teleport>
+
+  </div>
 </template>
 
 <style scoped>
@@ -895,6 +914,24 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
   90%  { opacity: 1; scale: 1;   }
   100% { opacity: 0; scale: 0.9; }
 }
+
+/* ── Outer wrapper ────────────────────────────────── */
+.nonogram-outer {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Info bar ─────────────────────────────────────── */
+.nonogram-info-bar {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  color: #888;
+  user-select: none;
+  font-family: monospace;
+}
+
 
 /* ── Scroll container ─────────────────────────────── */
 .nonogram-scroll-container {
@@ -974,5 +1011,21 @@ canvas {
 .col-header-canvas,
 .row-header-canvas {
   background-color: #eee;
+}
+</style>
+
+<style>
+.cursor-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #333;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #bbb;
+  padding: 1px 5px;
+  white-space: nowrap;
+  user-select: none;
 }
 </style>
