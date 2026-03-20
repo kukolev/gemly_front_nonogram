@@ -189,6 +189,7 @@ function handleCheck() {
       :show-buttons="currentPage === 'main'"
       :show-back-button="currentPage === 'finished' || currentPage === 'about'"
       :touch-mark-mode="touchMarkMode"
+      @reload="mainFormRef?.requestReload()"
       @show-finished="showFinished"
       @show-about="showAbout"
       @go-landing="showLanding"
