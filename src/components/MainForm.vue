@@ -115,15 +115,8 @@
 <style scoped>
 .main-form {
   padding: 0;
-  overflow-x: auto; /* desktop horizontal scroll */
   display: flex;
   flex-direction: column;
-}
-
-@media (max-width: 640px) {
-  .main-form {
-    overflow-x: visible; /* Nonogram's own container handles scroll on mobile */
-  }
 }
 
 /* ── Toolbar ─────────────────────────────────── */
@@ -136,6 +129,10 @@
   border-bottom: 1px solid #1a252f;
   flex-shrink: 0;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
 .tb-btn {
@@ -210,6 +207,7 @@
   padding: 1rem 1rem 0;
   display: flex;
   justify-content: flex-start;
+  overflow-x: auto; /* horizontal scroll stays below the sticky toolbar */
 }
 </style>
 
