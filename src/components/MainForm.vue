@@ -120,7 +120,7 @@
   flex-wrap: wrap;
   position: fixed;
   top: 0;
-  left: 180px; /* sidebar width */
+  left: 300px; /* sidebar width */
   right: 0;
   z-index: 50;
 }
