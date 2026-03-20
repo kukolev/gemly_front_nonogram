@@ -50,6 +50,11 @@
         <span>Решение</span>
       </button>
 
+      <label class="tb-help-label" :class="{'tb-help-active': helpMode}">
+        <input type="checkbox" v-model="helpMode" class="tb-help-checkbox" />
+        <span>Помощь</span>
+      </label>
+
     </div>
     <div class="nonogram-wrapper">
       <Nonogram
@@ -65,6 +70,7 @@
         :initial-history="initialHistory"
         :initial-history-index="initialHistoryIndex"
         :touch-mark-mode="touchMarkMode"
+        :help-mode="helpMode"
         @congrats-toggled="isCongratsShown = $event"
         @change="performSave"
       />
@@ -180,6 +186,40 @@
   flex: 1;
 }
 
+.tb-help-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #c8d4da;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: #2c3e50;
+  user-select: none;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.tb-help-label:hover {
+  background-color: #e8f4fb;
+  border-color: #7fb3d3;
+}
+
+.tb-help-active {
+  background-color: #e0f5ff;
+  border-color: #00bfff;
+  color: #007aa3;
+}
+
+.tb-help-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #00bfff;
+  flex-shrink: 0;
+}
+
 .toolbar-size {
   font-size: 0.75rem;
   color: #7a8a95;
@@ -222,6 +262,7 @@ const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const hasErrors = computed(() => nonogramComponent.value?.hasErrors || false);
 const isSolved = computed(() => nonogramComponent.value?.isSolved || false);
 const isCongratsShown = ref(false);
+const helpMode = ref(false);
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const pendingAction = ref(null);

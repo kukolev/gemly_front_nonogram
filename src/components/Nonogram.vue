@@ -41,6 +41,10 @@ const props = defineProps({
   touchMarkMode: {
     type: Boolean,
     default: false
+  },
+  helpMode: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -479,7 +483,7 @@ const draw = () => {
     for (let c = 0; c < cols; c++) {
       const pending = isDrawRow && c >= pMinC && c <= pMaxC;
       const val = pending ? dState : row[c];
-      if (val === -1)    cp['#5b5353'].push({x: c * cs, y: r * cs});
+      if (val === -1 && !props.helpMode) cp['#5b5353'].push({x: c * cs, y: r * cs});
       if (errRow[c])     cp['red'].push({x: c * cs, y: r * cs});
     }
   }
@@ -639,7 +643,7 @@ const handleRowHeaderTouchStart = (event) => {
 };
 
 // ── Watches ───────────────────────────────────────────────────────────────────
-watch([grid, errors, hoveredRow, hoveredCol, isDrawing, isSolved], () => {
+watch([grid, errors, hoveredRow, hoveredCol, isDrawing, isSolved, () => props.helpMode], () => {
   requestDraw();
   requestDrawRowHeader();
   requestDrawColHeader();
