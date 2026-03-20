@@ -104,7 +104,7 @@ const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled'])
 const triggerCongratulations = () => {
   if (showCongrats.value) return;
   congratsStyle.value = {
-    top: '50%', left: '50%',
+    top: '100px', left: '500px',
     transform: 'translate(-50%, -50%)',
     position: 'fixed',
     fontSize: '6rem', fontWeight: 'bold',
