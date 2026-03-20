@@ -52,7 +52,7 @@
 
       <label class="tb-help-label" :class="{'tb-help-active': helpMode}">
         <input type="checkbox" v-model="helpMode" class="tb-help-checkbox" />
-        <span>Помощь</span>
+        <span>Подсказка</span>
       </label>
 
     </div>

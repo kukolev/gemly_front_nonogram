@@ -99,6 +99,30 @@ const startRow     = ref(null);
 const startCol     = ref(null);
 const lockedAxis   = ref(null);
 
+// ── Help-mode animation ───────────────────────────────────────────────────────
+let helpAnimCells    = [];   // [{r, c}] cells being animated
+let helpAnimProgress = 0;    // 0 = sky-blue, 1 = black
+let helpAnimRafId    = null;
+const HELP_ANIM_MS   = 700;
+
+const startHelpAnim = (cells) => {
+  if (helpAnimRafId) cancelAnimationFrame(helpAnimRafId);
+  helpAnimCells    = cells;
+  helpAnimProgress = 0;
+  const t0 = performance.now();
+  const tick = (now) => {
+    helpAnimProgress = Math.min((now - t0) / HELP_ANIM_MS, 1);
+    requestDraw();
+    if (helpAnimProgress < 1) {
+      helpAnimRafId = requestAnimationFrame(tick);
+    } else {
+      helpAnimCells = [];
+      helpAnimRafId = null;
+    }
+  };
+  helpAnimRafId = requestAnimationFrame(tick);
+};
+
 const showCongrats  = ref(false);
 const congratsStyle = ref({});
 
@@ -163,16 +187,23 @@ const stopDrawing = () => {
     const rStart = startRow.value, rEnd = hoveredRow.value;
     const cStart = startCol.value, cEnd = hoveredCol.value;
     const sol = props.solution;
-    const cellValue = (r, c) =>
-      props.helpMode && sol ? (sol[r]?.[c] === 1 ? 1 : 0) : drawingState.value;
+    const help = props.helpMode && !!sol;
+    const cellValue = (r, c) => help ? (sol[r]?.[c] === 1 ? 1 : 0) : drawingState.value;
+
+    const animCells = [];
     if (lockedAxis.value === 'horizontal' || (lockedAxis.value === null && Math.abs(cEnd - cStart) >= Math.abs(rEnd - rStart))) {
-      for (let c = Math.min(cStart, cEnd); c <= Math.max(cStart, cEnd); c++)
+      for (let c = Math.min(cStart, cEnd); c <= Math.max(cStart, cEnd); c++) {
         grid.value[rStart][c] = cellValue(rStart, c);
+        if (help && sol[rStart]?.[c] === 1) animCells.push({r: rStart, c});
+      }
     } else {
-      for (let r = Math.min(rStart, rEnd); r <= Math.max(rStart, rEnd); r++)
+      for (let r = Math.min(rStart, rEnd); r <= Math.max(rStart, rEnd); r++) {
         grid.value[r][cStart] = cellValue(r, cStart);
+        if (help && sol[r]?.[cStart] === 1) animCells.push({r, c: cStart});
+      }
     }
     autoMarkClues(); check(false, false); saveHistory(); emit('change');
+    if (animCells.length) startHelpAnim(animCells);
   }
   isDrawing.value = false; drawingState.value = null; lockedAxis.value = null;
 };
@@ -459,6 +490,15 @@ const draw = () => {
 
   // Filled cells
   const help = props.helpMode;
+  // Build a Set of animated cell keys for O(1) lookup
+  const animSet = helpAnimCells.length
+    ? new Set(helpAnimCells.map(({r, c}) => `${r},${c}`))
+    : null;
+  // Interpolated colour for animated cells: sky-blue → black
+  const animG = Math.round(191 * (1 - helpAnimProgress));
+  const animB = Math.round(255 * (1 - helpAnimProgress));
+  const animColor = `rgb(0,${animG},${animB})`;
+
   ctx.fillStyle = 'black';
   for (let r = 0; r < rows; r++) {
     const row = gridData[r];
@@ -467,8 +507,14 @@ const draw = () => {
       const pending = drawing && r >= pMinR && r <= pMaxR && c >= pMinC && c <= pMaxC;
       const val = pending ? dState : row[c];
       if (val === 1) {
-        const color = (pending && help) ? (isHovRow && c === hCol ? '#0096cc' : '#00bfff')
-                                        : (isHovRow && c === hCol ? '#555555' : 'black');
+        let color;
+        if (animSet?.has(`${r},${c}`)) {
+          color = animColor;
+        } else if (pending && help) {
+          color = (isHovRow && c === hCol) ? '#0096cc' : '#00bfff';
+        } else {
+          color = (isHovRow && c === hCol) ? '#555555' : 'black';
+        }
         ctx.fillStyle = color;
         ctx.fillRect(c * cs, r * cs, cs, cs);
         ctx.fillStyle = 'black';
