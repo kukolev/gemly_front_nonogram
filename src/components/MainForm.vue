@@ -1,5 +1,8 @@
 <template>
   <div class="main-form">
+    <div class="nonogram-toolbar">
+      <span class="toolbar-size">Размер: {{ nonogramSize.cols }}&thinsp;×&thinsp;{{ nonogramSize.rows }}</span>
+    </div>
     <div class="nonogram-wrapper">
       <Nonogram
         ref="nonogramComponent"
@@ -41,20 +44,37 @@
 </template>
 <style scoped>
 .main-form {
-  padding: 1rem 1rem 0;
+  padding: 0;
   overflow-x: auto; /* desktop horizontal scroll */
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 640px) {
   .main-form {
-    padding: 0;
     overflow-x: visible; /* Nonogram's own container handles scroll on mobile */
   }
+}
+
+/* ── Toolbar ─────────────────────────────────── */
+.nonogram-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 1rem;
+  background: #f4f4f4;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.82rem;
+  color: #555;
+  font-family: monospace;
+  user-select: none;
+  flex-shrink: 0;
 }
 
 .nonogram-wrapper {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 1rem 1rem 0;
   display: flex;
   justify-content: flex-start;
 }

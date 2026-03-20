@@ -839,9 +839,6 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
 
 <template>
   <div class="nonogram-outer">
-  <div class="nonogram-info-bar">
-    <span class="info-size">Размер: {{ props.size.cols }}&thinsp;×&thinsp;{{ props.size.rows }}</span>
-  </div>
   <div
     ref="scrollContainerRef"
     class="nonogram-scroll-container"
@@ -919,17 +916,6 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
 .nonogram-outer {
   display: flex;
   flex-direction: column;
-}
-
-/* ── Info bar ─────────────────────────────────────── */
-.nonogram-info-bar {
-  display: flex;
-  gap: 1.5rem;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.78rem;
-  color: #888;
-  user-select: none;
-  font-family: monospace;
 }
 
 
