@@ -102,7 +102,7 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
 <style scoped>
 /* ── Sidebar shell ── */
 .app-sidebar {
-  width: 300px;
+  width: 250px;
   background-color: #f0f0f0;
   display: flex;
   flex-direction: column;

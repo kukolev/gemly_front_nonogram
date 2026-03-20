@@ -122,7 +122,7 @@
   overflow: hidden;
   position: fixed;
   top: 0;
-  left: 300px; /* sidebar width */
+  left: 250px; /* sidebar width */
   right: 0;
   z-index: 50;
 }

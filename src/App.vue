@@ -224,7 +224,7 @@ function handleCheck() {
 }
 
 .app-body {
-  margin-left: 300px;
+  margin-left: 250px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
