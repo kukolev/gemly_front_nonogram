@@ -18,15 +18,6 @@
         <span>Вернуть</span>
       </button>
 
-      <button class="tb-btn" @click="requestClear" title="Очистить поле">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-        </svg>
-        <span>Очистить</span>
-      </button>
 
       <button class="tb-btn" :class="{'tb-btn-error': props.checkError}"
               @click="emit('check')" title="Проверить решение">
@@ -59,11 +50,6 @@
         <span>Решение</span>
       </button>
 
-      <!-- Separator -->
-      <div class="tb-sep"></div>
-
-      <!-- Size label -->
-      <span class="toolbar-size">Размер: {{ nonogramSize.cols }}&thinsp;×&thinsp;{{ nonogramSize.rows }}</span>
     </div>
     <div class="nonogram-wrapper">
       <Nonogram
