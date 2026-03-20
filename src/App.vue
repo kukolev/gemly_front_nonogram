@@ -32,8 +32,6 @@ const pageTitle = computed(() => {
   }
 });
 
-const canUndo = computed(() => mainFormRef.value?.canUndo || false);
-const canRedo = computed(() => mainFormRef.value?.canRedo || false);
 const showPlusOne = computed(() => mainFormRef.value?.isCongratsShown || false);
 const checkErrorVisible = ref(false);
 const headerIsAdmin = ref(false);
@@ -187,32 +185,28 @@ function handleCheck() {
   <div v-else class="app-layout">
     <AppSidebar
       :finished-count="finishedCount"
-      :can-undo="canUndo"
-      :can-redo="canRedo"
-      :is-admin="headerIsAdmin"
       :show-plus-one="showPlusOne"
-      :check-error="checkErrorVisible"
       :show-buttons="currentPage === 'main'"
       :show-back-button="currentPage === 'finished' || currentPage === 'about'"
       :touch-mark-mode="touchMarkMode"
-      @reload="mainFormRef?.requestReload()"
-      @clear="mainFormRef?.requestClear()"
-      @check="handleCheck"
-      @undo="mainFormRef?.undo()"
-      @redo="mainFormRef?.redo()"
-      @draw-result="mainFormRef?.drawResult()"
       @show-finished="showFinished"
       @show-about="showAbout"
       @go-landing="showLanding"
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
-      @show-answer="mainFormRef?.showAnswer()"
       @back="showMainForm"
     />
     <div class="app-body">
       <main class="app-content">
         <Admin v-if="isAdmin" />
         <template v-else>
-          <MainForm v-if="currentPage === 'main'" ref="mainFormRef" :touch-mark-mode="touchMarkMode" @show-finished="showFinished" @loaded="updateFinishedCount" />
+          <MainForm v-if="currentPage === 'main'" ref="mainFormRef"
+            :touch-mark-mode="touchMarkMode"
+            :check-error="checkErrorVisible"
+            :is-admin="headerIsAdmin"
+            @show-finished="showFinished"
+            @loaded="updateFinishedCount"
+            @check="handleCheck"
+          />
           <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
           <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
           <LandingPage v-else @start="showMainForm" />

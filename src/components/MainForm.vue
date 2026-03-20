@@ -1,6 +1,76 @@
 <template>
   <div class="main-form">
     <div class="nonogram-toolbar">
+      <!-- Action buttons -->
+      <button class="tb-btn" @click="requestReload" title="Загрузить новый кроссворд">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Новый</span>
+      </button>
+
+      <button class="tb-btn" @click="undo" :disabled="!canUndo" title="Отменить">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+        </svg>
+        <span>Отменить</span>
+      </button>
+
+      <button class="tb-btn" @click="redo" :disabled="!canRedo" title="Вернуть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
+        </svg>
+        <span>Вернуть</span>
+      </button>
+
+      <button class="tb-btn" @click="requestClear" title="Очистить поле">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+        </svg>
+        <span>Очистить</span>
+      </button>
+
+      <button class="tb-btn" :class="{'tb-btn-error': props.checkError}"
+              @click="emit('check')" title="Проверить решение">
+        <svg v-if="!props.checkError" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>{{ props.checkError ? 'Ошибки!' : 'Проверить' }}</span>
+      </button>
+
+      <button class="tb-btn" @click="showAnswer" title="Показать ответ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M2 12C4.4 7 8 4 12 4s7.6 3 10 8c-2.4 5-6 8-10 8S4.4 17 2 12z"/>
+        </svg>
+        <span>Ответ</span>
+      </button>
+
+      <button v-if="props.isAdmin" class="tb-btn" @click="drawResult" title="Показать решение">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span>Решение</span>
+      </button>
+
+      <!-- Separator -->
+      <div class="tb-sep"></div>
+
+      <!-- Size label -->
       <span class="toolbar-size">Размер: {{ nonogramSize.cols }}&thinsp;×&thinsp;{{ nonogramSize.rows }}</span>
     </div>
     <div class="nonogram-wrapper">
@@ -60,15 +130,78 @@
 .nonogram-toolbar {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.4rem 1rem;
-  background: #f4f4f4;
-  border-bottom: 1px solid #ddd;
-  font-size: 0.82rem;
-  color: #555;
+  gap: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  background: #2c3e50;
+  border-bottom: 1px solid #1a252f;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #d0d8e0;
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 3px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tb-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.tb-btn:hover:not(:disabled) {
+  background: #34495e;
+  border-color: #4a6278;
+  color: #fff;
+}
+
+.tb-btn:active:not(:disabled) {
+  background: #3d5a73;
+}
+
+.tb-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@keyframes tbShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-4px); }
+  40%       { transform: translateX(4px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+
+.tb-btn-error {
+  background: #922b21 !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+  animation: tbShake 0.4s ease-in-out;
+}
+
+.tb-sep {
+  flex: 1;
+}
+
+.toolbar-size {
+  font-size: 0.75rem;
+  color: #8ca0b0;
   font-family: monospace;
   user-select: none;
-  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0 0.3rem;
 }
 
 .nonogram-wrapper {
@@ -82,13 +215,12 @@
 
 <script setup>
 
-const emit = defineEmits(['show-finished', 'loaded'])
+const emit = defineEmits(['show-finished', 'loaded', 'check'])
 
 const props = defineProps({
-  touchMarkMode: {
-    type: Boolean,
-    default: false
-  }
+  touchMarkMode: { type: Boolean, default: false },
+  checkError:    { type: Boolean, default: false },
+  isAdmin:       { type: Boolean, default: false },
 });
 
 import Nonogram from './Nonogram.vue';
