@@ -106,7 +106,7 @@
 </template>
 <style scoped>
 .main-form {
-  padding-top: 42px; /* space for the fixed toolbar */
+  padding-top: 50px; /* space for the fixed toolbar */
 }
 
 /* ── Toolbar ─────────────────────────────────── */
@@ -114,10 +114,12 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.3rem 0.5rem;
+  padding: 0 0.5rem;
+  height: 50px;
   background: #2c3e50;
   border-bottom: 1px solid #1a252f;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   position: fixed;
   top: 0;
   left: 300px; /* sidebar width */
@@ -127,7 +129,7 @@
 
 @media (max-width: 640px) {
   .main-form {
-    padding-top: 42px;
+    padding-top: 50px;
   }
 
   .nonogram-toolbar {
