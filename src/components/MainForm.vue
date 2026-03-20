@@ -204,9 +204,8 @@
 }
 
 .nonogram-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 1rem 0;
+  margin: 0;
+  padding: 0px 0 0 25px;
   display: flex;
   justify-content: flex-start;
   overflow-x: auto; /* horizontal scroll stays below the sticky toolbar */
