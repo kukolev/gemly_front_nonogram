@@ -32,6 +32,27 @@
         <span>{{ props.checkError ? 'Ошибки!' : 'Проверить' }}</span>
       </button>
 
+      <!-- Save button -->
+      <div class="tb-save-wrapper">
+        <button class="tb-btn"
+                :disabled="!hasUnsavedChanges"
+                @click="manualSave"
+                title="Сохранить прогресс">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          <span>Сохранить</span>
+        </button>
+        <transition name="save-tooltip-fade">
+          <div v-if="showSaveTooltip" class="tb-save-tooltip">
+            Спасибо, мы сохранили прогресс по кроссворду.<br>Прогресс регулярно сохраняется автоматически.
+          </div>
+        </transition>
+      </div>
+
       <button class="tb-btn" @click="showAnswer" title="Показать ответ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
@@ -54,28 +75,6 @@
         <input type="checkbox" v-model="helpMode" class="tb-help-checkbox" />
         <span>Подсказка</span>
       </label>
-
-      <!-- Save button -->
-      <button class="tb-btn tb-save-btn"
-              :class="{'tb-save-active': hasUnsavedChanges}"
-              :disabled="!hasUnsavedChanges"
-              @click="manualSave"
-              title="Сохранить прогресс">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        <span>Сохранить</span>
-      </button>
-
-      <!-- Save tooltip -->
-      <transition name="save-tooltip-fade">
-        <div v-if="showSaveTooltip" class="tb-save-tooltip">
-          Спасибо, мы сохранили прогресс по кроссворду. Прогресс сохраняется автоматически.
-        </div>
-      </transition>
 
     </div>
     <div class="nonogram-wrapper">
@@ -251,36 +250,26 @@
   padding: 0 0.3rem;
 }
 
-/* ── Save button ── */
-.tb-save-btn {
-  margin-left: 0.25rem;
+/* ── Save wrapper + tooltip ── */
+.tb-save-wrapper {
+  position: relative;
+  display: inline-flex;
 }
 
-.tb-save-active {
-  background: #e8f5e9 !important;
-  border-color: #4caf50 !important;
-  color: #2e7d32 !important;
-}
-
-.tb-save-active:hover {
-  background: #c8e6c9 !important;
-  border-color: #388e3c !important;
-}
-
-/* ── Save tooltip ── */
 .tb-save-tooltip {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0.5rem;
-  background: #2e7d32;
-  color: #fff;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  color: #1a1a1a;
   font-size: 0.78rem;
-  padding: 0.5rem 0.85rem;
+  padding: 0.55rem 0.9rem;
   border-radius: 4px;
-  white-space: normal;
-  max-width: 300px;
-  line-height: 1.4;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  white-space: nowrap;
+  line-height: 1.5;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  border: 1px solid #d0d0d0;
   z-index: 200;
   pointer-events: none;
 }
@@ -289,17 +278,19 @@
   content: '';
   position: absolute;
   top: -5px;
-  right: 1.2rem;
-  width: 10px;
-  height: 10px;
-  background: #2e7d32;
-  transform: rotate(45deg);
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-left: 1px solid #d0d0d0;
+  border-top: 1px solid #d0d0d0;
 }
 
-.save-tooltip-fade-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.save-tooltip-fade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
-.save-tooltip-fade-enter-from   { opacity: 0; transform: translateY(-4px); }
-.save-tooltip-fade-leave-to     { opacity: 0; transform: translateY(-4px); }
+.save-tooltip-fade-enter-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.save-tooltip-fade-leave-active { transition: opacity 0.35s ease, transform 0.35s ease; }
+.save-tooltip-fade-enter-from   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+.save-tooltip-fade-leave-to     { opacity: 0; transform: translateX(-50%) translateY(-4px); }
 
 .nonogram-wrapper {
   margin: 0;
@@ -450,12 +441,17 @@ function handleChange() {
   hasUnsavedChanges.value = true;
 }
 
+const SAVE_TOOLTIP_KEY = 'nonogram_save_tooltip_shown';
+
 function manualSave() {
   performSave();
   hasUnsavedChanges.value = false;
-  clearTimeout(saveTooltipTimer);
-  showSaveTooltip.value = true;
-  saveTooltipTimer = setTimeout(() => { showSaveTooltip.value = false; }, 4000);
+  if (!localStorage.getItem(SAVE_TOOLTIP_KEY)) {
+    localStorage.setItem(SAVE_TOOLTIP_KEY, '1');
+    clearTimeout(saveTooltipTimer);
+    showSaveTooltip.value = true;
+    saveTooltipTimer = setTimeout(() => { showSaveTooltip.value = false; }, 4000);
+  }
 }
 
 function check() {
