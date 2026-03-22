@@ -112,6 +112,11 @@
       </button>
 
     </div>
+    
+    <div class="nonogram-info" v-if="nonogramId">
+      <div class="info-item">Размер: {{ nonogramSize.cols }} x {{ nonogramSize.rows }}</div>
+      <div class="info-item" v-if="nonogramDate">Добавлен {{ formatDate(nonogramDate) }}</div>
+    </div>
     <div class="nonogram-wrapper">
       <Nonogram
         ref="nonogramComponent"
@@ -176,6 +181,25 @@
   z-index: 50;
 }
 
+/* ── Info Bar ───────────────────────────────── */
+.nonogram-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 25px;
+  background: #fdfdfd;
+  border-bottom: 1px solid #eee;
+  font-size: 0.82rem;
+  color: #555;
+  margin-left: 0;
+  line-height: 1.4;
+}
+
+.info-item {
+  display: inline-flex;
+  align-items: center;
+}
+
 @media (max-width: 640px) {
   .main-form {
     padding-top: 50px;
@@ -183,6 +207,13 @@
 
   .nonogram-toolbar {
     left: 48px; /* hamburger button width */
+  }
+
+  .nonogram-info {
+    margin-left: 0;
+    padding-left: 0;
+    font-size: 0.75rem;
+    gap: 1rem;
   }
 
   /* Icon-only toolbar on mobile */
@@ -474,6 +505,7 @@ const rowValues = ref([]);
 const colValues = ref([]);
 const resultData = ref(null);
 const nonogramId = ref(null);
+const nonogramDate = ref(null);
 const autoSolveReported = ref(false); // prevent double-reporting for same puzzle
 const nonogramSize = ref({rows: 0, cols: 0});
 const initialGrid = ref(null);
@@ -482,11 +514,22 @@ const initialMarkedColClues = ref(null);
 const initialHistory = ref(null);
 const initialHistoryIndex = ref(null);
 
-function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = null, markedColClues = null, history = null, historyIndex = null) {
+function formatDate(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return dateStr;
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}.${month}.${year}`;
+  }
+  return dateStr;
+}
+
+function setNonogramData(rows, cols, data, id, date = null, grid = null, markedRowClues = null, markedColClues = null, history = null, historyIndex = null) {
   rowValues.value = rows;
   colValues.value = cols;
   resultData.value = data;
   nonogramId.value = id;
+  nonogramDate.value = date;
   nonogramSize.value = {rows: rows.length, cols: cols.length};
   autoSolveReported.value = false;
   
@@ -519,7 +562,7 @@ function loadSavedState() {
   if (saved) {
     try {
       const data = JSON.parse(saved);
-      setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.grid, data.markedRowClues, data.markedColClues, data.history ?? null, data.historyIndex ?? null);
+      setNonogramData(data.rowValues, data.colValues, data.resultData, data.id, data.date ?? null, data.grid, data.markedRowClues, data.markedColClues, data.history ?? null, data.historyIndex ?? null);
       return true;
     } catch (e) {
       console.error('Failed to load saved nonogram', e);
@@ -529,18 +572,19 @@ function loadSavedState() {
 }
 
 if (!loadSavedState()) {
-  const [rows, cols, data, id] = loadRandomNonogram();
-  setNonogramData(rows, cols, data, id);
+  const [rows, cols, data, id, date] = loadRandomNonogram();
+  setNonogramData(rows, cols, data, id, date);
 }
 
 function reload() {
-  const [rows, cols, data, id] = loadRandomNonogram();
-  setNonogramData(rows, cols, data, id);
+  const [rows, cols, data, id, date] = loadRandomNonogram();
+  setNonogramData(rows, cols, data, id, date);
 }
 
 function performSave() {
   const data = {
     id: nonogramId.value,
+    date: nonogramDate.value,
     grid: nonogramComponent.value?.grid || initialGrid.value,
     markedRowClues: nonogramComponent.value?.markedRowClues || initialMarkedRowClues.value,
     markedColClues: nonogramComponent.value?.markedColClues || initialMarkedColClues.value,

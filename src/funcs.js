@@ -15,7 +15,14 @@ export function loadRandomNonogram() {
 
     if (request.status === 200) {
         const response = JSON.parse(request.responseText);
-        return [response.rows, response.columns, response.data, response.id];
+        let date = response.date;
+        if (date && typeof date === 'string' && date.includes('-')) {
+            const parts = date.split('-');
+            if (parts.length === 3) {
+                date = `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+        }
+        return [response.rows, response.columns, response.data, response.id, date];
     } else {
         throw new Error('Failed to load nonogram');
     }
