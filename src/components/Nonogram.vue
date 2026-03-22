@@ -45,6 +45,10 @@ const props = defineProps({
   helpMode: {
     type: Boolean,
     default: false
+  },
+  zoom: {
+    type: Number,
+    default: 100   // percentage, e.g. 100 = 100%
   }
 });
 
@@ -59,7 +63,10 @@ const canvasRef          = ref(null);   // main grid interactive
 // ── Responsive cell size ─────────────────────────────────────────────────────
 const isMobileSize = ref(window.innerWidth <= 640);
 const handleResize = () => { isMobileSize.value = window.innerWidth <= 640; };
-const CELL_SIZE = computed(() => isMobileSize.value ? 20 : 13);
+const CELL_SIZE = computed(() => {
+  const base = isMobileSize.value ? 20 : 13;
+  return Math.max(4, Math.round(base * props.zoom / 100));
+});
 
 // ── Puzzle state ─────────────────────────────────────────────────────────────
 const grid = ref(
@@ -126,7 +133,7 @@ const startHelpAnim = (cells) => {
 const showCongrats  = ref(false);
 const congratsStyle = ref({});
 
-const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled', 'auto-solved']);
+const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled']);
 
 // ── Celebrations ─────────────────────────────────────────────────────────────
 const triggerCongratulations = () => {
@@ -203,10 +210,8 @@ const stopDrawing = () => {
       }
     }
     autoMarkClues();
-    const wasSolved = isSolved.value;
-    check(false, true);
+    check(false, false);
     saveHistory(); emit('change');
-    if (!wasSolved && isSolved.value) emit('auto-solved');
     if (animCells.length) startHelpAnim(animCells);
   }
   isDrawing.value = false; drawingState.value = null; lockedAxis.value = null;

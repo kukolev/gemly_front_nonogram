@@ -76,6 +76,25 @@
         <span>Подсказка</span>
       </label>
 
+      <!-- Zoom controls -->
+      <div class="tb-zoom">
+        <button class="tb-btn tb-zoom-btn" @click="zoomOut" :disabled="zoomLevel <= ZOOM_MIN" title="Уменьшить">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+        <span class="tb-zoom-indicator">{{ zoomLevel }}%</span>
+        <button class="tb-btn tb-zoom-btn" @click="zoomIn" :disabled="zoomLevel >= ZOOM_MAX" title="Увеличить">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+      </div>
+
       <!-- Touch-mode toggle (mobile only) -->
       <button class="tb-btn tb-touch-mode-btn" :class="{'tb-touch-mode-active': touchMarkMode}"
               @click="emit('toggle-touch-mode')"
@@ -108,9 +127,9 @@
         :initial-history-index="initialHistoryIndex"
         :touch-mark-mode="touchMarkMode"
         :help-mode="helpMode"
+        :zoom="zoomLevel"
         @congrats-toggled="isCongratsShown = $event"
         @change="handleChange"
-        @auto-solved="handleAutoSolved"
       />
     </div>
   </div>
@@ -182,6 +201,7 @@
   border: 1px solid transparent;
   color: #2c3e50;
   font-size: 0.78rem;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   border-radius: 3px;
@@ -239,6 +259,7 @@
   border-radius: 3px;
   cursor: pointer;
   font-size: 0.78rem;
+  font-weight: 700;
   color: #2c3e50;
   user-select: none;
   white-space: nowrap;
@@ -315,6 +336,40 @@
 .save-tooltip-fade-enter-from   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
 .save-tooltip-fade-leave-to     { opacity: 0; transform: translateX(-50%) translateY(-4px); }
 
+/* ── Zoom controls ── */
+.tb-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid #c8d4da;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tb-zoom-btn {
+  border: none;
+  border-radius: 0;
+  padding: 0.3rem 0.45rem;
+}
+
+.tb-zoom-btn:hover:not(:disabled) {
+  border: none;
+}
+
+.tb-zoom-indicator {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: #2c3e50;
+  padding: 0 0.4rem;
+  min-width: 3.2em;
+  text-align: center;
+  user-select: none;
+  border-left: 1px solid #c8d4da;
+  border-right: 1px solid #c8d4da;
+  white-space: nowrap;
+}
+
 /* Touch-mode button: desktop pointer devices hide it, mobile shows it */
 @media (hover: hover) and (pointer: fine) {
   .tb-touch-mode-btn { display: none; }
@@ -360,6 +415,26 @@ import {loadRandomNonogram, checkSolution} from '../funcs.js';
 const componentKey = ref(0);
 const nonogramComponent = ref(null);
 
+// ── Zoom ─────────────────────────────────────────────────────────────────────
+const ZOOM_KEY  = 'nonogram_zoom';
+const ZOOM_STEP = 25;
+const ZOOM_MIN  = 50;
+const ZOOM_MAX  = 200;
+const zoomLevel = ref(parseInt(localStorage.getItem(ZOOM_KEY) || '100', 10));
+
+function zoomIn()  {
+  if (zoomLevel.value < ZOOM_MAX) {
+    zoomLevel.value = Math.min(ZOOM_MAX, zoomLevel.value + ZOOM_STEP);
+    localStorage.setItem(ZOOM_KEY, String(zoomLevel.value));
+  }
+}
+function zoomOut() {
+  if (zoomLevel.value > ZOOM_MIN) {
+    zoomLevel.value = Math.max(ZOOM_MIN, zoomLevel.value - ZOOM_STEP);
+    localStorage.setItem(ZOOM_KEY, String(zoomLevel.value));
+  }
+}
+
 const canUndo = computed(() => nonogramComponent.value?.canUndo);
 const canRedo = computed(() => nonogramComponent.value?.canRedo);
 const hasErrors = computed(() => nonogramComponent.value?.hasErrors || false);
@@ -399,6 +474,7 @@ const rowValues = ref([]);
 const colValues = ref([]);
 const resultData = ref(null);
 const nonogramId = ref(null);
+const autoSolveReported = ref(false); // prevent double-reporting for same puzzle
 const nonogramSize = ref({rows: 0, cols: 0});
 const initialGrid = ref(null);
 const initialMarkedRowClues = ref(null);
@@ -412,6 +488,7 @@ function setNonogramData(rows, cols, data, id, grid = null, markedRowClues = nul
   resultData.value = data;
   nonogramId.value = id;
   nonogramSize.value = {rows: rows.length, cols: cols.length};
+  autoSolveReported.value = false;
   
   if (!grid) {
     grid = Array.from({length: rows.length}, () => Array.from({length: cols.length}, () => 0));
@@ -479,6 +556,16 @@ function performSave() {
 function handleChange() {
   performSave();
   hasUnsavedChanges.value = true;
+
+  // Auto-detect solve: fires on the first change that leaves the puzzle solved
+  if (!autoSolveReported.value && nonogramComponent.value?.isSolved) {
+    autoSolveReported.value = true;
+    // Show Браво + mark correct cells (same as clicking "Проверить")
+    nonogramComponent.value.check(true, true);
+    // Record on backend; if accepted, refresh the finished-count badge
+    const result = checkSolution(nonogramId.value, nonogramComponent.value.grid);
+    if (result) emit('loaded');
+  }
 }
 
 const SAVE_TOOLTIP_KEY = 'nonogram_save_tooltip_shown';
@@ -499,10 +586,6 @@ function check() {
   checkSolution(nonogramId.value, nonogramComponent.value.grid);
 }
 
-function handleAutoSolved() {
-  const result = checkSolution(nonogramId.value, nonogramComponent.value.grid);
-  if (result) emit('loaded'); // refresh finished count in sidebar
-}
 
 function requestReload() {
   dialogMessage.value = 'Будет загружен новый кроссворд, вы точно уверены?';
