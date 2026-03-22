@@ -588,6 +588,12 @@ function check() {
 
 
 function requestReload() {
+  const g = nonogramComponent.value?.grid;
+  const hasProgress = g?.some(row => row.some(cell => cell !== 0)) ?? false;
+  if (!hasProgress) {
+    reload();
+    return;
+  }
   dialogMessage.value = 'Будет загружен новый кроссворд, вы точно уверены?';
   pendingAction.value = 'reload';
   showDialog.value = true;
