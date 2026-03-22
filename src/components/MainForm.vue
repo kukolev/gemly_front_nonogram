@@ -500,7 +500,8 @@ function check() {
 }
 
 function handleAutoSolved() {
-  checkSolution(nonogramId.value, nonogramComponent.value.grid);
+  const result = checkSolution(nonogramId.value, nonogramComponent.value.grid);
+  if (result) emit('loaded'); // refresh finished count in sidebar
 }
 
 function requestReload() {
