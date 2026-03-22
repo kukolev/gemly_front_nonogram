@@ -38,7 +38,7 @@
             </div>
           </div>
           <div class="item-actions">
-            <button class="action-btn edit-btn" title="Edit">
+            <button class="action-btn edit-btn" title="Edit" @click="handleEdit(item)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -60,15 +60,25 @@
         </div>
       </div>
     </div>
+
+    <ShoppingEdit 
+      v-if="isEditDialogOpen" 
+      :item="editingItem" 
+      @save="handleSaveEdit" 
+      @cancel="isEditDialogOpen = false" 
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import ShoppingEdit from './ShoppingEdit.vue';
 
 const items = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const editingItem = ref(null);
+const isEditDialogOpen = ref(false);
 
 const getList = () => {
   loading.value = true;
@@ -100,7 +110,7 @@ const getList = () => {
   }
 };
 
-const saveItem = (item, status = 'DONE') => {
+const saveItem = (item, status = null) => {
   try {
     const protocol = import.meta.env.ENV_SERVER_PROTOCOL || window.location.protocol.replace(':', '');
     const address = import.meta.env.ENV_SERVER_ADDRESS || window.location.host;
@@ -113,7 +123,7 @@ const saveItem = (item, status = 'DONE') => {
     
     const payload = {
       ...item,
-      status: status
+      status: status !== null ? status : item.status
     };
     
     request.send(JSON.stringify(payload));
@@ -131,6 +141,17 @@ const saveItem = (item, status = 'DONE') => {
 const handleCheckboxChange = (event, item) => {
   const newStatus = event.target.checked ? 'DONE' : 'REGULAR';
   saveItem(item, newStatus);
+};
+
+const handleEdit = (item) => {
+  editingItem.value = { ...item };
+  isEditDialogOpen.value = true;
+};
+
+const handleSaveEdit = (updatedItem) => {
+  saveItem(updatedItem);
+  isEditDialogOpen.value = false;
+  editingItem.value = null;
 };
 
 onMounted(() => {
