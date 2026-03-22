@@ -1,7 +1,9 @@
 <template>
   <div class="shopping-page">
     <div class="shopping-header">
-      <h2>Список покупок</h2>
+      <div class="header-left">
+        <h2>Список покупок</h2>
+      </div>
       <button class="add-btn" @click="handleAdd">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
           <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -86,6 +88,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ShoppingEdit from './ShoppingEdit.vue';
+
+const emit = defineEmits(['back']);
 
 const items = ref([]);
 const loading = ref(true);
@@ -238,6 +242,36 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.back-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .add-btn {
@@ -399,6 +433,17 @@ onMounted(() => {
 
 /* Mobile optimizations */
 @media (max-width: 640px) {
+  .shopping-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .shopping-page {
     padding: 12px;
   }

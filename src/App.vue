@@ -212,10 +212,11 @@ function handleCheck() {
   <div v-else-if="accessDenied">Access denied</div>
   <div v-else class="app-layout">
     <AppSidebar
+      v-if="currentPage !== 'shopping'"
       :finished-count="finishedCount"
       :show-plus-one="showPlusOne"
       :show-buttons="currentPage === 'main'"
-      :show-back-button="currentPage === 'finished' || currentPage === 'shopping' || currentPage === 'about' || currentPage === 'contacts'"
+      :show-back-button="currentPage === 'finished' || currentPage === 'about' || currentPage === 'contacts'"
       :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @show-finished="showFinished"
@@ -226,7 +227,7 @@ function handleCheck() {
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
       @back="showMainForm"
     />
-    <div class="app-body">
+    <div class="app-body" :class="{'no-sidebar': currentPage === 'shopping'}">
       <main class="app-content">
         <Admin v-if="isAdmin" />
         <template v-else>
@@ -263,6 +264,10 @@ function handleCheck() {
   min-height: 100vh;
 }
 
+.app-body.no-sidebar {
+  margin-left: 0;
+}
+
 .app-content {
   flex: 1;
 }
@@ -270,6 +275,9 @@ function handleCheck() {
 @media (max-width: 640px) {
   .app-body {
     margin-left: 48px;
+  }
+  .app-body.no-sidebar {
+    margin-left: 0;
   }
 }
 </style>
