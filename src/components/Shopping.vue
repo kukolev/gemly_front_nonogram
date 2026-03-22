@@ -4,13 +4,6 @@
       <div class="header-left">
         <h2>Список покупок</h2>
       </div>
-      <button class="add-btn" @click="handleAdd">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Добавить</span>
-      </button>
     </div>
 
     <div v-if="loading" class="loading-state">
@@ -73,6 +66,15 @@
             </button>
           </div>
         </div>
+      </div>
+      <div class="add-btn-wrapper">
+        <button class="add-btn" @click="handleAdd">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Добавить</span>
+        </button>
       </div>
     </div>
 
@@ -295,6 +297,12 @@ onMounted(() => {
 .add-icon {
   width: 18px;
   height: 18px;
+}
+
+.add-btn-wrapper {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
 }
 
 .shopping-header h2 {
