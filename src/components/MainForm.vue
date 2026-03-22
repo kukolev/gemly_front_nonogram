@@ -110,6 +110,7 @@
         :help-mode="helpMode"
         @congrats-toggled="isCongratsShown = $event"
         @change="handleChange"
+        @auto-solved="handleAutoSolved"
       />
     </div>
   </div>
@@ -495,6 +496,10 @@ function manualSave() {
 
 function check() {
   nonogramComponent.value?.check(true, true);
+  checkSolution(nonogramId.value, nonogramComponent.value.grid);
+}
+
+function handleAutoSolved() {
   checkSolution(nonogramId.value, nonogramComponent.value.grid);
 }
 

@@ -126,7 +126,7 @@ const startHelpAnim = (cells) => {
 const showCongrats  = ref(false);
 const congratsStyle = ref({});
 
-const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled']);
+const emit = defineEmits(['clue-click', 'change', 'solved', 'congrats-toggled', 'auto-solved']);
 
 // ── Celebrations ─────────────────────────────────────────────────────────────
 const triggerCongratulations = () => {
@@ -202,7 +202,11 @@ const stopDrawing = () => {
         if (help && sol[r]?.[cStart] === 1) animCells.push({r, c: cStart});
       }
     }
-    autoMarkClues(); check(false, false); saveHistory(); emit('change');
+    autoMarkClues();
+    const wasSolved = isSolved.value;
+    check(false, true);
+    saveHistory(); emit('change');
+    if (!wasSolved && isSolved.value) emit('auto-solved');
     if (animCells.length) startHelpAnim(animCells);
   }
   isDrawing.value = false; drawingState.value = null; lockedAxis.value = null;
