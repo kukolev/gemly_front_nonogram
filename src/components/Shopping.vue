@@ -11,7 +11,7 @@
 
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="fetchItems" class="retry-btn">Повторить</button>
+      <button @click="getList" class="retry-btn">Повторить</button>
     </div>
 
     <div v-else class="shopping-content">
@@ -26,10 +26,15 @@
           class="item-card"
         >
           <div class="item-left">
-            <input type="checkbox" class="item-checkbox" />
+            <input 
+              type="checkbox" 
+              class="item-checkbox" 
+              :checked="item.status === 'DONE'"
+              @change="handleCheckboxChange($event, item)"
+            />
             <div class="item-main">
               <span class="item-number">#{{ item.number }}</span>
-              <span class="item-topic">{{ item.topic }}</span>
+              <span class="item-topic" :class="{ 'done': item.status === 'DONE' }">{{ item.topic }}</span>
             </div>
           </div>
           <div class="item-actions">
@@ -39,7 +44,11 @@
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
             </button>
-            <button class="action-btn delete-btn" title="Delete">
+            <button 
+              class="action-btn delete-btn" 
+              title="Delete"
+              @click="saveItem(item, 'DELETED')"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -61,7 +70,7 @@ const items = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-const fetchItems = () => {
+const getList = () => {
   loading.value = true;
   error.value = null;
   try {
@@ -91,8 +100,41 @@ const fetchItems = () => {
   }
 };
 
+const saveItem = (item, status = 'DONE') => {
+  try {
+    const protocol = import.meta.env.ENV_SERVER_PROTOCOL || window.location.protocol.replace(':', '');
+    const address = import.meta.env.ENV_SERVER_ADDRESS || window.location.host;
+    
+    const request = new XMLHttpRequest();
+    // Use the provided POST api/v1/shopping.saveItem
+    request.open("POST", `${protocol}://${address}/api/v1/shopping.saveItem`, false);
+    request.withCredentials = true;
+    request.setRequestHeader('Content-Type', 'application/json');
+    
+    const payload = {
+      ...item,
+      status: status
+    };
+    
+    request.send(JSON.stringify(payload));
+
+    if (request.status === 200) {
+      getList();
+    } else {
+      console.error('Save failed:', request.status);
+    }
+  } catch (err) {
+    console.error('Save error:', err);
+  }
+};
+
+const handleCheckboxChange = (event, item) => {
+  const newStatus = event.target.checked ? 'DONE' : 'REGULAR';
+  saveItem(item, newStatus);
+};
+
 onMounted(() => {
-  fetchItems();
+  getList();
 });
 </script>
 
@@ -167,6 +209,11 @@ onMounted(() => {
   color: #1e293b;
   font-weight: 500;
   font-size: 1.1rem;
+}
+
+.item-topic.done {
+  text-decoration: line-through;
+  color: #94a3b8;
 }
 
 .item-actions {
