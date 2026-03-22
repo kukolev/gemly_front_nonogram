@@ -9,7 +9,7 @@ defineProps({
   showBackButton:{ type: Boolean, default: false },
 })
 
-defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'show-contacts', 'toggle-touch-mode', 'back'])
+defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'show-contacts', 'show-shopping', 'toggle-touch-mode', 'back'])
 
 const mobileOpen = ref(false);
 const toggleMobile = () => { mobileOpen.value = !mobileOpen.value; };
@@ -114,6 +114,17 @@ const closeMobile  = () => { mobileOpen.value = false; };
           <polyline points="22,6 12,13 2,6"/>
         </svg>
         <span class="btn-label">Обратная связь</span>
+      </button>
+
+      <!-- Shopping -->
+      <button name="shopping-button" class="side-btn" @click="$emit('show-shopping')"
+              title="Список покупок">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span class="btn-label">Список покупок</span>
       </button>
 
       <!-- Draw result (admin only) - placeholder kept for potential future use -->
@@ -302,11 +313,12 @@ const closeMobile  = () => { mobileOpen.value = false; };
   color: #4e83a6;
 }
 
-/* ── Touch-mode: hide on pointer devices ── */
+/* ── Touch-mode: hide on pointer devices and on mobile (shown in toolbar there) ── */
 @media (hover: hover) and (pointer: fine) {
-  .touch-mode-btn {
-    display: none;
-  }
+  .touch-mode-btn { display: none; }
+}
+@media (max-width: 640px) {
+  .touch-mode-btn { display: none; }
 }
 
 /* ── Hamburger button (mobile only) ── */

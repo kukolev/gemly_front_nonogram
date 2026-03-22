@@ -76,6 +76,22 @@
         <span>Подсказка</span>
       </label>
 
+      <!-- Touch-mode toggle (mobile only) -->
+      <button class="tb-btn tb-touch-mode-btn" :class="{'tb-touch-mode-active': touchMarkMode}"
+              @click="emit('toggle-touch-mode')"
+              :title="touchMarkMode ? 'Режим: пометить' : 'Режим: закрасить'">
+        <svg v-if="!touchMarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" fill="currentColor" stroke="currentColor"/>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16"/>
+          <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
+        </svg>
+        <span>{{ touchMarkMode ? 'Пометить' : 'Закрасить' }}</span>
+      </button>
+
     </div>
     <div class="nonogram-wrapper">
       <Nonogram
@@ -298,6 +314,17 @@
 .save-tooltip-fade-enter-from   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
 .save-tooltip-fade-leave-to     { opacity: 0; transform: translateX(-50%) translateY(-4px); }
 
+/* Touch-mode button: desktop pointer devices hide it, mobile shows it */
+@media (hover: hover) and (pointer: fine) {
+  .tb-touch-mode-btn { display: none; }
+}
+
+.tb-touch-mode-active {
+  background: #e0f5ff !important;
+  border-color: #00bfff !important;
+  color: #007aa3 !important;
+}
+
 .nonogram-wrapper {
   margin: 0;
   padding: 0px 0 0 25px;
@@ -305,11 +332,17 @@
   justify-content: flex-start;
   overflow-x: auto; /* horizontal scroll stays below the sticky toolbar */
 }
+
+@media (max-width: 640px) {
+  .nonogram-wrapper {
+    padding-left: 0;
+  }
+}
 </style>
 
 <script setup>
 
-const emit = defineEmits(['show-finished', 'loaded', 'check'])
+const emit = defineEmits(['show-finished', 'loaded', 'check', 'toggle-touch-mode'])
 
 const props = defineProps({
   touchMarkMode: { type: Boolean, default: false },

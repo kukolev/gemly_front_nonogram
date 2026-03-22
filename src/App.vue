@@ -8,6 +8,7 @@ import ContactsPage from "@/components/ContactsPage.vue";
 import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
 import AppFooter from "@/components/AppFooter.vue";
+import Shopping from "@/components/Shopping.vue";
 
 import {loadData, loadRandomNonogram, checkSolution, checkAdmin, getFinishedCount} from './funcs.js';
 
@@ -30,6 +31,7 @@ const pageTitle = computed(() => {
     case 'finished': return 'Завершенные кроссворды';
     case 'about': return 'О проекте';
     case 'contacts': return 'Обратная связь';
+    case 'shopping': return 'Список покупок';
     default: return 'Добро пожаловать!';
   }
 });
@@ -80,6 +82,8 @@ const updateRoute = () => {
     isAdmin.value = false;
     if (path.includes('/nonogram/finished_nonograms')) {
       currentPage.value = 'finished';
+    } else if (path.includes('/shopping')) {
+      currentPage.value = 'shopping';
     } else if (path.includes('/nonogram/about')) {
       currentPage.value = 'about';
     } else if (path.includes('/nonogram/contacts')) {
@@ -127,6 +131,12 @@ function showContacts() {
   currentPage.value = 'contacts';
 }
 
+function showShopping() {
+  mainFormRef.value?.performSave();
+  window.history.pushState({}, '', '/shopping');
+  currentPage.value = 'shopping';
+}
+
 function showLanding() {
   window.history.pushState({}, '', '/');
   currentPage.value = 'landing';
@@ -153,6 +163,10 @@ const PAGE_META = {
   contacts: {
     title: 'Японские кроссворды',
     description: 'Свяжитесь с нами по любым вопросам, предложениям или замечаниям по работе сайта.',
+  },
+  shopping: {
+    title: 'Список покупок',
+    description: 'Ваш список покупок.',
   },
 };
 
@@ -201,12 +215,13 @@ function handleCheck() {
       :finished-count="finishedCount"
       :show-plus-one="showPlusOne"
       :show-buttons="currentPage === 'main'"
-      :show-back-button="currentPage === 'finished' || currentPage === 'about' || currentPage === 'contacts'"
+      :show-back-button="currentPage === 'finished' || currentPage === 'shopping' || currentPage === 'about' || currentPage === 'contacts'"
       :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @show-finished="showFinished"
       @show-about="showAbout"
       @show-contacts="showContacts"
+      @show-shopping="showShopping"
       @go-landing="showLanding"
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
       @back="showMainForm"
@@ -222,8 +237,10 @@ function handleCheck() {
             @show-finished="showFinished"
             @loaded="updateFinishedCount"
             @check="handleCheck"
+            @toggle-touch-mode="touchMarkMode = !touchMarkMode"
           />
           <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
+          <Shopping v-else-if="currentPage === 'shopping'" @back="showMainForm" />
           <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
           <ContactsPage v-else-if="currentPage === 'contacts'" @back="showMainForm" />
           <LandingPage v-else @start="showMainForm" />
