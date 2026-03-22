@@ -259,7 +259,7 @@ onMounted(() => {
   background-color: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
-  padding: 8px 12px;
+  padding: 5px 12px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -283,7 +283,7 @@ onMounted(() => {
   background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 5px 16px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -308,7 +308,8 @@ onMounted(() => {
 .shopping-header h2 {
   color: #1e293b;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
 .items-list {
@@ -319,7 +320,7 @@ onMounted(() => {
 .item-row {
   background: transparent;
   border-bottom: 1px solid #e2e8f0;
-  padding: 16px 8px;
+  padding: 7px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -382,7 +383,7 @@ onMounted(() => {
 .action-btn {
   background: none;
   border: none;
-  padding: 8px;
+  padding: 5px;
   cursor: pointer;
   border-radius: 6px;
   color: #64748b;
@@ -421,7 +422,7 @@ onMounted(() => {
 
 .retry-btn {
   margin-top: 16px;
-  padding: 8px 16px;
+  padding: 5px 16px;
   background-color: #1e293b;
   color: white;
   border: none;
@@ -462,7 +463,7 @@ onMounted(() => {
   }
   
   .item-row {
-    padding: 12px 4px;
+    padding: 4px 4px;
     gap: 8px;
   }
 
