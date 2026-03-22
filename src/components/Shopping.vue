@@ -2,6 +2,13 @@
   <div class="shopping-page">
     <div class="shopping-header">
       <h2>Список покупок</h2>
+      <button class="add-btn" @click="handleAdd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Добавить</span>
+      </button>
     </div>
 
     <div v-if="loading" class="loading-state">
@@ -46,8 +53,14 @@
             </button>
             <button 
               class="action-btn delete-btn" 
-              title="Delete"
-              @click="saveItem(item, 'DELETED')"
+              title="Delete (hold 2s)"
+              @mousedown="startDeletePress(item)"
+              @mouseup="cancelDeletePress(item)"
+              @mouseleave="cancelDeletePress(item)"
+              @touchstart.passive="startDeletePress(item)"
+              @touchend="cancelDeletePress(item)"
+              @touchcancel="cancelDeletePress(item)"
+              :style="getDeleteButtonStyle(item.id)"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -79,6 +92,52 @@ const loading = ref(true);
 const error = ref(null);
 const editingItem = ref(null);
 const isEditDialogOpen = ref(false);
+
+const pressTimers = ref({});
+const pressProgress = ref({});
+
+const startDeletePress = (item) => {
+  if (pressTimers.value[item.id]) return;
+  
+  const startTime = Date.now();
+  const duration = 500;
+  
+  pressProgress.value[item.id] = 0;
+  
+  const interval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    pressProgress.value[item.id] = Math.min((elapsed / duration) * 100, 100);
+    
+    if (elapsed >= duration) {
+      clearInterval(interval);
+      saveItem(item, 'DELETED');
+      delete pressTimers.value[item.id];
+      delete pressProgress.value[item.id];
+    }
+  }, 50);
+  
+  pressTimers.value[item.id] = interval;
+};
+
+const cancelDeletePress = (item) => {
+  if (pressTimers.value[item.id]) {
+    clearInterval(pressTimers.value[item.id]);
+    delete pressTimers.value[item.id];
+    delete pressProgress.value[item.id];
+  }
+};
+
+const getDeleteButtonStyle = (id) => {
+  const progress = pressProgress.value[id];
+  if (progress === undefined) return {};
+  
+  return {
+    background: `linear-gradient(to top, rgba(220, 38, 38, 0.2) ${progress}%, transparent ${progress}%)`,
+    color: progress > 50 ? '#dc2626' : '#64748b',
+    border: '1px solid rgba(220, 38, 38, 0.3)',
+    transition: 'none'
+  };
+};
 
 const getList = () => {
   loading.value = true;
@@ -148,6 +207,11 @@ const handleEdit = (item) => {
   isEditDialogOpen.value = true;
 };
 
+const handleAdd = () => {
+  editingItem.value = { topic: '', status: 'REGULAR', number: items.value.length + 1 };
+  isEditDialogOpen.value = true;
+};
+
 const handleSaveEdit = (updatedItem) => {
   saveItem(updatedItem);
   isEditDialogOpen.value = false;
@@ -171,6 +235,32 @@ onMounted(() => {
   margin-bottom: 24px;
   border-bottom: 2px solid #e2e8f0;
   padding-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+  background-color: #2563eb;
+}
+
+.add-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .shopping-header h2 {
@@ -265,6 +355,10 @@ onMounted(() => {
 
 .delete-btn:hover {
   color: #dc2626;
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
 }
 
 .action-icon {
