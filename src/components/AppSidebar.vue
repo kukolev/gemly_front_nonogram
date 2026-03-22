@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue';
+
 defineProps({
   showPlusOne:   { type: Boolean, default: false },
   showButtons:   { type: Boolean, default: false },
@@ -7,11 +9,30 @@ defineProps({
   showBackButton:{ type: Boolean, default: false },
 })
 
-defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touch-mode', 'back'])
+defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'show-contacts', 'toggle-touch-mode', 'back'])
+
+const mobileOpen = ref(false);
+const toggleMobile = () => { mobileOpen.value = !mobileOpen.value; };
+const closeMobile  = () => { mobileOpen.value = false; };
 </script>
 
 <template>
-  <aside class="app-sidebar">
+  <!-- Hamburger (mobile only) -->
+  <button class="hamburger-btn" @click="toggleMobile" aria-label="Меню">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+         stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6"  x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Backdrop (mobile only) -->
+  <transition name="backdrop-fade">
+    <div v-if="mobileOpen" class="sidebar-backdrop" @click="closeMobile"></div>
+  </transition>
+
+  <aside class="app-sidebar" :class="{'sidebar-open': mobileOpen}" @click.stop>
 
     <!-- Title -->
     <div class="sidebar-title" @click="$emit('go-landing')">
@@ -82,6 +103,17 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
               title="О проекте">
         <span class="about-icon">?</span>
         <span class="btn-label">О проекте</span>
+      </button>
+
+      <!-- Contacts -->
+      <button name="nonogram-contacts-button" class="side-btn" @click="$emit('show-contacts')"
+              title="Обратная связь">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <span class="btn-label">Обратная связь</span>
       </button>
 
       <!-- Draw result (admin only) - placeholder kept for potential future use -->
@@ -277,52 +309,62 @@ defineEmits(['reload', 'show-finished', 'go-landing', 'show-about', 'toggle-touc
   }
 }
 
-/* ── Mobile: icon-only narrow sidebar ── */
+/* ── Hamburger button (mobile only) ── */
+.hamburger-btn {
+  display: none;
+}
+
 @media (max-width: 640px) {
-  .app-sidebar {
-    width: 48px;
-  }
-
-  .sidebar-title {
-    font-size: 0;          /* hide text */
-    padding: 0.9rem 0;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .sidebar-title::before {
-    content: '⊞';
-    font-size: 1.2rem;
-    color: #fff;
-  }
-
-  .btn-label {
-    display: none;
-  }
-
-  .side-btn {
+  /* Hamburger */
+  .hamburger-btn {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    padding: 0.75rem 0;
-    border-left: none;
-    border-bottom: 2px solid transparent;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 48px;
+    height: 50px;
+    background: #f0f0f0;
+    border: none;
+    border-right: 1px solid #d0d0d0;
+    border-bottom: 1px solid #d0d0d0;
+    color: #2c3e50;
+    cursor: pointer;
+    z-index: 201;
+    padding: 0;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .side-btn:hover:not(:disabled) {
-    border-left-color: transparent;
-    border-bottom-color: #7fb3d3;
-  }
-
-  .side-btn svg {
+  .hamburger-btn svg {
     width: 20px;
     height: 20px;
   }
 
-  .plus-one {
-    display: none;
+  /* Backdrop */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 199;
   }
 
-  .sidebar-sep {
-    margin: 0.25rem 0;
+  .backdrop-fade-enter-active,
+  .backdrop-fade-leave-active { transition: opacity 0.22s ease; }
+  .backdrop-fade-enter-from,
+  .backdrop-fade-leave-to     { opacity: 0; }
+
+  /* Sidebar: hidden off-screen, slides in */
+  .app-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+    width: 250px;
+  }
+
+  .app-sidebar.sidebar-open {
+    transform: translateX(0);
   }
 }
 </style>

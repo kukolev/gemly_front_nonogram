@@ -4,6 +4,7 @@ import AppSidebar from "@/components/AppSidebar.vue";
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
 import AboutPage from "@/components/AboutPage.vue";
+import ContactsPage from "@/components/ContactsPage.vue";
 import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
 import AppFooter from "@/components/AppFooter.vue";
@@ -28,6 +29,7 @@ const pageTitle = computed(() => {
     case 'main': return 'Японские кроссворды';
     case 'finished': return 'Завершенные кроссворды';
     case 'about': return 'О проекте';
+    case 'contacts': return 'Обратная связь';
     default: return 'Добро пожаловать!';
   }
 });
@@ -80,6 +82,8 @@ const updateRoute = () => {
       currentPage.value = 'finished';
     } else if (path.includes('/nonogram/about')) {
       currentPage.value = 'about';
+    } else if (path.includes('/nonogram/contacts')) {
+      currentPage.value = 'contacts';
     } else if (path.includes('/nonogram')) {
       currentPage.value = 'main';
     } else {
@@ -117,6 +121,12 @@ function showAbout() {
   currentPage.value = 'about';
 }
 
+function showContacts() {
+  mainFormRef.value?.performSave();
+  window.history.pushState({}, '', '/nonogram/contacts');
+  currentPage.value = 'contacts';
+}
+
 function showLanding() {
   window.history.pushState({}, '', '/');
   currentPage.value = 'landing';
@@ -125,20 +135,24 @@ function showLanding() {
 // --- SEO: per-page meta ---
 const PAGE_META = {
   landing: {
-    title: 'Японские кроссворды онлайн — нонограммы бесплатно',
+    title: 'Японские кроссворды',
     description: 'Решайте японские кроссворды (нонограммы) онлайн бесплатно. Тренируйте логику, память и концентрацию внимания.',
   },
   main: {
-    title: 'Решить кроссворд — Японские кроссворды онлайн',
+    title: 'Японские кроссворды',
     description: 'Откройте новую головоломку и решайте японские кроссворды онлайн. Проверьте свои логические способности.',
   },
   finished: {
-    title: 'Завершённые кроссворды — Японские кроссворды',
+    title: 'Японские кроссворды',
     description: 'Ваши решённые японские кроссворды. Просматривайте историю завершённых головоломок.',
   },
   about: {
-    title: 'О нонограммах и методах решения — Японские кроссворды',
+    title: 'Японские кроссворды',
     description: 'Узнайте, что такое японские кроссворды и как их решать. Методы решения нонограмм с иллюстрациями.',
+  },
+  contacts: {
+    title: 'Японские кроссворды',
+    description: 'Свяжитесь с нами по любым вопросам, предложениям или замечаниям по работе сайта.',
   },
 };
 
@@ -187,11 +201,12 @@ function handleCheck() {
       :finished-count="finishedCount"
       :show-plus-one="showPlusOne"
       :show-buttons="currentPage === 'main'"
-      :show-back-button="currentPage === 'finished' || currentPage === 'about'"
+      :show-back-button="currentPage === 'finished' || currentPage === 'about' || currentPage === 'contacts'"
       :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @show-finished="showFinished"
       @show-about="showAbout"
+      @show-contacts="showContacts"
       @go-landing="showLanding"
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
       @back="showMainForm"
@@ -210,6 +225,7 @@ function handleCheck() {
           />
           <FinishedNonograms v-else-if="currentPage === 'finished'" @back="showMainForm" />
           <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
+          <ContactsPage v-else-if="currentPage === 'contacts'" @back="showMainForm" />
           <LandingPage v-else @start="showMainForm" />
         </template>
       </main>

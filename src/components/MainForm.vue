@@ -146,7 +146,13 @@
   }
 
   .nonogram-toolbar {
-    left: 48px; /* mobile sidebar width */
+    left: 48px; /* hamburger button width */
+  }
+
+  /* Icon-only toolbar on mobile */
+  .tb-btn span,
+  .tb-help-label span:last-child {
+    display: none;
   }
 }
 
