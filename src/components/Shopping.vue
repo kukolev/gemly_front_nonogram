@@ -25,7 +25,7 @@
         <div 
           v-for="item in items" 
           :key="item.id" 
-          class="item-card"
+          class="item-row"
         >
           <div class="item-left">
             <input 
@@ -314,23 +314,28 @@ onMounted(() => {
 .items-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.item-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px;
+.item-row {
+  background: transparent;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.1s;
+  transition: background-color 0.2s;
 }
 
-.item-card:active {
-  transform: scale(0.98);
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-row:hover {
+  background-color: #f8fafc;
+}
+
+.item-row:active {
+  background-color: #f1f5f9;
 }
 
 .item-left {
@@ -456,8 +461,8 @@ onMounted(() => {
     padding: 12px;
   }
   
-  .item-card {
-    padding: 12px;
+  .item-row {
+    padding: 12px 4px;
     gap: 8px;
   }
 
