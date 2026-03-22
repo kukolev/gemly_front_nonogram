@@ -35,7 +35,6 @@
               @change="handleCheckboxChange($event, item)"
             />
             <div class="item-main">
-              <span class="item-number">#{{ item.number }}</span>
               <span class="item-topic" :class="{ 'done': item.status === 'DONE' }">{{ item.topic }}</span>
             </div>
           </div>
@@ -68,6 +67,13 @@
         </div>
       </div>
       <div class="add-btn-wrapper">
+        <button class="refresh-btn" @click="getList" title="Обновить список">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="refresh-icon">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
         <button class="add-btn" @click="handleAdd">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -88,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import ShoppingEdit from './ShoppingEdit.vue';
 
 const emit = defineEmits(['back']);
@@ -101,6 +107,7 @@ const isEditDialogOpen = ref(false);
 
 const pressTimers = ref({});
 const pressProgress = ref({});
+let refreshInterval = null;
 
 const startDeletePress = (item) => {
   if (pressTimers.value[item.id]) return;
@@ -145,33 +152,52 @@ const getDeleteButtonStyle = (id) => {
   };
 };
 
-const getList = () => {
-  loading.value = true;
-  error.value = null;
+const getList = (showLoading = true) => {
+  if (showLoading) {
+    loading.value = true;
+    error.value = null;
+  }
   try {
     const protocol = import.meta.env.ENV_SERVER_PROTOCOL || window.location.protocol.replace(':', '');
     const address = import.meta.env.ENV_SERVER_ADDRESS || window.location.host;
     
     const request = new XMLHttpRequest();
-    // Use the provided GET api/v1/shopping.getList
-    request.open("GET", `${protocol}://${address}/api/v1/shopping.getList`, false);
+    // Use true for async
+    request.open("GET", `${protocol}://${address}/api/v1/shopping.getList`, true);
     request.withCredentials = true;
-    request.send(null);
+    
+    request.onload = () => {
+      if (request.status === 200) {
+        try {
+          const data = JSON.parse(request.responseText);
+          const fetchedItems = data.items || [];
+          fetchedItems.sort((a, b) => (a.number || 0) - (b.number || 0));
+          items.value = fetchedItems;
+          if (showLoading) error.value = null;
+        } catch (e) {
+          if (showLoading) error.value = 'Ошибка при разборе данных';
+          console.error('Parse error:', e);
+        }
+      } else if (request.status === 403) {
+        if (showLoading) error.value = 'Доступ запрещен (только для администраторов)';
+      } else {
+        if (showLoading) error.value = 'Не удалось загрузить список (ошибка ' + request.status + ')';
+      }
+      if (showLoading) loading.value = false;
+    };
 
-    if (request.status === 200) {
-      const data = JSON.parse(request.responseText);
-      // ItemsList has 'items' field
-      items.value = data.items || [];
-    } else if (request.status === 403) {
-      error.value = 'Доступ запрещен (только для администраторов)';
-    } else {
-      error.value = 'Не удалось загрузить список (ошибка ' + request.status + ')';
-    }
+    request.onerror = () => {
+      if (showLoading) error.value = 'Ошибка при подключении к серверу';
+      if (showLoading) loading.value = false;
+    };
+
+    request.send(null);
   } catch (err) {
-    error.value = 'Ошибка при подключении к серверу';
+    if (showLoading) {
+      error.value = 'Ошибка при подключении к серверу';
+      loading.value = false;
+    }
     console.error('Fetch error:', err);
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -181,8 +207,8 @@ const saveItem = (item, status = null) => {
     const address = import.meta.env.ENV_SERVER_ADDRESS || window.location.host;
     
     const request = new XMLHttpRequest();
-    // Use the provided POST api/v1/shopping.saveItem
-    request.open("POST", `${protocol}://${address}/api/v1/shopping.saveItem`, false);
+    // Use true for async to be consistent and responsive
+    request.open("POST", `${protocol}://${address}/api/v1/shopping.saveItem`, true);
     request.withCredentials = true;
     request.setRequestHeader('Content-Type', 'application/json');
     
@@ -191,13 +217,15 @@ const saveItem = (item, status = null) => {
       status: status !== null ? status : item.status
     };
     
+    request.onload = () => {
+      if (request.status === 200) {
+        getList(false); // Background refresh after save
+      } else {
+        console.error('Save failed:', request.status);
+      }
+    };
+    
     request.send(JSON.stringify(payload));
-
-    if (request.status === 200) {
-      getList();
-    } else {
-      console.error('Save failed:', request.status);
-    }
   } catch (err) {
     console.error('Save error:', err);
   }
@@ -226,6 +254,15 @@ const handleSaveEdit = (updatedItem) => {
 
 onMounted(() => {
   getList();
+  refreshInterval = setInterval(() => {
+    getList(false);
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 </script>
 
@@ -276,6 +313,30 @@ onMounted(() => {
   height: 18px;
 }
 
+.refresh-btn {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.refresh-btn:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.refresh-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .add-btn {
   display: flex;
   align-items: center;
@@ -283,8 +344,9 @@ onMounted(() => {
   background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 5px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  height: 44px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -303,6 +365,7 @@ onMounted(() => {
   margin-top: 24px;
   display: flex;
   justify-content: center;
+  gap: 12px;
 }
 
 .shopping-header h2 {
@@ -355,13 +418,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.item-number {
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.9rem;
-  min-width: 40px;
 }
 
 .item-topic {
@@ -453,8 +509,13 @@ onMounted(() => {
     gap: 12px;
   }
 
-  .add-btn {
+  .add-btn-wrapper {
     width: 100%;
+    gap: 8px;
+  }
+
+  .add-btn {
+    flex: 1;
     justify-content: center;
   }
 
@@ -473,10 +534,6 @@ onMounted(() => {
 
   .item-topic {
     font-size: 1rem;
-  }
-  
-  .item-number {
-    min-width: 30px;
   }
 }
 </style>

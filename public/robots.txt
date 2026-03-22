@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /shtokupilka
+Disallow: /shopping
 
 Sitemap: https://rubyruby.games/sitemap.xml
