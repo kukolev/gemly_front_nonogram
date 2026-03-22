@@ -24,17 +24,29 @@
           v-for="item in items" 
           :key="item.id" 
           class="item-card"
-          :class="{ 
-            'status-done': item.status === 'DONE',
-            'status-deleted': item.status === 'DELETED'
-          }"
         >
-          <div class="item-main">
-            <span class="item-number">#{{ item.number }}</span>
-            <span class="item-topic">{{ item.topic }}</span>
+          <div class="item-left">
+            <input type="checkbox" class="item-checkbox" />
+            <div class="item-main">
+              <span class="item-number">#{{ item.number }}</span>
+              <span class="item-topic">{{ item.topic }}</span>
+            </div>
           </div>
-          <div class="item-badge" :class="'badge-' + item.status.toLowerCase()">
-            {{ getStatusLabel(item.status) }}
+          <div class="item-actions">
+            <button class="action-btn edit-btn" title="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="action-btn delete-btn" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -48,15 +60,6 @@ import { ref, onMounted } from 'vue';
 const items = ref([]);
 const loading = ref(true);
 const error = ref(null);
-
-const getStatusLabel = (status) => {
-  switch (status) {
-    case 'REGULAR': return 'Обычный';
-    case 'DONE': return 'Готово';
-    case 'DELETED': return 'Удалено';
-    default: return status;
-  }
-};
 
 const fetchItems = () => {
   loading.value = true;
@@ -135,6 +138,18 @@ onMounted(() => {
   transform: scale(0.98);
 }
 
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.item-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
 .item-main {
   display: flex;
   align-items: center;
@@ -154,41 +169,39 @@ onMounted(() => {
   font-size: 1.1rem;
 }
 
-.item-badge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  text-transform: uppercase;
+.item-actions {
+  display: flex;
+  gap: 4px;
 }
 
-.badge-regular {
-  background-color: #dbeafe;
-  color: #1e40af;
+.action-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.badge-done {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.badge-deleted {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.status-done {
-  background-color: #f8fafc;
-}
-
-.status-done .item-topic {
-  text-decoration: line-through;
-  color: #94a3b8;
-}
-
-.status-deleted {
-  opacity: 0.5;
+.action-btn:hover {
   background-color: #f1f5f9;
+}
+
+.edit-btn:hover {
+  color: #2563eb;
+}
+
+.delete-btn:hover {
+  color: #dc2626;
+}
+
+.action-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .loading-state, .error-state, .empty-state {
@@ -230,17 +243,19 @@ onMounted(() => {
   
   .item-card {
     padding: 12px;
-    flex-direction: column;
-    align-items: flex-start;
     gap: 8px;
   }
-  
-  .item-badge {
-    align-self: flex-end;
+
+  .item-left {
+    gap: 12px;
   }
 
   .item-topic {
     font-size: 1rem;
+  }
+  
+  .item-number {
+    min-width: 30px;
   }
 }
 </style>
