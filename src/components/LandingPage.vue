@@ -2,13 +2,12 @@
   <div class="landing-page">
     <main class="content">
       <article class="article">
-        <h2 class="welcome-title">Добро пожаловать на сайт Ruby Ruby Games!</h2>
+        <h2 class="welcome-title">{{ t('landing.welcome') }}</h2>
         <p>
-          Наш сайт содержит... ну точнее будет содержать множество увлекательных игр и развлечений на любой вкус!
-          Ну а пока у нас есть просто
+          {{ t('landing.description') }}
         </p>
         <div class="hero-actions">
-          <button @click="$emit('start')" class="start-btn">Японские кроссворды</button>
+          <button @click="$emit('start')" class="start-btn">{{ t('landing.start') }}</button>
         </div>
       </article>
     </main>
@@ -17,7 +16,10 @@
 
 <script setup>
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {countVisit} from "@/funcs.js";
+
+const { t } = useI18n();
 
 defineEmits(['start']);
 

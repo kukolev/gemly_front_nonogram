@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
   showPlusOne:   { type: Boolean, default: false },
@@ -18,7 +21,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
 
 <template>
   <!-- Hamburger (mobile only) -->
-  <button class="hamburger-btn" @click="toggleMobile" aria-label="Меню">
+  <button class="hamburger-btn" @click="toggleMobile" :aria-label="t('sidebar.menu')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
          stroke-linecap="round" stroke-linejoin="round">
       <line x1="3" y1="6"  x2="21" y2="6"/>
@@ -37,7 +40,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
     <!-- Title -->
     <div class="sidebar-title" @click="$emit('go-landing')">
       <img src="/logo.png" alt="logo" class="sidebar-logo" />
-      Японские кроссворды
+      {{ t('app.title') }}
     </div>
 
     <!-- Back button (finished / about pages) -->
@@ -46,7 +49,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
            stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
-      <span class="btn-label">Назад к кроссворду</span>
+      <span class="btn-label">{{ t('sidebar.backToCrossword') }}</span>
     </button>
 
     <!-- Main nav (only on the puzzle page) -->
@@ -54,19 +57,19 @@ const closeMobile  = () => { mobileOpen.value = false; };
 
       <!-- New crossword -->
       <button name="nonogram-reload-button" class="side-btn" @click="$emit('reload')"
-              title="Загрузить новый кроссворд">
+              :title="t('sidebar.randomCrossword')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span class="btn-label">Случайный кроссворд</span>
+        <span class="btn-label">{{ t('sidebar.randomCrossword') }}</span>
       </button>
 
       <!-- Touch mode (touch devices only) -->
       <button name="nonogram-touch-mode-button" class="side-btn touch-mode-btn"
               :class="{'btn-active': touchMarkMode}"
               @click="$emit('toggle-touch-mode')"
-              :title="touchMarkMode ? 'Режим: пометить' : 'Режим: закрасить'">
+              :title="touchMarkMode ? t('toolbar.mark') : t('toolbar.fill')">
         <svg v-if="!touchMarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="4" y="4" width="16" height="16" fill="currentColor" stroke="currentColor"/>
@@ -76,7 +79,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
           <rect x="4" y="4" width="16" height="16"/>
           <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
         </svg>
-        <span class="btn-label">{{ touchMarkMode ? 'Пометить' : 'Закрасить' }}</span>
+        <span class="btn-label">{{ touchMarkMode ? t('toolbar.mark') : t('toolbar.fill') }}</span>
       </button>
 
       <!-- Separator -->
@@ -84,7 +87,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
 
       <!-- Finished -->
       <button name="nonogram-finished-button" class="side-btn finished-btn"
-              @click="$emit('show-finished')" title="Список завершенных кроссвордов">
+              @click="$emit('show-finished')" :title="t('pages.finished')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
@@ -92,7 +95,7 @@ const closeMobile  = () => { mobileOpen.value = false; };
           <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
         </svg>
         <span class="btn-label">
-          Завершённые
+          {{ t('sidebar.finished') }}
           <span class="finished-count">({{ finishedCount }})</span>
         </span>
         <span v-if="showPlusOne" class="plus-one">+1</span>
@@ -100,32 +103,32 @@ const closeMobile  = () => { mobileOpen.value = false; };
 
       <!-- About -->
       <button name="nonogram-about-button" class="side-btn" @click="$emit('show-about')"
-              title="О проекте">
+              :title="t('pages.about')">
         <span class="about-icon">?</span>
-        <span class="btn-label">О проекте</span>
+        <span class="btn-label">{{ t('sidebar.about') }}</span>
       </button>
 
       <!-- Contacts -->
       <button name="nonogram-contacts-button" class="side-btn" @click="$emit('show-contacts')"
-              title="Обратная связь">
+              :title="t('sidebar.feedback')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
         </svg>
-        <span class="btn-label">Обратная связь</span>
+        <span class="btn-label">{{ t('sidebar.feedback') }}</span>
       </button>
 
 
       <!-- Draw result (admin only) - placeholder kept for potential future use -->
       <button v-if="false" name="nonogram-draw-result-button" class="side-btn"
-              title="Показать решение">
+              :title="t('toolbar.solution')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
           <circle cx="12" cy="12" r="3"/>
         </svg>
-        <span class="btn-label">Решение</span>
+        <span class="btn-label">{{ t('toolbar.solution') }}</span>
       </button>
 
     </nav>

@@ -2,25 +2,25 @@
   <div class="main-form">
     <div class="nonogram-toolbar">
       <!-- Action buttons -->
-      <button class="tb-btn" @click="undo" :disabled="!canUndo" title="Отменить">
+      <button class="tb-btn" @click="undo" :disabled="!canUndo" :title="t('toolbar.undo')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
         </svg>
-        <span>Отменить</span>
+        <span>{{ t('toolbar.undo') }}</span>
       </button>
 
-      <button class="tb-btn" @click="redo" :disabled="!canRedo" title="Вернуть">
+      <button class="tb-btn" @click="redo" :disabled="!canRedo" :title="t('toolbar.redo')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
         </svg>
-        <span>Вернуть</span>
+        <span>{{ t('toolbar.redo') }}</span>
       </button>
 
 
       <button class="tb-btn" :class="{'tb-btn-error': props.checkError}"
-              @click="emit('check')" title="Проверить решение">
+              @click="emit('check')" :title="t('toolbar.check')">
         <svg v-if="!props.checkError" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
@@ -29,7 +29,7 @@
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
-        <span>{{ props.checkError ? 'Ошибки!' : 'Проверить' }}</span>
+        <span>{{ props.checkError ? t('toolbar.errors') : t('toolbar.check') }}</span>
       </button>
 
       <!-- Save button -->
@@ -37,48 +37,47 @@
         <button class="tb-btn"
                 :disabled="!hasUnsavedChanges"
                 @click="manualSave"
-                title="Сохранить прогресс">
+                :title="t('toolbar.save')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
             <polyline points="7 3 7 8 15 8"/>
           </svg>
-          <span>Сохранить</span>
+          <span>{{ t('toolbar.save') }}</span>
         </button>
         <transition name="save-tooltip-fade">
-          <div v-if="showSaveTooltip" class="tb-save-tooltip">
-            Спасибо, мы сохранили прогресс по кроссворду.<br>Прогресс регулярно сохраняется автоматически.
+          <div v-if="showSaveTooltip" class="tb-save-tooltip" v-html="t('toolbar.saveTooltip')">
           </div>
         </transition>
       </div>
 
-      <button class="tb-btn" @click="showAnswer" title="Показать ответ">
+      <button class="tb-btn" @click="showAnswer" :title="t('toolbar.answer')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M2 12C4.4 7 8 4 12 4s7.6 3 10 8c-2.4 5-6 8-10 8S4.4 17 2 12z"/>
         </svg>
-        <span>Ответ</span>
+        <span>{{ t('toolbar.answer') }}</span>
       </button>
 
-      <button v-if="props.isAdmin" class="tb-btn" @click="drawResult" title="Показать решение">
+      <button v-if="props.isAdmin" class="tb-btn" @click="drawResult" :title="t('toolbar.solution')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
           <circle cx="12" cy="12" r="3"/>
         </svg>
-        <span>Решение</span>
+        <span>{{ t('toolbar.solution') }}</span>
       </button>
 
       <label class="tb-help-label" :class="{'tb-help-active': helpMode}">
         <input type="checkbox" v-model="helpMode" class="tb-help-checkbox" />
-        <span>Подсказка</span>
+        <span>{{ t('toolbar.hint') }}</span>
       </label>
 
       <!-- Zoom controls -->
       <div class="tb-zoom">
-        <button class="tb-btn tb-zoom-btn" @click="zoomOut" :disabled="zoomLevel <= ZOOM_MIN" title="Уменьшить">
+        <button class="tb-btn tb-zoom-btn" @click="zoomOut" :disabled="zoomLevel <= ZOOM_MIN" :title="t('toolbar.zoomOut')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -86,7 +85,7 @@
           </svg>
         </button>
         <span class="tb-zoom-indicator">{{ zoomLevel }}%</span>
-        <button class="tb-btn tb-zoom-btn" @click="zoomIn" :disabled="zoomLevel >= ZOOM_MAX" title="Увеличить">
+        <button class="tb-btn tb-zoom-btn" @click="zoomIn" :disabled="zoomLevel >= ZOOM_MAX" :title="t('toolbar.zoomIn')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -98,7 +97,7 @@
       <!-- Touch-mode toggle (mobile only) -->
       <button class="tb-btn tb-touch-mode-btn" :class="{'tb-touch-mode-active': touchMarkMode}"
               @click="emit('toggle-touch-mode')"
-              :title="touchMarkMode ? 'Режим: пометить' : 'Режим: закрасить'">
+              :title="touchMarkMode ? t('toolbar.mark') : t('toolbar.fill')">
         <svg v-if="!touchMarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="4" y="4" width="16" height="16" fill="currentColor" stroke="currentColor"/>
@@ -108,14 +107,56 @@
           <rect x="4" y="4" width="16" height="16"/>
           <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
         </svg>
-        <span>{{ touchMarkMode ? 'Пометить' : 'Закрасить' }}</span>
+        <span>{{ touchMarkMode ? t('toolbar.mark') : t('toolbar.fill') }}</span>
       </button>
+
+      <!-- Language switcher -->
+      <div class="tb-lang-container" :title="t('toolbar.language')">
+        <div class="tb-lang-selected" @click="toggleLangDropdown">
+          <svg v-if="locale === 'en'" viewBox="0 0 640 480">
+            <path fill="#012169" d="M0 0h640v480H0z"/>
+            <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/>
+            <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zM226 199l-226-167V0l282 209h-56zm356 281 58-45v45h-58zM0 480l51-39 122 91h-52L0 480zm320-281-282-209h71l211 156V199zM0 0l217 161h-56L0 40V0zm640 0L423 161h56L640 40V0zM161 281 0 401v79l212-157h-51zm253-82 226 167v40L358 209h56z"/>
+            <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+            <path fill="#C8102E" d="M281 0v480h80V0h-80zM0 200v80h640v-80H0z"/>
+          </svg>
+          <svg v-else-if="locale === 'ru'" viewBox="0 0 900 600">
+            <rect width="900" height="600" fill="#fff"/>
+            <rect width="900" height="400" y="200" fill="#0039a6"/>
+            <rect width="900" height="200" y="400" fill="#d52b1e"/>
+          </svg>
+          <span class="tb-lang-label">{{ locale.toUpperCase() }}</span>
+          <svg class="tb-lang-arrow" :class="{'tb-lang-arrow-up': langDropdownOpen}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div v-if="langDropdownOpen" class="tb-lang-dropdown">
+          <div class="tb-lang-option" @click="selectLanguage('en')">
+            <svg viewBox="0 0 640 480">
+              <path fill="#012169" d="M0 0h640v480H0z"/>
+              <path fill="#FFF" d="m75 0 244 181L562 0h78v62L400 241l240 178v61h-80L320 301 81 480H0v-60l239-178L0 64V0h75z"/>
+              <path fill="#C8102E" d="m424 281 216 159v40L369 281h55zM226 199l-226-167V0l282 209h-56zm356 281 58-45v45h-58zM0 480l51-39 122 91h-52L0 480zm320-281-282-209h71l211 156V199zM0 0l217 161h-56L0 40V0zm640 0L423 161h56L640 40V0zM161 281 0 401v79l212-157h-51zm253-82 226 167v40L358 209h56z"/>
+              <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+              <path fill="#C8102E" d="M281 0v480h80V0h-80zM0 200v80h640v-80H0z"/>
+            </svg>
+            <span>EN</span>
+          </div>
+          <div class="tb-lang-option" @click="selectLanguage('ru')">
+            <svg viewBox="0 0 900 600">
+              <rect width="900" height="600" fill="#fff"/>
+              <rect width="900" height="400" y="200" fill="#0039a6"/>
+              <rect width="900" height="200" y="400" fill="#d52b1e"/>
+            </svg>
+            <span>RU</span>
+          </div>
+        </div>
+      </div>
 
     </div>
     
     <div class="nonogram-info" v-if="nonogramId">
-      <div class="info-item">Размер: {{ nonogramSize.cols }} x {{ nonogramSize.rows }}</div>
-      <div class="info-item" v-if="nonogramDate">Добавлен {{ formatDate(nonogramDate) }}</div>
+      <div class="info-item">{{ t('sidebar.size') }}: {{ nonogramSize.cols }} x {{ nonogramSize.rows }}</div>
+      <div class="info-item" v-if="nonogramDate">{{ t('sidebar.added') }} {{ formatDate(nonogramDate) }}</div>
     </div>
     <div class="nonogram-wrapper">
       <Nonogram
@@ -220,6 +261,96 @@
   .tb-btn span,
   .tb-help-label span:last-child {
     display: none;
+  }
+}
+
+.tb-lang-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  padding: 0 0.4rem;
+  user-select: none;
+}
+
+.tb-lang-selected {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.tb-lang-selected:hover {
+  border-color: #b0bec5;
+  background-color: #ffffff;
+}
+
+.tb-lang-selected svg {
+  width: 18px;
+  height: auto;
+  border-radius: 1px;
+}
+
+.tb-lang-arrow {
+  width: 10px !important;
+  height: 10px !important;
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+
+.tb-lang-arrow-up {
+  transform: rotate(180deg);
+}
+
+.tb-lang-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0.4rem;
+  right: 0.4rem;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.tb-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2c3e50;
+  transition: background-color 0.1s;
+}
+
+.tb-lang-option:hover {
+  background-color: #f0f4f7;
+}
+
+.tb-lang-option svg {
+  width: 18px;
+  height: auto;
+  border-radius: 1px;
+}
+
+@media (max-width: 640px) {
+  .tb-lang-label, .tb-lang-arrow {
+    display: none;
+  }
+  .tb-lang-selected {
+    padding: 0.2rem;
   }
 }
 
@@ -440,8 +571,37 @@ const props = defineProps({
 import Nonogram from './Nonogram.vue';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 import AnswerDialog from './AnswerDialog.vue';
-import {ref, computed, nextTick} from 'vue';
+import {ref, computed, nextTick, onMounted, onUnmounted} from 'vue';
+import { useI18n } from 'vue-i18n';
+import i18n from '../i18n';
 import {loadRandomNonogram, checkSolution} from '../funcs.js';
+
+const { t, locale } = useI18n();
+
+const langDropdownOpen = ref(false);
+const toggleLangDropdown = () => {
+  langDropdownOpen.value = !langDropdownOpen.value;
+};
+const selectLanguage = (val) => {
+  locale.value = val;
+  saveLanguage();
+  langDropdownOpen.value = false;
+};
+const closeLangDropdown = (e) => {
+  if (!e.target.closest('.tb-lang-container')) {
+    langDropdownOpen.value = false;
+  }
+};
+onMounted(() => {
+  window.addEventListener('click', closeLangDropdown);
+});
+onUnmounted(() => {
+  window.removeEventListener('click', closeLangDropdown);
+});
+
+const saveLanguage = () => {
+  localStorage.setItem('lang', locale.value);
+};
 
 const componentKey = ref(0);
 const nonogramComponent = ref(null);

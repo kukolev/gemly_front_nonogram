@@ -2,79 +2,56 @@
   <div class="contacts-page">
     <main class="content">
       <article class="article">
-        <h2>Обратная связь</h2>
-
-<!--        <p class="contacts-text">-->
-<!--          Есть предложения или замечания по работе сайта? Напишите нам на-->
-<!--          <a href="mailto:info.rubyrubygames@gmail.com" class="email-link">-->
-<!--            info.rubyrubygames@gmail.com</a>-->
-<!--          <button-->
-<!--            class="copy-btn"-->
-<!--            :disabled="copied"-->
-<!--            :title="copied ? 'Скопировано!' : 'Скопировать адрес'"-->
-<!--            @click="copyEmail"-->
-<!--          >-->
-<!--            <svg v-if="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor"-->
-<!--                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
-<!--              <rect x="9" y="9" width="13" height="13" rx="2"/>-->
-<!--              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>-->
-<!--            </svg>-->
-<!--            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor"-->
-<!--                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">-->
-<!--              <polyline points="20 6 9 17 4 12"/>-->
-<!--            </svg>-->
-<!--          </button>-->
-<!--        </p>-->
+        <h2>{{ t('contacts.title') }}</h2>
 
         <!-- Feedback form -->
         <form class="feedback-form" @submit.prevent="submitForm" novalidate>
-          <p class="contacts-text">Есть предложения или замечания по работе сайта? Напишите нам: </p>
-<!--          <h3 class="form-title">Написать нам</h3>-->
+          <p class="contacts-text">{{ t('contacts.description') }}</p>
 
           <div class="form-field">
-            <label class="field-label" for="fb-name">Имя <span class="optional">(необязательно)</span></label>
+            <label class="field-label" for="fb-name">{{ t('contacts.name') }} <span class="optional">{{ t('contacts.optional') }}</span></label>
             <input
               id="fb-name"
               v-model="form.name"
               type="text"
               class="field-input"
-              placeholder="Ваше имя"
+              :placeholder="t('contacts.namePlaceholder')"
               :disabled="status === 'sending' || status === 'success'"
               autocomplete="name"
             />
           </div>
 
           <div class="form-field">
-            <label class="field-label" for="fb-email">Email <span class="optional">(необязательно)</span></label>
+            <label class="field-label" for="fb-email">Email <span class="optional">{{ t('contacts.optional') }}</span></label>
             <input
               id="fb-email"
               v-model="form.email"
               type="email"
               class="field-input"
               :class="{'field-error': emailInvalid}"
-              placeholder="example@mail.com"
+              :placeholder="t('contacts.emailPlaceholder')"
               :disabled="status === 'sending' || status === 'success'"
               autocomplete="email"
               @blur="validateEmail"
             />
-            <span v-if="emailInvalid" class="error-msg">Введите корректный email</span>
+            <span v-if="emailInvalid" class="error-msg">{{ t('contacts.emailError') }}</span>
           </div>
 
           <div class="form-field">
             <label class="field-label" for="fb-text">
-              Сообщение <span class="required">*</span>
+              {{ t('contacts.message') }} <span class="required">{{ t('contacts.required') }}</span>
             </label>
             <textarea
               id="fb-text"
               v-model="form.text"
               class="field-textarea"
               :class="{'field-error': textInvalid}"
-              placeholder="Ваш вопрос, предложение или замечание..."
+              :placeholder="t('contacts.messagePlaceholder')"
               rows="5"
               :disabled="status === 'sending' || status === 'success'"
               @blur="textTouched = true"
             ></textarea>
-            <span v-if="textInvalid" class="error-msg">Заполните это поле</span>
+            <span v-if="textInvalid" class="error-msg">{{ t('contacts.messageError') }}</span>
           </div>
 
           <!-- Status messages -->
@@ -83,11 +60,11 @@
                  stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Спасибо! Ваше сообщение отправлено.
+            {{ t('contacts.success') }}
           </div>
 
           <div v-if="status === 'error'" class="status-error">
-            Не удалось отправить сообщение. Попробуйте позже или напишите нам на email.
+            {{ t('contacts.error') }}
           </div>
 
           <button
@@ -102,7 +79,7 @@
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
-            <span>{{ status === 'sending' ? 'Отправка...' : 'Отправить' }}</span>
+            <span>{{ status === 'sending' ? t('contacts.sending') : t('contacts.send') }}</span>
           </button>
         </form>
 
@@ -113,6 +90,9 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineEmits(['back']);
 

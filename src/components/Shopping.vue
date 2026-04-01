@@ -2,23 +2,23 @@
   <div class="shopping-page">
     <div class="shopping-header">
       <div class="header-left">
-        <h2>Список покупок</h2>
+        <h2>{{ t('shopping.title') }}</h2>
       </div>
     </div>
 
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <p>Загрузка списка...</p>
+      <p>{{ t('shopping.loading') }}</p>
     </div>
 
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="getList" class="retry-btn">Повторить</button>
+      <button @click="getList" class="retry-btn">{{ t('shopping.retry') }}</button>
     </div>
 
     <div v-else class="shopping-content">
       <div v-if="items.length === 0" class="empty-state">
-        <p>Список пуст</p>
+        <p>{{ t('shopping.empty') }}</p>
       </div>
 
       <div v-else class="items-list">
@@ -39,7 +39,7 @@
             </div>
           </div>
           <div class="item-actions">
-            <button class="action-btn edit-btn" title="Edit" @click="handleEdit(item)">
+            <button class="action-btn edit-btn" :title="t('shopping.edit')" @click="handleEdit(item)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -47,7 +47,7 @@
             </button>
             <button 
               class="action-btn delete-btn" 
-              title="Delete (hold 2s)"
+              :title="t('shopping.delete')"
               @mousedown="startDeletePress(item)"
               @mouseup="cancelDeletePress(item)"
               @mouseleave="cancelDeletePress(item)"
@@ -67,7 +67,7 @@
         </div>
       </div>
       <div class="add-btn-wrapper">
-        <button class="refresh-btn" @click="getList" title="Обновить список">
+        <button class="refresh-btn" @click="getList" :title="t('shopping.refresh')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="refresh-icon">
             <path d="M23 4v6h-6"></path>
             <path d="M1 20v-6h6"></path>
@@ -79,7 +79,7 @@
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>Добавить</span>
+          <span>{{ t('shopping.add') }}</span>
         </button>
       </div>
     </div>
@@ -95,7 +95,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ShoppingEdit from './ShoppingEdit.vue';
+
+const { t } = useI18n();
 
 const emit = defineEmits(['back']);
 

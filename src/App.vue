@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import i18n from './i18n';
 import AppSidebar from "@/components/AppSidebar.vue";
 import MainForm from "@/components/MainForm.vue";
 import LandingPage from "@/components/LandingPage.vue";
@@ -19,20 +21,21 @@ const accessDenied = ref(false);
 const mainFormRef = ref(null);
 const finishedCount = ref(0);
 const touchMarkMode = ref(false);
+const { t } = useI18n();
 
 const updateFinishedCount = () => {
   finishedCount.value = getFinishedCount();
 };
 
 const pageTitle = computed(() => {
-  if (isAdmin.value) return 'Панель администратора';
+  if (isAdmin.value) return t('pages.admin');
   switch (currentPage.value) {
-    case 'main': return 'Японские кроссворды';
-    case 'finished': return 'Завершенные кроссворды';
-    case 'about': return 'О проекте';
-    case 'contacts': return 'Обратная связь';
-    case 'shopping': return 'Список покупок';
-    default: return 'Добро пожаловать!';
+    case 'main': return t('pages.main');
+    case 'finished': return t('pages.finished');
+    case 'about': return t('pages.about');
+    case 'contacts': return t('pages.contacts');
+    case 'shopping': return t('pages.shopping');
+    default: return t('pages.welcome');
   }
 });
 
@@ -143,33 +146,6 @@ function showLanding() {
 }
 
 // --- SEO: per-page meta ---
-const PAGE_META = {
-  landing: {
-    title: 'Японские кроссворды',
-    description: 'Решайте японские кроссворды (нонограммы) онлайн бесплатно. Тренируйте логику, память и концентрацию внимания.',
-  },
-  main: {
-    title: 'Японские кроссворды',
-    description: 'Откройте новую головоломку и решайте японские кроссворды онлайн. Проверьте свои логические способности.',
-  },
-  finished: {
-    title: 'Японские кроссворды',
-    description: 'Ваши решённые японские кроссворды. Просматривайте историю завершённых головоломок.',
-  },
-  about: {
-    title: 'Японские кроссворды',
-    description: 'Узнайте, что такое японские кроссворды и как их решать. Методы решения нонограмм с иллюстрациями.',
-  },
-  contacts: {
-    title: 'Японские кроссворды',
-    description: 'Свяжитесь с нами по любым вопросам, предложениям или замечаниям по работе сайта.',
-  },
-  shopping: {
-    title: 'Список покупок',
-    description: 'Ваш список покупок.',
-  },
-};
-
 function setMeta(title, description) {
   document.title = title;
   const setContent = (selector, value) =>
@@ -181,12 +157,12 @@ function setMeta(title, description) {
   setContent('meta[name="twitter:description"]', description);
 }
 
-watch([currentPage, isAdmin], ([page, admin]) => {
+watch([currentPage, isAdmin, () => i18n.global.locale.value], ([page, admin]) => {
   if (admin) {
-    setMeta('Панель администратора', '');
+    setMeta(t('pages.admin'), '');
   } else {
-    const meta = PAGE_META[page] ?? PAGE_META.landing;
-    setMeta(meta.title, meta.description);
+    const key = ['landing', 'main', 'finished', 'about', 'contacts', 'shopping'].includes(page) ? page : 'landing';
+    setMeta(t(`seo.${key}.title`), t(`seo.${key}.description`));
   }
 }, { immediate: true });
 // --- end SEO ---
@@ -208,8 +184,8 @@ function handleCheck() {
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
-  <div v-else-if="accessDenied">Access denied</div>
+  <div v-if="isLoading">{{ t('app.loading') }}</div>
+  <div v-else-if="accessDenied">{{ t('app.accessDenied') }}</div>
   <div v-else class="app-layout">
     <AppSidebar
       v-if="currentPage !== 'shopping'"

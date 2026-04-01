@@ -3,17 +3,17 @@
     <main class="content">
       <div v-if="loading" class="status-message">
         <div class="loader"></div>
-        <p>Загрузка...</p>
+        <p>{{ t('finished.loading') }}</p>
       </div>
       
       <div v-else-if="error" class="status-message error">
         <p>{{ error }}</p>
-        <button @click="fetchList" class="retry-btn">Попробовать снова</button>
+        <button @click="fetchList" class="retry-btn">{{ t('finished.retry') }}</button>
       </div>
       
       <div v-else-if="list.length === 0" class="status-message empty">
-        <p>У вас пока нет завершенных кроссвордов.</p>
-        <button @click="$emit('back')" class="start-btn">Назад к кроссворду</button>
+        <p>{{ t('finished.empty') }}</p>
+        <button @click="$emit('back')" class="start-btn">{{ t('finished.back') }}</button>
       </div>
       
       <div v-else class="nonograms-grid">
