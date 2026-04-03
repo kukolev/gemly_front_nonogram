@@ -1,5 +1,8 @@
 <script setup>
 import {computed, ref, onMounted, onUnmounted, watch} from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   size: {
@@ -892,7 +895,7 @@ defineExpose({undo, redo, canUndo, canRedo, clear, drawResult, check, grid, mark
     class="nonogram-scroll-container"
     @mouseleave="resetHover"
   >
-    <div v-if="showCongrats" :style="congratsStyle" class="congrats-text">Браво!</div>
+    <div v-if="showCongrats" :style="congratsStyle" class="congrats-text">{{ t('dialog.congrats') }}</div>
 
     <div class="nonogram-grid-layout" :style="gridLayoutStyle">
 

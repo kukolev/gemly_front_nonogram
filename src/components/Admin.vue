@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from './ConfirmationDialog.vue';
 
+const { t } = useI18n();
 const nonogramId = ref('');
 const loadedId = ref('');
 const verificationStatus = ref('UNVERIFIED');
@@ -237,7 +239,7 @@ function performLoad() {
 
 function handleLoad() {
   if (isDirty.value) {
-    dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue loading?';
+    dialogMessage.value = t('dialog.admin.unsavedChangesOnLoad');
     pendingAction.value = { type: 'load' };
     showDialog.value = true;
     return;
@@ -247,14 +249,14 @@ function handleLoad() {
 
 function markNonogram(mark) {
   if (!loadedId.value) {
-    alert('No nonogram loaded');
+    alert(t('dialog.admin.noNonogramLoaded'));
     return;
   }
   if (isDirty.value) {
     if (mark === 'GOOD') {
-      dialogMessage.value = 'Image was changed. Are you sure you want to save changes and mark it as Good?';
+      dialogMessage.value = t('dialog.admin.saveChangesAndMarkGood');
     } else {
-      dialogMessage.value = 'Image was changed. Unsaved changes will be lost. Continue?';
+      dialogMessage.value = t('dialog.admin.unsavedChangesContinue');
     }
     pendingAction.value = { type: 'mark', mark: mark };
     showDialog.value = true;
@@ -292,11 +294,11 @@ function performMarkNonogram(mark) {
 
 function saveNonogram() {
   if (!loadedId.value) {
-    alert('No nonogram loaded');
+    alert(t('dialog.admin.noNonogramLoaded'));
     return;
   }
   if (isDirty.value) {
-    dialogMessage.value = 'Are you sure you want to save changes to the image?';
+    dialogMessage.value = t('dialog.admin.confirmSaveImage');
     pendingAction.value = { type: 'save' };
     showDialog.value = true;
     return;
@@ -325,11 +327,11 @@ async function performSaveNonogram(markAs = null) {
         verificationStatus.value = data.verificationStatus;
       }
     } else {
-      alert(`Error: ${response.status}`);
+      alert(`${t('dialog.admin.errorSaving')}: ${response.status}`);
     }
   } catch (error) {
     console.error('Error saving nonogram:', error);
-    alert('Error saving nonogram');
+    alert(t('dialog.admin.errorSaving'));
   } finally {
     isSaving.value = false;
   }

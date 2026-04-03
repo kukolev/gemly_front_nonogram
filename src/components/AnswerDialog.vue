@@ -1,5 +1,8 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   solution: { type: Array, required: true }
@@ -57,7 +60,7 @@ watch(() => props.solution, () => nextTick(drawAnswer), { deep: true });
         <canvas ref="canvasRef"></canvas>
       </div>
       <div class="answer-footer">
-        <button class="ok-btn" @click="$emit('ok')">Ага, спасибо :)</button>
+        <button class="ok-btn" @click="$emit('ok')">{{ $t('dialog.ok') }}</button>
       </div>
     </div>
   </div>

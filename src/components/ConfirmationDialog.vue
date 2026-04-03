@@ -1,28 +1,32 @@
 <template>
   <div class="dialog-overlay" @click.self="$emit('no')">
     <div class="dialog-box">
-      <p class="dialog-message">{{ message }}</p>
+      <p class="dialog-message">{{ displayMessage }}</p>
       <div class="dialog-actions">
-        <button class="dialog-button yes" @click="$emit('yes')">{{ yesText }}</button>
-        <button v-if="showNo" class="dialog-button no" @click="$emit('no')">{{ noText }}</button>
+        <button class="dialog-button yes" @click="$emit('yes')">{{ displayYesText }}</button>
+        <button v-if="showNo" class="dialog-button no" @click="$emit('no')">{{ displayNoText }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
+const props = defineProps({
   message: {
     type: String,
-    default: 'Вы точно уверены?'
+    default: null
   },
   yesText: {
     type: String,
-    default: 'Да'
+    default: null
   },
   noText: {
     type: String,
-    default: 'Нет'
+    default: null
   },
   showNo: {
     type: Boolean,
@@ -30,6 +34,10 @@ defineProps({
   }
 });
 defineEmits(['yes', 'no']);
+
+const displayMessage = computed(() => props.message || t('dialog.areYouSure'));
+const displayYesText = computed(() => props.yesText || t('dialog.yes'));
+const displayNoText = computed(() => props.noText || t('dialog.no'));
 </script>
 
 <style scoped>

@@ -187,9 +187,9 @@
   />
   <ConfirmationDialog
     v-if="showAnswerConfirm"
-    message="Очень хочется посмотреть ответ, да?"
-    yes-text="Да!"
-    no-text="Нет, я отгадаю самостоятельно!"
+    :message="$t('dialog.answerConfirmMessage')"
+    :yes-text="$t('dialog.answerConfirmYes')"
+    :no-text="$t('dialog.answerConfirmNo')"
     @yes="showAnswerConfirm = false; showAnswerDialog = true"
     @no="showAnswerConfirm = false"
   />
@@ -798,13 +798,13 @@ function requestReload() {
     reload();
     return;
   }
-  dialogMessage.value = 'Будет загружен новый кроссворд, вы точно уверены?';
+  dialogMessage.value = t('dialog.newCrosswordWarning');
   pendingAction.value = 'reload';
   showDialog.value = true;
 }
 
 function requestClear() {
-  dialogMessage.value = 'Ваш прогресс по данному кроссворду будет потерян, вы точно уверены?';
+  dialogMessage.value = t('dialog.progressLossWarning');
   pendingAction.value = 'clear';
   showDialog.value = true;
 }
