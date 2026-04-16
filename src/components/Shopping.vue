@@ -174,7 +174,11 @@ const getList = (showLoading = true) => {
         try {
           const data = JSON.parse(request.responseText);
           const fetchedItems = data.items || [];
-          fetchedItems.sort((a, b) => (a.number || 0) - (b.number || 0));
+          fetchedItems.sort((a, b) => {
+            if (a.status === 'DONE' && b.status !== 'DONE') return 1;
+            if (a.status !== 'DONE' && b.status === 'DONE') return -1;
+            return (a.number || 0) - (b.number || 0);
+          });
           items.value = fetchedItems;
           if (showLoading) error.value = null;
         } catch (e) {
