@@ -251,6 +251,9 @@ function handleCheck() {
 
 .app-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 @media (max-width: 640px) {

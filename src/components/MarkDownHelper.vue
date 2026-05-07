@@ -100,7 +100,8 @@ const togglePreview = () => {
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
-  min-height: 100%;
+  flex: 1;
+  min-height: 0;
   font-family: 'Inter', sans-serif;
   color: #1e293b;
   background: #f8fafc;
