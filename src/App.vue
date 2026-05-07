@@ -192,7 +192,7 @@ function handleCheck() {
   <div v-else-if="accessDenied">{{ t('app.accessDenied') }}</div>
   <div v-else class="app-layout">
     <AppSidebar
-      v-if="currentPage !== 'shopping'"
+      v-if="currentPage !== 'shopping' && currentPage !== 'markdown'"
       :finished-count="finishedCount"
       :show-plus-one="showPlusOne"
       :show-buttons="currentPage === 'main'"
@@ -207,7 +207,7 @@ function handleCheck() {
       @toggle-touch-mode="touchMarkMode = !touchMarkMode"
       @back="showMainForm"
     />
-    <div class="app-body" :class="{'no-sidebar': currentPage === 'shopping'}">
+    <div class="app-body" :class="{'no-sidebar': currentPage === 'shopping' || currentPage === 'markdown'}">
       <main class="app-content">
         <Admin v-if="isAdmin" />
         <template v-else>
@@ -228,7 +228,7 @@ function handleCheck() {
           <LandingPage v-else @start="showMainForm" />
         </template>
       </main>
-      <AppFooter />
+      <AppFooter v-if="currentPage !== 'markdown'" />
     </div>
   </div>
 </template>
