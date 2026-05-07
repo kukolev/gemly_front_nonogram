@@ -12,6 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
+    "marked": "^15.0.7",
     "nonogram": "^0.0.4",
     "vue": "^3.5.25",
     "vue-i18n": "^9.14.5"

@@ -11,6 +11,7 @@ import Admin from "@/components/Admin.vue";
 import FinishedNonograms from "@/components/FinishedNonograms.vue";
 import AppFooter from "@/components/AppFooter.vue";
 import Shopping from "@/components/Shopping.vue";
+import MarkDownHelper from "@/components/MarkDownHelper.vue";
 
 import {loadData, loadRandomNonogram, checkSolution, checkAdmin, getFinishedCount} from './funcs.js';
 
@@ -35,6 +36,7 @@ const pageTitle = computed(() => {
     case 'about': return t('pages.about');
     case 'contacts': return t('pages.contacts');
     case 'shopping': return t('pages.shopping');
+    case 'markdown': return t('pages.markdown');
     default: return t('pages.welcome');
   }
 });
@@ -83,7 +85,9 @@ const updateRoute = () => {
     }
   } else {
     isAdmin.value = false;
-    if (path.includes('/nonogram/finished_nonograms')) {
+    if (path.includes('/markdown')) {
+      currentPage.value = 'markdown';
+    } else if (path.includes('/nonogram/finished_nonograms')) {
       currentPage.value = 'finished';
     } else if (path.includes('/shopping')) {
       currentPage.value = 'shopping';
@@ -161,7 +165,7 @@ watch([currentPage, isAdmin, () => i18n.global.locale.value], ([page, admin]) =>
   if (admin) {
     setMeta(t('pages.admin'), '');
   } else {
-    const key = ['landing', 'main', 'finished', 'about', 'contacts', 'shopping'].includes(page) ? page : 'landing';
+    const key = ['landing', 'main', 'finished', 'about', 'contacts', 'shopping', 'markdown'].includes(page) ? page : 'landing';
     setMeta(t(`seo.${key}.title`), t(`seo.${key}.description`));
   }
 }, { immediate: true });
@@ -192,7 +196,7 @@ function handleCheck() {
       :finished-count="finishedCount"
       :show-plus-one="showPlusOne"
       :show-buttons="currentPage === 'main'"
-      :show-back-button="currentPage === 'finished' || currentPage === 'about' || currentPage === 'contacts'"
+      :show-back-button="currentPage === 'finished' || currentPage === 'about' || currentPage === 'contacts' || currentPage === 'markdown'"
       :touch-mark-mode="touchMarkMode"
       @reload="mainFormRef?.requestReload()"
       @show-finished="showFinished"
@@ -220,6 +224,7 @@ function handleCheck() {
           <Shopping v-else-if="currentPage === 'shopping'" @back="showMainForm" />
           <AboutPage v-else-if="currentPage === 'about'" @back="showMainForm" />
           <ContactsPage v-else-if="currentPage === 'contacts'" @back="showMainForm" />
+          <MarkDownHelper v-else-if="currentPage === 'markdown'" />
           <LandingPage v-else @start="showMainForm" />
         </template>
       </main>
