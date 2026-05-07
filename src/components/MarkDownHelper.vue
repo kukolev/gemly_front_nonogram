@@ -36,11 +36,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import hljs from 'highlight.js/lib/core';
-import markdown from 'highlight.js/lib/languages/markdown';
-import { marked } from 'marked';
-
-hljs.registerLanguage('markdown', markdown);
+import hljs from 'highlight.js/lib/common';
+import { filterMarkdownLines } from '@/utils/markdownFilter';
+import { renderMarkdown } from '@/utils/markdownRenderer';
 
 const filterValue = ref('');
 const memoText = ref('');
@@ -49,14 +47,18 @@ const highlightRef = ref(null);
 const isPreview = ref(false);
 const memoStorageKey = 'markdown-memo';
 
+const filteredMemoText = computed(() =>
+  filterMarkdownLines(memoText.value, filterValue.value)
+);
+
 const highlightedMarkdown = computed(() => {
-  if (!memoText.value) {
+  if (!filteredMemoText.value) {
     return '';
   }
-  return hljs.highlight(memoText.value, { language: 'markdown' }).value;
+  return hljs.highlight(filteredMemoText.value, { language: 'markdown' }).value;
 });
 
-const renderedMarkdown = computed(() => marked.parse(memoText.value || ''));
+const renderedMarkdown = computed(() => renderMarkdown(filteredMemoText.value || ''));
 
 const syncScroll = () => {
   if (!memoRef.value || !highlightRef.value) {
