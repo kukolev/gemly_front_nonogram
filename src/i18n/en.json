@@ -1,0 +1,154 @@
+{
+  "app": {
+    "title": "Japanese Crosswords",
+    "loading": "Loading...",
+    "accessDenied": "Access denied"
+  },
+  "pages": {
+    "welcome": "Welcome!",
+    "main": "Japanese Crosswords",
+    "finished": "Finished Crosswords",
+    "about": "About Project",
+    "contacts": "Feedback",
+    "shopping": "Shopping List",
+    "markdown": "Markdown Helper",
+    "admin": "Admin Panel"
+  },
+  "seo": {
+    "landing": {
+      "title": "Japanese Crosswords",
+      "description": "Solve Japanese crosswords (nonograms) online for free. Train your logic, memory, and focus."
+    },
+    "main": {
+      "title": "Japanese Crosswords",
+      "description": "Open a new puzzle and solve Japanese crosswords online. Test your logical abilities."
+    },
+    "finished": {
+      "title": "Japanese Crosswords",
+      "description": "Your solved Japanese crosswords. View history of completed puzzles."
+    },
+    "about": {
+      "title": "Japanese Crosswords",
+      "description": "Learn what Japanese crosswords are and how to solve them. Methods for solving nonograms with illustrations."
+    },
+    "contacts": {
+      "title": "Japanese Crosswords",
+      "description": "Contact us with any questions, suggestions, or comments about the site's operation."
+    },
+    "shopping": {
+      "title": "Shopping List",
+      "description": "Your shopping list."
+    },
+    "markdown": {
+      "title": "Markdown Helper",
+      "description": "Write and review Markdown with syntax highlighting."
+    }
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "check": "Check",
+    "errors": "Errors!",
+    "save": "Save",
+    "saveTooltip": "Thank you, we've saved your progress on the crossword.<br>Progress is regularly saved automatically.",
+    "answer": "Answer",
+    "solution": "Solution",
+    "hint": "Hint",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "mark": "Mark",
+    "fill": "Fill",
+    "language": "Language"
+  },
+  "landing": {
+    "welcome": "Welcome to Ruby Ruby Games!",
+    "description": "Our site contains... well, more precisely, it will contain many exciting games and entertainment for every taste! But for now, we just have",
+    "start": "Japanese Crosswords"
+  },
+  "about": {
+    "title": "What are Japanese crosswords?",
+    "p1": "Japanese crosswords (nonograms) are logical puzzles in which an image is encrypted with the help of numbers. The goal of the puzzle is to completely restore this image.",
+    "p2": "In these crosswords, unlike conventional ones, images are encrypted, not words. They are colored in the grid according to the numbers located to the left of the rows and above the columns.",
+    "p3": "The numbers show how many groups of colored cells are in the corresponding row or column, and how many continuous cells each of these groups contains (for example, the number 5 means that there is a group of five consecutively colored cells in this row).",
+    "p4": "Groups must be separated by at least one empty cell. These puzzles develop logic, memory, and concentration.",
+    "exampleCaption": "Example of a 5x5 nonogram and its solution (\"smiley\")",
+    "methodsTitle": "Methods for solving nonograms",
+    "methodsP1": "Nonograms are solved using logical reasoning - without random trial and error. The main methods are based on the analysis of individual rows and columns with sequential refinement of the state of each cell.",
+    "overlapTitle": "Overlap Method",
+    "overlapP1": "If a block is large enough relative to the length of the row, some cells are guaranteed to be colored in any valid placement of the block. For example, if a row of 7 cells must contain a block of length 5, the block can start at position 1, 2, or 3. Cells that fall into all three variants simultaneously (the middle) are definitely colored - this is the \"overlap\".",
+    "overlapCaption": "Overlap method: a 7-cell row with a clue [5]. Light-blue cells are possible block positions, dark-blue are guaranteed colored.",
+    "fromEdgesTitle": "Method from the edges",
+    "fromEdgesP1": "If a cell at the edge of a row turns out to be colored, and the first clue specifies a particular block length, you can accurately count that block from the edge and place a bounding empty cell immediately after it. This technique allows you to quickly fix blocks that are \"pressed\" to one of the ends of the row.",
+    "intersectionsTitle": "Analysis of intersections of rows and columns",
+    "intersectionsP1": "Solving a nonogram is an iterative process: information obtained when parsing rows refines the possible states of cells in columns, and vice versa. By repeating this cycle again and again, step by step the entire image is restored - that's why nonograms are often called \"crosswords for the eyes\".",
+    "reductioTitle": "Method of contradiction",
+    "reductioP1": "In difficult cases where no simple logical clues remain, you can temporarily assume the state of one cell (colored or empty) and trace whether a contradiction with the clues arises. If the assumption leads to a contradiction, the opposite state of the cell is true."
+  },
+  "contacts": {
+    "title": "Feedback",
+    "description": "Have suggestions or comments about the site's operation? Write to us:",
+    "name": "Name",
+    "optional": "(optional)",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "example{'@'}mail.com",
+    "emailError": "Enter a valid email",
+    "message": "Message",
+    "required": "*",
+    "messagePlaceholder": "Your question, suggestion, or comment...",
+    "messageError": "Please fill out this field",
+    "success": "Thank you! Your message has been sent.",
+    "error": "Failed to send message. Please try again later or write to us by email.",
+    "sending": "Sending...",
+    "send": "Send"
+  },
+  "shopping": {
+    "title": "Shopping List",
+    "loading": "Loading list...",
+    "retry": "Retry",
+    "empty": "List is empty",
+    "edit": "Edit",
+    "delete": "Delete (hold 2s)",
+    "refresh": "Refresh list",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel",
+    "placeholder": "What to buy?"
+  },
+  "finished": {
+    "loading": "Loading...",
+    "retry": "Try again",
+    "empty": "You have no finished crosswords yet.",
+    "back": "Back to crossword"
+  },
+  "sidebar": {
+    "menu": "Menu",
+    "backToCrossword": "Back to crossword",
+    "randomCrossword": "Random crossword",
+    "finished": "Finished",
+    "about": "About",
+    "feedback": "Feedback",
+    "shopping": "Shopping List",
+    "size": "Size",
+    "added": "Added"
+  },
+  "dialog": {
+    "areYouSure": "Are you sure?",
+    "yes": "Yes",
+    "no": "No",
+    "newCrosswordWarning": "A new crossword will be loaded, are you sure?",
+    "progressLossWarning": "Your progress on this crossword will be lost, are you sure?",
+    "answerConfirmMessage": "Really want to see the answer, huh?",
+    "answerConfirmYes": "Yes!",
+    "answerConfirmNo": "No, I'll figure it out myself!",
+    "ok": "Yep, thanks!",
+    "congrats": "Congrats!",
+    "admin": {
+      "unsavedChangesOnLoad": "Image was changed. Unsaved changes will be lost. Continue loading?",
+      "saveChangesAndMarkGood": "Image was changed. Are you sure you want to save changes and mark it as Good?",
+      "unsavedChangesContinue": "Image was changed. Unsaved changes will be lost. Continue?",
+      "confirmSaveImage": "Are you sure you want to save changes to the image?",
+      "noNonogramLoaded": "No nonogram loaded",
+      "errorSaving": "Error saving nonogram"
+    }
+  }
+}
