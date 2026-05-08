@@ -67,43 +67,27 @@
           placeholder="Document name"
         />
         <button type="button" class="action-button" @click="saveMemo">Save</button>
-        <button
-          type="button"
-          class="action-button"
-          :class="{ active: isPreview }"
-          @click="togglePreview"
-        >
-          Preview
-        </button>
       </div>
       <div class="memo-wrapper">
-        <div v-if="isPreview" class="memo-preview" v-html="renderedMarkdown"></div>
-        <template v-else>
-          <pre ref="highlightRef" class="memo-highlight"><code class="hljs" v-html="highlightedMarkdown"></code></pre>
-          <textarea
-            id="markdown-memo"
-            ref="memoRef"
-            v-model="memoText"
-            class="memo-input"
-            spellcheck="false"
-          ></textarea>
-        </template>
+        <textarea
+          id="markdown-memo"
+          :value="filteredMemoText"
+          :readonly="!!filterValue"
+          class="memo-input"
+          spellcheck="false"
+          @input="memoText = $event.target.value"
+        ></textarea>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import hljs from 'highlight.js/lib/common';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { filterMarkdownLines } from '@/utils/markdownFilter';
-import { renderMarkdown } from '@/utils/markdownRenderer';
 
 const filterValue = ref('');
 const memoText = ref('');
-const memoRef = ref(null);
-const highlightRef = ref(null);
-const isPreview = ref(false);
 const documentTitle = ref('');
 const currentDocId = ref(null);
 const userId = ref(localStorage.getItem('markdownUserId') || '');
@@ -114,16 +98,24 @@ const docsError = ref(null);
 // index of the "New document" sentinel in documentList, or -1 when none
 const newDocumentIndex = ref(-1);
 
+// Snapshot of the last successfully saved state — used to skip no-op autosaves.
+const lastSaved = ref({ id: null, title: '', text: '' });
+
+const isDirty = computed(() =>
+  memoText.value !== lastSaved.value.text ||
+  documentTitle.value !== lastSaved.value.title ||
+  currentDocId.value !== lastSaved.value.id
+);
+
+// Don't autosave a blank new-document sentinel that was never touched.
+const canSave = computed(() =>
+  !(currentDocId.value === null && !memoText.value && !documentTitle.value)
+);
+
 const filteredMemoText = computed(() =>
   filterMarkdownLines(memoText.value, filterValue.value)
 );
 
-const highlightedMarkdown = computed(() => {
-  if (!filteredMemoText.value) return '';
-  return hljs.highlight(filteredMemoText.value, { language: 'markdown' }).value;
-});
-
-const renderedMarkdown = computed(() => renderMarkdown(filteredMemoText.value || ''));
 
 const getBaseUrl = () => {
   const protocol = import.meta.env.ENV_SERVER_PROTOCOL || window.location.protocol.replace(':', '');
@@ -134,11 +126,6 @@ const getBaseUrl = () => {
 const userIdParam = () =>
   userId.value ? `userId=${encodeURIComponent(userId.value)}` : '';
 
-const syncScroll = () => {
-  if (!memoRef.value || !highlightRef.value) return;
-  highlightRef.value.scrollTop = memoRef.value.scrollTop;
-  highlightRef.value.scrollLeft = memoRef.value.scrollLeft;
-};
 
 const loadDocumentList = () => {
   docsLoading.value = true;
@@ -178,6 +165,10 @@ const isActiveDoc = (doc, index) => {
 
 // Called when the user clicks a link in the left panel.
 const selectDoc = (doc) => {
+  // Save the current document before navigating away.
+  if (isDirty.value && canSave.value) {
+    saveMemo();
+  }
   if (doc.id === null) {
     // Sentinel — already selected via newDocument(); nothing to fetch.
     currentDocId.value = null;
@@ -199,7 +190,9 @@ const loadDocument = (doc) => {
   request.onload = () => {
     if (request.status === 200) {
       try {
-        memoText.value = JSON.parse(request.responseText).text || '';
+        const text = JSON.parse(request.responseText).text || '';
+        memoText.value = text;
+        lastSaved.value = { id: doc.id, title: doc.title || '', text };
       } catch {
         console.error('Parse error loading document');
       }
@@ -266,6 +259,7 @@ const saveMemo = () => {
       try {
         const data = JSON.parse(request.responseText);
         currentDocId.value = data.id;
+        lastSaved.value = { id: data.id, title: documentTitle.value, text: memoText.value };
         // Drop the unsaved sentinel — loadDocumentList will add the real entry.
         if (newDocumentIndex.value !== -1) {
           documentList.value.splice(newDocumentIndex.value, 1);
@@ -288,23 +282,21 @@ const onUserIdChange = () => {
   loadDocumentList();
 };
 
-const togglePreview = () => {
-  isPreview.value = !isPreview.value;
-};
+let autosaveTimer = null;
 
 onMounted(() => {
-  memoRef.value?.addEventListener('scroll', syncScroll);
   loadDocumentList();
+  autosaveTimer = setInterval(() => {
+    if (isDirty.value && canSave.value) {
+      saveMemo();
+    }
+  }, 5000);
 });
 
 onUnmounted(() => {
-  memoRef.value?.removeEventListener('scroll', syncScroll);
+  clearInterval(autosaveTimer);
 });
 
-watch(memoText, async () => {
-  await nextTick();
-  syncScroll();
-});
 </script>
 
 <style scoped>
@@ -556,11 +548,12 @@ watch(memoText, async () => {
   overflow: hidden;
 }
 
-.memo-highlight,
 .memo-input {
   position: absolute;
   inset: 0;
   margin: 0;
+  width: 100%;
+  height: 100%;
   padding: 1rem;
   font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   font-size: 0.95rem;
@@ -568,20 +561,6 @@ watch(memoText, async () => {
   white-space: pre-wrap;
   word-break: break-word;
   box-sizing: border-box;
-}
-
-.memo-highlight {
-  pointer-events: none;
-  overflow: auto;
-}
-
-.memo-highlight code {
-  font-family: inherit;
-}
-
-.memo-input {
-  width: 100%;
-  height: 100%;
   border: none;
   resize: none;
   background: white;
@@ -594,67 +573,7 @@ watch(memoText, async () => {
   outline: none;
 }
 
-.memo-preview {
-  padding: 1rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.98rem;
-  line-height: 1.6;
-  color: #1e293b;
-  overflow: auto;
-  height: 100%;
-  box-sizing: border-box;
-}
 
-.memo-preview :deep(pre) {
-  background: #f1f5f9;
-  padding: 0.75rem;
-  border-radius: 8px;
-  overflow-x: auto;
-}
-
-.memo-preview :deep(code) {
-  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-}
-
-:deep(.hljs) {
-  color: #0f172a;
-}
-
-:deep(.hljs-comment),
-:deep(.hljs-quote) {
-  color: #64748b;
-  font-style: italic;
-}
-
-:deep(.hljs-keyword),
-:deep(.hljs-section),
-:deep(.hljs-selector-tag),
-:deep(.hljs-literal),
-:deep(.hljs-symbol) {
-  color: #7c3aed;
-  font-weight: 600;
-}
-
-:deep(.hljs-string),
-:deep(.hljs-title),
-:deep(.hljs-name),
-:deep(.hljs-type) {
-  color: #0f766e;
-}
-
-:deep(.hljs-strong) {
-  font-weight: 700;
-}
-
-:deep(.hljs-emphasis) {
-  font-style: italic;
-  color: #2563eb;
-}
-
-:deep(.hljs-link) {
-  color: #2563eb;
-  text-decoration: underline;
-}
 
 @media (max-width: 640px) {
   .left-panel {
