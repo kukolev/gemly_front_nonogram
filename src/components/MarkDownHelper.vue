@@ -2,21 +2,41 @@
   <div class="markdown-helper">
     <!-- Left panel: document list -->
     <div class="left-panel">
-      <div class="left-panel-header">Documents</div>
+      <div class="left-panel-header">
+        <span>Documents</span>
+        <button class="new-doc-button" @click="newDocument" title="New document">+</button>
+      </div>
       <div class="docs-scroll">
         <div v-if="docsLoading" class="docs-status">Loading...</div>
         <div v-else-if="docsError" class="docs-status docs-error">{{ docsError }}</div>
         <template v-else>
           <div v-if="documentList.length === 0" class="docs-status">No documents</div>
-          <button
-            v-for="doc in documentList"
-            :key="doc.id"
-            class="doc-link"
-            :class="{ active: currentDocId === doc.id }"
-            @click="loadDocument(doc)"
+          <div
+            v-for="(doc, index) in documentList"
+            :key="index"
+            class="doc-row"
+            :class="{ active: isActiveDoc(doc, index) }"
           >
-            {{ doc.title || doc.id }}
-          </button>
+            <button
+              class="doc-link"
+              @click="selectDoc(doc)"
+            >
+              {{ doc.title || (doc.id ? doc.id : 'New document') }}
+            </button>
+            <button
+              v-if="doc.id !== null"
+              class="doc-delete"
+              title="Delete document"
+              @click.stop="deleteDocument(doc)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </button>
+          </div>
         </template>
       </div>
       <div class="left-panel-footer">
@@ -91,6 +111,8 @@ const userId = ref(localStorage.getItem('markdownUserId') || '');
 const documentList = ref([]);
 const docsLoading = ref(false);
 const docsError = ref(null);
+// index of the "New document" sentinel in documentList, or -1 when none
+const newDocumentIndex = ref(-1);
 
 const filteredMemoText = computed(() =>
   filterMarkdownLines(memoText.value, filterValue.value)
@@ -130,6 +152,7 @@ const loadDocumentList = () => {
     if (request.status === 200) {
       try {
         documentList.value = JSON.parse(request.responseText).list || [];
+        newDocumentIndex.value = -1;
       } catch {
         docsError.value = 'Parse error';
       }
@@ -144,6 +167,25 @@ const loadDocumentList = () => {
     docsError.value = 'Connection error';
   };
   request.send(null);
+};
+
+// Determine whether a list entry is the currently active one.
+// The new-document sentinel has id === null; it is identified by index.
+const isActiveDoc = (doc, index) => {
+  if (doc.id === null) return index === newDocumentIndex.value;
+  return currentDocId.value === doc.id;
+};
+
+// Called when the user clicks a link in the left panel.
+const selectDoc = (doc) => {
+  if (doc.id === null) {
+    // Sentinel — already selected via newDocument(); nothing to fetch.
+    currentDocId.value = null;
+    documentTitle.value = doc.title || '';
+    memoText.value = '';
+    return;
+  }
+  loadDocument(doc);
 };
 
 const loadDocument = (doc) => {
@@ -169,6 +211,45 @@ const loadDocument = (doc) => {
   request.send(null);
 };
 
+const newDocument = () => {
+  // Remove any existing unsaved sentinel first.
+  if (newDocumentIndex.value !== -1) {
+    documentList.value.splice(newDocumentIndex.value, 1);
+  }
+  const sentinel = { id: null, title: 'New document' };
+  documentList.value.unshift(sentinel);
+  newDocumentIndex.value = 0;
+  currentDocId.value = null;
+  documentTitle.value = '';
+  memoText.value = '';
+};
+
+const deleteDocument = (doc) => {
+  const label = doc.title || doc.id;
+  if (!window.confirm(`Delete "${label}"?`)) return;
+  const uid = userIdParam();
+  const url = `${getBaseUrl()}/api/v1/markdown.deleteDocument${uid ? '?' + uid : ''}`;
+  const payload = JSON.stringify({ id: doc.id });
+  const request = new XMLHttpRequest();
+  request.open('POST', url, true);
+  request.withCredentials = true;
+  request.setRequestHeader('Content-Type', 'application/json');
+  request.onload = () => {
+    if (request.status === 200) {
+      if (currentDocId.value === doc.id) {
+        currentDocId.value = null;
+        documentTitle.value = '';
+        memoText.value = '';
+      }
+      loadDocumentList();
+    } else {
+      console.error('Error deleting document:', request.status);
+    }
+  };
+  request.onerror = () => console.error('Connection error deleting document');
+  request.send(payload);
+};
+
 const saveMemo = () => {
   const uid = userIdParam();
   const url = `${getBaseUrl()}/api/v1/markdown.saveDocument${uid ? '?' + uid : ''}`;
@@ -185,6 +266,11 @@ const saveMemo = () => {
       try {
         const data = JSON.parse(request.responseText);
         currentDocId.value = data.id;
+        // Drop the unsaved sentinel — loadDocumentList will add the real entry.
+        if (newDocumentIndex.value !== -1) {
+          documentList.value.splice(newDocumentIndex.value, 1);
+          newDocumentIndex.value = -1;
+        }
         loadDocumentList();
       } catch {
         console.error('Parse error saving document');
@@ -245,13 +331,40 @@ watch(memoText, async () => {
 }
 
 .left-panel-header {
-  padding: 1rem 1rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.75rem 0.75rem 1rem;
   font-weight: 700;
   font-size: 0.8rem;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.new-doc-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  color: #334155;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.new-doc-button:hover {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .docs-scroll {
@@ -270,30 +383,70 @@ watch(memoText, async () => {
   color: #ef4444;
 }
 
+.doc-row {
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.doc-row:hover {
+  background: #e2e8f0;
+}
+
+.doc-row.active {
+  background: #dbeafe;
+}
+
+.doc-row.active .doc-link {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
 .doc-link {
-  display: block;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   text-align: left;
-  padding: 0.55rem 1rem;
+  padding: 0.55rem 0.5rem 0.55rem 1rem;
   font-size: 0.9rem;
   color: #334155;
   background: none;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.doc-link:hover {
-  background: #e2e8f0;
+.doc-delete {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-right: 0.35rem;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: #94a3b8;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
 }
 
-.doc-link.active {
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-weight: 600;
+.doc-row:hover .doc-delete {
+  opacity: 1;
+}
+
+.doc-delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.doc-delete svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  pointer-events: none;
 }
 
 .left-panel-footer {
