@@ -285,12 +285,16 @@ const saveMemo = () => {
         const data = JSON.parse(request.responseText);
         currentDocId.value = data.id;
         lastSaved.value = { id: data.id, title: documentTitle.value, text: memoText.value };
-        // Drop the unsaved sentinel — loadDocumentList will add the real entry.
+        // Update the list in-place to avoid a full reload.
         if (newDocumentIndex.value !== -1) {
-          documentList.value.splice(newDocumentIndex.value, 1);
+          // Replace the unsaved sentinel with the real entry.
+          documentList.value.splice(newDocumentIndex.value, 1, { id: data.id, title: documentTitle.value });
           newDocumentIndex.value = -1;
+        } else {
+          // Update the title of the existing entry.
+          const idx = documentList.value.findIndex(d => d.id === data.id);
+          if (idx !== -1) documentList.value[idx] = { ...documentList.value[idx], title: documentTitle.value };
         }
-        loadDocumentList();
       } catch {
         console.error('Parse error saving document');
       }
@@ -599,7 +603,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   padding: 1rem;
-  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 0.95rem;
   line-height: 1.5;
   white-space: pre-wrap;
