@@ -58,6 +58,7 @@
         type="text"
         class="filter-input"
         placeholder="Filter"
+        @keyup.enter="updateUrlParam('filter', filterValue)"
       />
       <div class="memo-actions">
         <input
@@ -101,6 +102,19 @@ const newDocumentIndex = ref(-1);
 // Snapshot of the last successfully saved state — used to skip no-op autosaves.
 const lastSaved = ref({ id: null, title: '', text: '' });
 
+const initialLoad = ref(true);
+
+const updateUrlParam = (key, value) => {
+  const params = new URLSearchParams(window.location.search);
+  if (value !== null && value !== undefined && value !== '') {
+    params.set(key, String(value));
+  } else {
+    params.delete(key);
+  }
+  const search = params.toString();
+  window.history.pushState({}, '', window.location.pathname + (search ? '?' + search : ''));
+};
+
 const isDirty = computed(() =>
   memoText.value !== lastSaved.value.text ||
   documentTitle.value !== lastSaved.value.title ||
@@ -140,6 +154,14 @@ const loadDocumentList = () => {
       try {
         documentList.value = JSON.parse(request.responseText).list || [];
         newDocumentIndex.value = -1;
+        if (initialLoad.value) {
+          initialLoad.value = false;
+          const idParam = new URLSearchParams(window.location.search).get('id');
+          if (idParam) {
+            const doc = documentList.value.find(d => String(d.id) === String(idParam));
+            if (doc) loadDocument(doc);
+          }
+        }
       } catch {
         docsError.value = 'Parse error';
       }
@@ -174,8 +196,10 @@ const selectDoc = (doc) => {
     currentDocId.value = null;
     documentTitle.value = doc.title || '';
     memoText.value = '';
+    updateUrlParam('id', null);
     return;
   }
+  updateUrlParam('id', doc.id);
   loadDocument(doc);
 };
 
@@ -215,6 +239,7 @@ const newDocument = () => {
   currentDocId.value = null;
   documentTitle.value = '';
   memoText.value = '';
+  updateUrlParam('id', null);
 };
 
 const deleteDocument = (doc) => {
@@ -282,19 +307,38 @@ const onUserIdChange = () => {
   loadDocumentList();
 };
 
+const handlePopState = () => {
+  const idParam = new URLSearchParams(window.location.search).get('id');
+  if (idParam) {
+    const doc = documentList.value.find(d => String(d.id) === String(idParam));
+    if (doc) loadDocument(doc);
+  } else {
+    currentDocId.value = null;
+    documentTitle.value = '';
+    memoText.value = '';
+  }
+};
+
 let autosaveTimer = null;
 
 onMounted(() => {
+  const params = new URLSearchParams(window.location.search);
+  const filterParam = params.get('filter');
+  if (filterParam !== null) {
+    filterValue.value = filterParam;
+  }
   loadDocumentList();
   autosaveTimer = setInterval(() => {
     if (isDirty.value && canSave.value) {
       saveMemo();
     }
   }, 5000);
+  window.addEventListener('popstate', handlePopState);
 });
 
 onUnmounted(() => {
   clearInterval(autosaveTimer);
+  window.removeEventListener('popstate', handlePopState);
 });
 
 </script>
