@@ -70,28 +70,27 @@
         <button type="button" class="action-button" @click="saveMemo">Save</button>
       </div>
       <div class="memo-wrapper">
-        <textarea
-          id="markdown-memo"
-          :value="filteredMemoText"
-          :readonly="!!filterValue"
-          class="memo-input"
-          spellcheck="false"
-          @input="memoText = $event.target.value"
-        ></textarea>
+        <div ref="editorContainer" class="monaco-container"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { filterMarkdownLines } from '@/utils/markdownFilter';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { getFilterTokens } from '@/utils/markdownFilter';
+import * as monaco from 'monaco-editor';
 
 const filterValue = ref('');
 const memoText = ref('');
 const documentTitle = ref('');
 const currentDocId = ref(null);
 const userId = ref(localStorage.getItem('markdownUserId') || '');
+
+// Monaco editor
+const editorContainer = ref(null);
+let editor = null;
+let editorActivateFilter = null; // set in onMounted once editor is ready
 
 const documentList = ref([]);
 const docsLoading = ref(false);
@@ -125,11 +124,6 @@ const isDirty = computed(() =>
 const canSave = computed(() =>
   !(currentDocId.value === null && !memoText.value && !documentTitle.value)
 );
-
-const filteredMemoText = computed(() =>
-  filterMarkdownLines(memoText.value, filterValue.value)
-);
-
 
 const getBaseUrl = () => {
   const protocol = import.meta.env.ENV_SERVER_PROTOCOL || window.location.protocol.replace(':', '');
@@ -217,6 +211,7 @@ const loadDocument = (doc) => {
         const text = JSON.parse(request.responseText).text || '';
         memoText.value = text;
         lastSaved.value = { id: doc.id, title: doc.title || '', text };
+        if (editorActivateFilter && filterValue.value) editorActivateFilter();
       } catch {
         console.error('Parse error loading document');
       }
@@ -240,6 +235,7 @@ const newDocument = () => {
   documentTitle.value = '';
   memoText.value = '';
   updateUrlParam('id', null);
+  if (editorActivateFilter && filterValue.value) editorActivateFilter();
 };
 
 const deleteDocument = (doc) => {
@@ -258,6 +254,7 @@ const deleteDocument = (doc) => {
         currentDocId.value = null;
         documentTitle.value = '';
         memoText.value = '';
+        if (editorActivateFilter && filterValue.value) editorActivateFilter();
       }
       loadDocumentList();
     } else {
@@ -338,11 +335,136 @@ onMounted(() => {
     }
   }, 5000);
   window.addEventListener('popstate', handlePopState);
+
+  // filteredState holds the non-matching line "gaps" while a filter is active.
+  // gaps[0] = lines before first match, gaps[i] = lines after match i-1, etc.
+  let filteredState = null; // { gaps: string[][] }
+  let settingEditorValue = false; // guard against reentrant change events
+
+  // Rebuild full text by interleaving new visible lines with stored gap lines.
+  const rebuildFromGaps = (visibleLines, gaps) => {
+    const originalMatchCount = gaps.length - 1;
+    const result = [...gaps[0]];
+    visibleLines.forEach((line, i) => {
+      result.push(line);
+      if (i + 1 < gaps.length) result.push(...gaps[i + 1]);
+    });
+    // Include gaps of any visible lines the user deleted
+    for (let i = visibleLines.length; i < originalMatchCount; i++) {
+      result.push(...gaps[i + 1]);
+    }
+    return result.join('\n');
+  };
+
+  const activateFilter = () => {
+    if (!editor) return;
+    const tokens = getFilterTokens(filterValue.value);
+    const lines = memoText.value.split('\n');
+    const gaps = [[]];
+    const visibleLines = [];
+    for (const line of lines) {
+      if (tokens.some(t => line.includes(t))) {
+        visibleLines.push(line);
+        gaps.push([]);
+      } else {
+        gaps[gaps.length - 1].push(line);
+      }
+    }
+    filteredState = { gaps };
+    const content = visibleLines.join('\n');
+    if (editor.getValue() !== content) {
+      settingEditorValue = true;
+      editor.setValue(content);
+      settingEditorValue = false;
+    }
+  };
+
+  const deactivateFilter = () => {
+    filteredState = null;
+    if (!editor) return;
+    const content = memoText.value;
+    if (editor.getValue() !== content) {
+      settingEditorValue = true;
+      editor.setValue(content);
+      settingEditorValue = false;
+    }
+  };
+
+  // Create Monaco editor
+  editor = monaco.editor.create(editorContainer.value, {
+    value: memoText.value,
+    language: 'markdown',
+    theme: 'vs',
+    automaticLayout: true,
+    wordWrap: 'on',
+    minimap: { enabled: false },
+    scrollBeyondLastLine: false,
+    fontFamily: "'Courier New', Courier, monospace",
+    fontSize: 14,
+    lineHeight: 21,
+    renderLineHighlight: 'none',
+    overviewRulerLanes: 0,
+    hideCursorInOverviewRuler: true,
+    overviewRulerBorder: false,
+    readOnly: false,
+  });
+
+  editor.onKeyDown((e) => {
+    if (filteredState && e.keyCode === monaco.KeyCode.Enter) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+
+  editor.onDidPaste((e) => {
+    if (!filteredState) return;
+    const model = editor.getModel();
+    if (!model) return;
+    const pastedText = model.getValueInRange(e.range);
+    if (!/\r|\n/.test(pastedText)) return;
+    const sanitized = pastedText.replace(/\r?\n|\r/g, ' ');
+    editor.executeEdits('sanitize-paste', [{
+      range: e.range,
+      text: sanitized,
+      forceMoveMarkers: true,
+    }]);
+  });
+
+  editor.onDidChangeModelContent(() => {
+    if (settingEditorValue) return;
+    if (filteredState) {
+      memoText.value = rebuildFromGaps(editor.getValue().split('\n'), filteredState.gaps);
+    } else {
+      memoText.value = editor.getValue();
+    }
+  });
+
+  // Sync external memoText changes into the editor (e.g. document load)
+  watch(memoText, (newVal) => {
+    if (!editor || filteredState) return;
+    if (editor.getValue() !== newVal) {
+      settingEditorValue = true;
+      editor.setValue(newVal);
+      settingEditorValue = false;
+    }
+  });
+
+  // Activate or deactivate filtered editing when filter text changes
+  watch(filterValue, (newVal) => {
+    if (!editor) return;
+    if (newVal) activateFilter();
+    else deactivateFilter();
+  });
+
+  // Expose activateFilter so document-load code can refresh the filtered view
+  editorActivateFilter = activateFilter;
 });
 
 onUnmounted(() => {
   clearInterval(autosaveTimer);
   window.removeEventListener('popstate', handlePopState);
+  editor?.dispose();
+  editor = null;
 });
 
 </script>
@@ -596,29 +718,9 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.memo-input {
+.monaco-container {
   position: absolute;
   inset: 0;
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-  box-sizing: border-box;
-  border: none;
-  resize: none;
-  background: white;
-  color: #1e293b;
-  caret-color: #1e293b;
-  overflow: auto;
-}
-
-.memo-input:focus {
-  outline: none;
 }
 
 
