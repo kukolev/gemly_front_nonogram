@@ -414,6 +414,11 @@ onMounted(() => {
       e.preventDefault();
       e.stopPropagation();
     }
+    if ((e.ctrlKey || e.metaKey) && e.keyCode === monaco.KeyCode.KeyS) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (canSave.value) saveMemo();
+    }
   });
 
   editor.onDidPaste((e) => {
