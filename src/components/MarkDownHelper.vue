@@ -4,7 +4,7 @@
     <div class="left-panel">
       <div class="left-panel-header">
         <span>Documents</span>
-        <button class="new-doc-button" @click="newDocument" title="New document">+</button>
+        <button class="new-doc-button" :disabled="isSaving" @click="newDocument" title="New document">+</button>
       </div>
       <div class="docs-scroll">
         <div v-if="docsLoading" class="docs-status">Loading...</div>
@@ -19,6 +19,7 @@
           >
             <button
               class="doc-link"
+              :disabled="isSaving"
               @click="selectDoc(doc)"
             >
               {{ doc.title || (doc.id ? doc.id : 'New document') }}
@@ -27,6 +28,7 @@
               v-if="doc.id !== null"
               class="doc-delete"
               title="Delete document"
+              :disabled="isSaving"
               @click.stop="deleteDocument(doc)"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -67,7 +69,7 @@
           class="doc-title-input"
           placeholder="Document name"
         />
-        <button type="button" class="action-button" @click="saveMemo">Save</button>
+        <button type="button" class="action-button" :disabled="isSaving" @click="saveMemo">{{ isSaving ? 'Saving…' : 'Save' }}</button>
       </div>
       <div class="memo-wrapper">
         <div ref="editorContainer" class="monaco-container"></div>
@@ -97,6 +99,12 @@ const docsLoading = ref(false);
 const docsError = ref(null);
 // index of the "New document" sentinel in documentList, or -1 when none
 const newDocumentIndex = ref(-1);
+
+// True while a save POST is in flight. Saves are single-flight: a new save is
+// not started while one is running, and switching documents is blocked until
+// the running save resolves. savePromise resolves when the in-flight save ends.
+const isSaving = ref(false);
+let savePromise = null;
 
 // Snapshot of the last successfully saved state — used to skip no-op autosaves.
 const lastSaved = ref({ id: null, title: '', text: '' });
@@ -180,10 +188,12 @@ const isActiveDoc = (doc, index) => {
 };
 
 // Called when the user clicks a link in the left panel.
-const selectDoc = (doc) => {
-  // Save the current document before navigating away.
+const selectDoc = async (doc) => {
+  // Don't allow switching documents while a save is still in flight.
+  if (isSaving.value) return;
+  // Save the current document and wait for it to finish before navigating away.
   if (isDirty.value && canSave.value) {
-    saveMemo();
+    await saveMemo();
   }
   if (doc.id === null) {
     // Sentinel — already selected via newDocument(); nothing to fetch.
@@ -200,12 +210,15 @@ const selectDoc = (doc) => {
 const loadDocument = (doc) => {
   currentDocId.value = doc.id;
   documentTitle.value = doc.title || '';
+  const requestedId = doc.id;
   const uid = userIdParam();
   const url = `${getBaseUrl()}/api/v1/markdown.getDocument?documentId=${encodeURIComponent(doc.id)}${uid ? '&' + uid : ''}`;
   const request = new XMLHttpRequest();
   request.open('GET', url, true);
   request.withCredentials = true;
   request.onload = () => {
+    // Ignore a stale response if the user has switched documents meanwhile.
+    if (currentDocId.value !== requestedId) return;
     if (request.status === 200) {
       try {
         const text = JSON.parse(request.responseText).text || '';
@@ -223,7 +236,13 @@ const loadDocument = (doc) => {
   request.send(null);
 };
 
-const newDocument = () => {
+const newDocument = async () => {
+  // Don't start a new document while a save is still in flight.
+  if (isSaving.value) return;
+  // Persist the current document first so its edits aren't lost.
+  if (isDirty.value && canSave.value) {
+    await saveMemo();
+  }
   // Remove any existing unsaved sentinel first.
   if (newDocumentIndex.value !== -1) {
     documentList.value.splice(newDocumentIndex.value, 1);
@@ -238,9 +257,15 @@ const newDocument = () => {
   if (editorActivateFilter && filterValue.value) editorActivateFilter();
 };
 
-const deleteDocument = (doc) => {
+const deleteDocument = async (doc) => {
+  // Don't delete while a save is still in flight.
+  if (isSaving.value) return;
   const label = doc.title || doc.id;
   if (!window.confirm(`Delete "${label}"?`)) return;
+  // If there are unsaved edits to a *different* open document, persist them first.
+  if (isDirty.value && canSave.value && currentDocId.value !== doc.id) {
+    await saveMemo();
+  }
   const uid = userIdParam();
   const url = `${getBaseUrl()}/api/v1/markdown.deleteDocument${uid ? '?' + uid : ''}`;
   const payload = JSON.stringify({ id: doc.id });
@@ -265,42 +290,72 @@ const deleteDocument = (doc) => {
   request.send(payload);
 };
 
+// Persist the current document. Single-flight and Promise-based: if a save is
+// already running, its promise is returned instead of starting a second one.
+// The document being saved is snapshotted up front so the response handler
+// never writes back into a different document the user has navigated to.
 const saveMemo = () => {
-  const uid = userIdParam();
-  const url = `${getBaseUrl()}/api/v1/markdown.saveDocument${uid ? '?' + uid : ''}`;
-  const payload = JSON.stringify({
-    info: { id: currentDocId.value || null, title: documentTitle.value || '' },
-    document: { text: memoText.value || '' },
-  });
-  const request = new XMLHttpRequest();
-  request.open('POST', url, true);
-  request.withCredentials = true;
-  request.setRequestHeader('Content-Type', 'application/json');
-  request.onload = () => {
-    if (request.status === 200) {
-      try {
-        const data = JSON.parse(request.responseText);
-        currentDocId.value = data.id;
-        lastSaved.value = { id: data.id, title: documentTitle.value, text: memoText.value };
-        // Update the list in-place to avoid a full reload.
-        if (newDocumentIndex.value !== -1) {
-          // Replace the unsaved sentinel with the real entry.
-          documentList.value.splice(newDocumentIndex.value, 1, { id: data.id, title: documentTitle.value });
-          newDocumentIndex.value = -1;
-        } else {
-          // Update the title of the existing entry.
-          const idx = documentList.value.findIndex(d => d.id === data.id);
-          if (idx !== -1) documentList.value[idx] = { ...documentList.value[idx], title: documentTitle.value };
-        }
-      } catch {
-        console.error('Parse error saving document');
-      }
-    } else {
-      console.error('Error saving document:', request.status);
-    }
+  if (savePromise) return savePromise;
+  if (!canSave.value) return Promise.resolve();
+
+  const snapshot = {
+    id: currentDocId.value || null,
+    title: documentTitle.value || '',
+    text: memoText.value || '',
   };
-  request.onerror = () => console.error('Connection error saving document');
-  request.send(payload);
+
+  isSaving.value = true;
+  savePromise = new Promise((resolve) => {
+    const uid = userIdParam();
+    const url = `${getBaseUrl()}/api/v1/markdown.saveDocument${uid ? '?' + uid : ''}`;
+    const payload = JSON.stringify({
+      info: { id: snapshot.id, title: snapshot.title },
+      document: { text: snapshot.text },
+    });
+    const request = new XMLHttpRequest();
+    request.open('POST', url, true);
+    request.withCredentials = true;
+    request.setRequestHeader('Content-Type', 'application/json');
+    request.onload = () => {
+      if (request.status === 200) {
+        try {
+          const data = JSON.parse(request.responseText);
+          // Only adopt the server id if we're still on the document we saved.
+          if (currentDocId.value === snapshot.id) {
+            currentDocId.value = data.id;
+          }
+          // lastSaved reflects exactly what was persisted (the snapshot), so any
+          // edits made *during* the save keep the document dirty for the next one.
+          lastSaved.value = { id: data.id, title: snapshot.title, text: snapshot.text };
+          // Update the list in-place to avoid a full reload.
+          if (newDocumentIndex.value !== -1 && snapshot.id === null) {
+            // Replace the unsaved sentinel with the real entry.
+            documentList.value.splice(newDocumentIndex.value, 1, { id: data.id, title: snapshot.title });
+            newDocumentIndex.value = -1;
+          } else {
+            // Update the title of the existing entry.
+            const idx = documentList.value.findIndex(d => d.id === data.id);
+            if (idx !== -1) documentList.value[idx] = { ...documentList.value[idx], title: snapshot.title };
+          }
+        } catch {
+          console.error('Parse error saving document');
+        }
+      } else {
+        console.error('Error saving document:', request.status);
+      }
+      resolve();
+    };
+    request.onerror = () => {
+      console.error('Connection error saving document');
+      resolve();
+    };
+    request.send(payload);
+  }).finally(() => {
+    isSaving.value = false;
+    savePromise = null;
+  });
+
+  return savePromise;
 };
 
 const onUserIdChange = () => {
@@ -308,7 +363,10 @@ const onUserIdChange = () => {
   loadDocumentList();
 };
 
-const handlePopState = () => {
+const handlePopState = async () => {
+  // Let any running save finish, then persist current edits before switching.
+  if (savePromise) await savePromise;
+  if (isDirty.value && canSave.value) await saveMemo();
   const idParam = new URLSearchParams(window.location.search).get('id');
   if (idParam) {
     const doc = documentList.value.find(d => String(d.id) === String(idParam));
@@ -330,7 +388,7 @@ onMounted(() => {
   }
   loadDocumentList();
   autosaveTimer = setInterval(() => {
-    if (isDirty.value && canSave.value) {
+    if (isDirty.value && canSave.value && !isSaving.value) {
       saveMemo();
     }
   }, 5000);
@@ -427,7 +485,7 @@ onMounted(() => {
     if ((e.ctrlKey || e.metaKey) && e.keyCode === monaco.KeyCode.KeyS) {
       e.preventDefault();
       e.stopPropagation();
-      if (canSave.value) saveMemo();
+      if (canSave.value && !isSaving.value) saveMemo();
     }
   });
 
@@ -721,6 +779,16 @@ onUnmounted(() => {
   background: #2563eb;
   border-color: #2563eb;
   color: #f8fafc;
+}
+
+/* Controls blocked while a save is in flight. */
+.new-doc-button:disabled,
+.doc-link:disabled,
+.doc-delete:disabled,
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .memo-wrapper {
