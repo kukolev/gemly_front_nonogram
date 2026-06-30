@@ -1,94 +1,97 @@
 <template>
   <div class="shopping-page">
-    <div class="shopping-header">
-      <div class="header-left">
-        <h2>{{ t('shopping.title') }}</h2>
-      </div>
-    </div>
-
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>{{ t('shopping.loading') }}</p>
-    </div>
-
-    <div v-else-if="error" class="error-state">
-      <p>{{ error }}</p>
-      <button @click="getList" class="retry-btn">{{ t('shopping.retry') }}</button>
-    </div>
-
-    <div v-else class="shopping-content">
-      <div v-if="items.length === 0" class="empty-state">
-        <p>{{ t('shopping.empty') }}</p>
+    <div class="shopping-scrollable">
+      <div class="shopping-header">
+        <div class="header-left">
+          <h2>{{ t('shopping.title') }}</h2>
+        </div>
       </div>
 
-      <div v-else class="items-list">
-        <div 
-          v-for="item in items" 
-          :key="item.id" 
-          class="item-row"
-        >
-          <div class="item-left">
-            <input 
-              type="checkbox" 
-              class="item-checkbox" 
-              :checked="item.status === 'DONE'"
-              @change="handleCheckboxChange($event, item)"
-            />
-            <div class="item-main">
-              <span class="item-topic" :class="{ 'done': item.status === 'DONE' }">{{ item.topic }}</span>
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ t('shopping.loading') }}</p>
+      </div>
+
+      <div v-else-if="error" class="error-state">
+        <p>{{ error }}</p>
+        <button @click="getList" class="retry-btn">{{ t('shopping.retry') }}</button>
+      </div>
+
+      <div v-else class="shopping-content">
+        <div v-if="items.length === 0" class="empty-state">
+          <p>{{ t('shopping.empty') }}</p>
+        </div>
+
+        <div v-else class="items-list">
+          <div
+            v-for="item in items"
+            :key="item.id"
+            class="item-row"
+          >
+            <div class="item-left">
+              <input
+                type="checkbox"
+                class="item-checkbox"
+                :checked="item.status === 'DONE'"
+                @change="handleCheckboxChange($event, item)"
+              />
+              <div class="item-main">
+                <span class="item-topic" :class="{ 'done': item.status === 'DONE' }">{{ item.topic }}</span>
+              </div>
             </div>
-          </div>
-          <div class="item-actions">
-            <button class="action-btn edit-btn" :title="t('shopping.edit')" @click="handleEdit(item)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button 
-              class="action-btn delete-btn" 
-              :title="t('shopping.delete')"
-              @mousedown="startDeletePress(item)"
-              @mouseup="cancelDeletePress(item)"
-              @mouseleave="cancelDeletePress(item)"
-              @touchstart.passive="startDeletePress(item)"
-              @touchend="cancelDeletePress(item)"
-              @touchcancel="cancelDeletePress(item)"
-              :style="getDeleteButtonStyle(item.id)"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
-            </button>
+            <div class="item-actions">
+              <button class="action-btn edit-btn" :title="t('shopping.edit')" @click="handleEdit(item)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button
+                class="action-btn delete-btn"
+                :title="t('shopping.delete')"
+                @mousedown="startDeletePress(item)"
+                @mouseup="cancelDeletePress(item)"
+                @mouseleave="cancelDeletePress(item)"
+                @touchstart.passive="startDeletePress(item)"
+                @touchend="cancelDeletePress(item)"
+                @touchcancel="cancelDeletePress(item)"
+                :style="getDeleteButtonStyle(item.id)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="add-btn-wrapper">
-        <button class="refresh-btn" @click="getList" :title="t('shopping.refresh')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="refresh-icon">
-            <path d="M23 4v6h-6"></path>
-            <path d="M1 20v-6h6"></path>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-        </button>
-        <button class="add-btn" @click="handleAdd">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <span>{{ t('shopping.add') }}</span>
-        </button>
-      </div>
     </div>
 
-    <ShoppingEdit 
-      v-if="isEditDialogOpen" 
-      :item="editingItem" 
-      @save="handleSaveEdit" 
-      @cancel="isEditDialogOpen = false" 
+    <div class="add-btn-wrapper">
+      <button class="refresh-btn" @click="getList" :title="t('shopping.refresh')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="refresh-icon">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+      <button class="add-btn" @click="handleAdd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="add-icon">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>{{ t('shopping.add') }}</span>
+      </button>
+    </div>
+
+    <ShoppingEdit
+      v-if="isEditDialogOpen"
+      :item="editingItem"
+      @save="handleSaveEdit"
+      @cancel="isEditDialogOpen = false"
     />
   </div>
 </template>
@@ -177,6 +180,7 @@ const getList = (showLoading = true) => {
           fetchedItems.sort((a, b) => {
             if (a.status === 'DONE' && b.status !== 'DONE') return 1;
             if (a.status !== 'DONE' && b.status === 'DONE') return -1;
+            if (a.status === 'DONE') return (a.topic || '').localeCompare(b.topic || '');
             return (a.number || 0) - (b.number || 0);
           });
           items.value = fetchedItems;
@@ -275,10 +279,20 @@ onUnmounted(() => {
 
 <style scoped>
 .shopping-page {
-  padding: 20px;
   max-width: 800px;
   margin: 0 auto;
   font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.shopping-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 .shopping-header {
@@ -369,10 +383,14 @@ onUnmounted(() => {
 }
 
 .add-btn-wrapper {
-  margin-top: 24px;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   gap: 12px;
+  padding: 10px 20px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .shopping-header h2 {
@@ -517,8 +535,8 @@ onUnmounted(() => {
   }
 
   .add-btn-wrapper {
-    width: 100%;
     gap: 8px;
+    padding: 10px 12px;
   }
 
   .add-btn {
@@ -526,7 +544,7 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  .shopping-page {
+  .shopping-scrollable {
     padding: 12px;
   }
   

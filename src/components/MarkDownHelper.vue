@@ -78,7 +78,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { getFilterTokens } from '@/utils/markdownFilter';
+import { getFilterTokens, isTagToken, selectMatchingLines, selectMatchingTagLines } from '@/utils/markdownFilter';
 import * as monaco from 'monaco-editor';
 
 const filterValue = ref('');
@@ -362,14 +362,24 @@ onMounted(() => {
     const lines = memoText.value.split('\n');
     const gaps = [[]];
     const visibleLines = [];
-    for (const line of lines) {
-      if (tokens.some(t => line.includes(t))) {
+
+    // Tag filtering keeps each matched tag line plus its ancestor chain and body;
+    // regular filtering keeps matching lines plus each match's ancestor lines.
+    // Either way we get a per-line keep[] flag: kept lines become visible, hidden
+    // lines accumulate into gaps so the full text can be rebuilt after edits.
+    const useTagFilter = tokens.length > 0 && tokens.every(t => isTagToken(t));
+    const keep = useTagFilter
+      ? selectMatchingTagLines(lines, tokens)
+      : selectMatchingLines(lines, tokens);
+    lines.forEach((line, i) => {
+      if (keep[i]) {
         visibleLines.push(line);
         gaps.push([]);
       } else {
         gaps[gaps.length - 1].push(line);
       }
-    }
+    });
+
     filteredState = { gaps };
     const content = visibleLines.join('\n');
     if (editor.getValue() !== content) {
